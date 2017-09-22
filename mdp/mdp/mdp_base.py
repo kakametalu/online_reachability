@@ -309,12 +309,8 @@ class MDP(TransitionProbabilities):
             
         output = linprog(c, A_ineq, b_ineq, callback=my_callback)
         V_opt = output['x']
-        print(output['status'])
-        print(output['success'])
-        print(output['nit'])
-        print(output['message'])
         if np.isnan(V_opt).any():
-            print("found a nan here too")
+            print("LP failed.")
             return
         V_opt, pi_opt = self._value_iteration(V_opt)
 

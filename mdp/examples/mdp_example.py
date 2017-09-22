@@ -51,4 +51,3 @@ if __name__ == "__main__":
     	  format(time.time()- t_start))
     print("Optimal value function:\n {}".format(V_opt))
     print("Optimal policy:\n {}".format(pi_opt))
-    
