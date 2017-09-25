@@ -155,17 +155,20 @@ class MDP(TransitionProbabilities):
         # Absorbing states will be treated as transitioning out of the
         # state space in the undiscounted case. This is useful for computing
         # the value function via a linear program.
-        
+        self._expR[state, action] = np.sum([self.reward(state, action, x[0])
+                                            * x[1]for x in zip(next_states,
+                                                               probs)])
         spa = False # Skip probability assertion
         probs_copy = deepcopy(probs) # Pass by copy since it may be modified.
+        
+        # Absorbing states cannot accumulate reward if MDP is undiscounted
+        # We model absorbing states as transitioning out of state space.
         if state in self._absorbing and self._gamma ==1.0:
             probs_copy *= 0
             spa = True
 
         super().add_transition(state, action, next_states, probs_copy,spa)
-        self._expR[state, action] = np.sum([self.reward(state, action, x[0])
-                                            * x[1]for x in zip(next_states,
-                                                               probs_copy)])
+
     def __getitem__(self, state_action):
         """Takes state and action and returns (next_states, probs, exp rewards).
 
@@ -297,21 +300,15 @@ class MDP(TransitionProbabilities):
         eye_tensor[:, range(self.num_states), range(self.num_states)] = 1.0
         A_ineq = np.concatenate(list(self._gamma * self._trans_tensor -
                                      eye_tensor))
-        b_ineq = - self._expR.flatten('F')
-        A_eq = np.zeros([2, self.num_states])
-        A_eq[0,0] = 1
-        A_eq[1,self.num_states-1] = 1
-        b_eq = np.zeros([2,1])
+        b_ineq = - self._expR.flatten('F') + 10**-20        
+        output = linprog(c, A_ineq, b_ineq)
         
-        def my_callback(xk,**kwargs):
-            #print("current solution:\n {}".format(xk))
-            return
-            
-        output = linprog(c, A_ineq, b_ineq, callback=my_callback)
-        V_opt = output['x']
-        if np.isnan(V_opt).any():
-            print("LP failed.")
-            return
-        V_opt, pi_opt = self._value_iteration(V_opt)
+        if  output['success']:
+            print("\nLP Successful.")
+            V_opt = output['x']
+            V_opt, pi_opt = self._bellman_backup(V_opt)
+        else:
+            print("\nLP FAILED. Returning solution using value iteration.")
+            V_opt, pi_opt = self._value_iteration()
 
         return V_opt, pi_opt
