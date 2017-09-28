@@ -4,8 +4,9 @@ from setuptools import find_packages
 setup(name='mdp',
       version='0.0.1',
       author='Kene Akametalu',
-      author_email='somil@berkeley.edu',
+      author_email='kakametalu@berkeley.edu',
       description='Code for generating MDPs',
+      install_requires=['scipy', 'numpy'],
       packages=find_packages(),
       license='Hybrid Systems Lab UC Berkeley'
 )
