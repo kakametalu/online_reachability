@@ -1,66 +1,69 @@
 import numpy as np
 from scipy.optimize import linprog
 from copy import deepcopy
+from itertools import product
+import time 
 
-class TransitionProbabilities(object):
+class TransitionModel(object):
     """Dictionary containing the state transition probabilities for an MDP.
 
     Attributes:
-        _trans_dict(dict): Dictionary containing transition probabilities.
-            Takes state and action index, and returns tuple of np arrays, where
-            each list has a state index, and transition probability, e.g.
-            ([state_0, state_1], [0.3, 0.7]) = _trans_dict[state_0, action_0].
         _num_states (uint): Number of states.
         _num_actions (uint): Number of actions.
-        _trans_tensor(3d np array): State transition probabilities in a tensor.
+        _p_trans(3d np array): State transition probabilities in a tensor.
             Tensor dimension is num_actions by num_states by num_states.
-            Usage: _trans_tensor[action, state, next_state]
+            Usage: _p_trans[action, state, next_state]
 
     Args:
         num_states (uint): Number of states.
         num_actions (uint): Number of actions.
+        p_trans(3d np array): State transition probabilities in a tensor.
+            Tensor dimension is num_actions by num_states by num_states.
+            Usage: _p_trans[action, state, next_state]
     """
 
-    def __init__(self,num_states, num_actions):
-        """Initialize TransitionProbabilities object."""
+    def __init__(self,num_states, num_actions, p_trans=None):
+        """Initialize TransitionModel object."""
 
-        self._trans_dict = {}
-        self._trans_tensor = np.zeros([num_actions, num_states, num_states])
+        if p_trans is None:
+            p_trans = np.zeros([num_actions, num_states, num_states])
+
+        p_trans_shape = (num_actions, num_states, num_states)
+        assert (p_trans.shape == p_trans_shape),\
+            "Transition tensor should have shape {}.".format(p_trans_shape)
+        self._p_trans = p_trans
         self._num_states = num_states
         self._num_actions = num_actions
+        self._pi_opt = None
+        self._v_opt = None
 
-    def add_transition(self, state, action, next_states, probs,
+    def add_transition(self, state, action, support, probs,
                        skip_prob_assert=False):
         """Add new transition.
 
         Args:
             state (uint): State index.
             action (uint): Action index.
-            next_states (1D np array): Possible next transition stats.
+            support (1D np array): Possible next transition states.
             probs (1D np array): Transition probabilities.
-            skip_prob_assert (bool): Skip probability assertion.
-               User intentionally has specified probs to not sum to one.
         """
         assert (state < self._num_states),\
             "State index {} out of range.".format(state)
         assert (action < self._num_actions), "Action index out of range."
-        if skip_prob_assert is False:
-            assert (np.sum(probs) == 1.0),\
-                "Total prob = {}".format(np.sum(probs))
-        for next_state in next_states:
+        assert (np.sum(probs) == 1.0),\
+            "Total prob = {}".format(np.sum(probs))
+        for next_state in support:
             assert (next_state < self._num_states),\
                 "Next state {} index out of range.".format(next_state)
-
-        self._trans_dict.update({(state, action): (next_states, probs)})
-        self._trans_tensor[action, state, next_states] = probs
+        self._p_trans[action, state, support] = probs
 
     def __getitem__(self, state_action):
-        """Takes state and action and returns (next_states, probs, exp rewards).
+        """Takes state and action and returns (support, probs, exp rewards).
 
         Args:
             state_action (tuple of uints): State index and action index.
         Returns:
-            next_states (1D np array): Possible next transition states.
+            support (1D np array): Possible next transition states.
             probs (1D np array): Transition probabilities.
         """
         
@@ -68,15 +71,25 @@ class TransitionProbabilities(object):
         assert (state < self._num_states), "State index is out of range."
         assert (action < self._num_actions), "Action index is out of range."
 
-        # If no transition for state/action then use default.
-        default = ([state], [0.0])
-        (next_states, probs) = self._trans_dict.get((state, action), default)
+        support = self._p_trans[int(action), int(state)].nonzero()[0]
+        probs = self._p_trans[action, state, support]
 
-        return next_states, probs
+        if len(support) == 0:
+            support =[state]
+            probs = np.array([1.0])
+        return support, probs
     
     @property
-    def trans_tensor(self):
-        return self._trans_tensor
+    def p_trans(self):
+        return self._p_trans
+    
+    @p_trans.setter
+    def p_trans(self, p_trans):
+        assert (p_trans.shape == self._ptrans.shape),\
+            "Transition tensor should have shape {}.".format(self._ptrans.shape)
+        # TODO(AKA): check that tensor consist of stochastic matrices.
+        self._p_trans = p_trans
+
     @property
     def num_states(self):
         return self._num_states
@@ -84,11 +97,8 @@ class TransitionProbabilities(object):
     def num_actions(self):
         return self._num_actions
 
-def zero_reward(s, a, s_next):
-    """Reward function that returns zero."""
-    return 0.0
 
-class MDP(TransitionProbabilities):
+class MDP(TransitionModel):
     """MDP tuple with states, actions, rewards, and transition function.
 
     The trajectory reward is a sum of discounted rewards. The rewards may
@@ -99,111 +109,112 @@ class MDP(TransitionProbabilities):
     
 
     Attributes:
-        _reward_func (func): Scalar reward function.
-            Usage reward = _reward_func(state, action, next_state).
+        _reward (func): Scalar reward function.
+            Usage reward = _reward(state, action, next_state).
         _gamma (float): Discount rate in (0 1].
             If gamma is 1, then the reward is undiscounted, and absorbing
             states must be provided.
         _expR (np array): Expected immediate reward for state action pair.
             Shape is num_states by num_actions.
-        absorbing (list of uints): Absorbing state indices.
+        _abs_set (list of uints): Set of absorbing states.
+        _pi_opt(np array): Optimal action to reach goal from each state.
+            Size is total number of states by 1.
+        _v_opt(np array): Optimal value (cost to go) from each state.
+            Size is total number of states by 1.
 
     Args:
         num_states (uint): Number of states.
         num_actions(uint): Number of actions.
-        _reward_func (func): Scalar reward function.
-            Usage reward = _reward_func(state, action, next_state).
+        _reward (func): Scalar reward function.
+            Usage reward = _reward(state, action, next_state).
         gamma (float): Discount rate between 0 and 1.
             If gamma is 1, then the reward is undiscounted, and absorbing
             states must be provided.
-        _absorbing (list of uints): Absorbing state indices.
+        abs_set (list or set of uints): Set of absorbing states.
+        p_trans(3d np array): State transition probabilities in a tensor.
+            Tensor dimension is num_actions by num_states by num_states.
+            Usage: _p_trans[action, state, next_state]
     """
 
-    def __init__(self, num_states, num_actions, reward_func = None,
-                 gamma=None, absorbing=None):
+    def __init__(self, num_states, num_actions,
+                 reward = None, gamma=None, abs_set=None,
+                 p_trans=None):
         """Initialize MDP Object."""
         
-        if reward_func is None:
-            reward_func = zero_reward
+        gamma_one_abs_none = False # Gamma is 1 and no absorbing state
+        if (gamma == 1 and abs_set is None):
+            gamma_one_abs_none = True
+        assert(gamma_one_abs_none is False),\
+            "Absorbing states needed for gamma == 1."
+
+        super().__init__(num_states, num_actions, p_trans)
+
+        # Handling rewards
+        self._expR = np.zeros([num_states, num_actions])
+        if reward is None:
+            reward = lambda s, a, s_next: 0
+        self._reward = reward
 
         if gamma is None:
             gamma = 0.95
-        
-        gamma_one_abs_none = False # Gamma is 1 and no absorbing state
-        if (gamma == 1 and absorbing is None):
-            gamma_one_abs_none = True
-        assert(gamma_one_abs_none is False),\
-            "Absorbing states needed for gamma = 1."
-
-        super().__init__(num_states, num_actions)
-        self._reward_func = reward_func
         self._gamma = gamma
-        self._expR = np.zeros([num_states, num_actions])
-        self._absorbing = absorbing
+
+        self._abs_set = set(abs_set)
 
 
-    def add_transition(self, state, action, next_states, probs):
+    def add_transition(self, state, action, support, probs):
         """Add new transition and expected reward.
 
         Args:
             state (uint): State index.
             action (uint): Action index.
-            next_states (1D np array): Possible next transition stats.
+            support (1D np array): Possible next transition stats.
             probs (1D np array): Transition probabilities.
         """
 
-        # Absorbing states will be treated as transitioning out of the
-        # state space in the undiscounted case. This is useful for computing
-        # the value function via a linear program.
         self._expR[state, action] = np.sum([self.reward(state, action, x[0])
-                                            * x[1]for x in zip(next_states,
+                                            * x[1]for x in zip(support,
                                                                probs)])
-        spa = False # Skip probability assertion
-        probs_copy = deepcopy(probs) # Pass by copy since it may be modified.
-        
-        # Absorbing states cannot accumulate reward if MDP is undiscounted
-        # We model absorbing states as transitioning out of state space.
-        if state in self._absorbing and self._gamma ==1.0:
-            probs_copy *= 0
-            spa = True
 
-        super().add_transition(state, action, next_states, probs_copy,spa)
+        super().add_transition(state, action, support, probs)
 
     def __getitem__(self, state_action):
-        """Takes state and action and returns (next_states, probs, exp rewards).
+        """Takes state and action and returns (support, probs, exp rewards).
 
         Args:
             state_action (tuple of uints): State index and action index.
         Returns:
-            next_states (1D np array): Possible next transition stats.
+            support (1D np array): Possible next transition stats.
             probs (1D np array): Transition probabilities.
             rewards (float): Reward for state/action pair.
         """
         state, action = state_action
-        next_states, probs = super().__getitem__(state_action)
+        if state in self._abs_set: 
+            support, probs = [[state], [1.0]]
+        else:
+            support, probs = super().__getitem__(state_action)
         exp_reward = self._expR[state, action]
-        return next_states, probs, exp_reward
+        return support, probs, exp_reward
 
     def reward(self, state, action, next_state):
         """Return reward."""
-
-        return self._reward_func(state, action, next_state)
+        return self._reward(state, action, next_state)
 
     def _policy_backup(self, V, pi):
         """Does one policy back up on the value function."""
+
         V_out = np.zeros(self.num_states)
         for state in range(self.num_states):
-            next_support, ps, exp_r= self[state, pi[state]]
+            support, probs, exp_r= self[state, pi[state]]
             V_out[state] = exp_r
-            for next_state, p in zip(next_support, ps):
-                try:
+            if state not in self._abs_set:
+                for next_state, p in zip(support, probs):
                     V_out[state] += (V[next_state] * p) * self._gamma
-                except TypeError:
-                    print(V)
         return V_out
 
     def _bellman_backup(self, V=None):
         """Performs one bellman backup on the value function V."""
+
         if V is None:
             V = np.zeros(self.num_states)
 
@@ -225,32 +236,13 @@ class MDP(TransitionProbabilities):
 
         return V_out, pi_greedy
 
-    def v_opt(self, V=None, method='vi'):
-        """Rerurn optimal value function and policy.
-            
-            Args:
-                V (1D np array): Initial value function.
-                    Size is number of states.
-                method(string): Method for computing optimal value function.
-                    'vi': value iteration, 'pi': policy iteration, 'lp':
-                    linear_programming
-            Returns:
-                V_opt (1D np array): Optimal value function.
-                    Size is number of states.
-                pi_opt (1D np array): Optimal policy
-                    Size is number of states.
-        """
-        V_opt, pi_opt = {'vi': self._value_iteration,
-                         'pi': self._policy_iteration,
-                         'lp': self._linear_program}[method](V)
-        
-        return V_opt, pi_opt
-
     def _value_iteration(self, V=None):
+        """Value iteration initialized with initial value function V.
+        """        
         if V is None:
             V = np.zeros(self.num_states)
         V_opt = deepcopy(V)
-        tol = 10 ** (-20)
+        tol = 10 ** (-16)
         err = tol * 2
 
         while err > tol:
@@ -261,17 +253,8 @@ class MDP(TransitionProbabilities):
         return V_opt, pi_opt
 
     def _policy_iteration(self, V=None):
-        """Policy iteration initialized with value function V.
+        """Policy iteration initialized with initial value function V."""
 
-            Args:
-                V (1D np array): Initial value function.
-                    Size is number of states.
-            Returns:
-                V_opt (1D np array): Optimal value function.
-                    Size is number of states.
-                pi_opt (1D np array): Optimal policy
-                    Size is number of states.
-        """
         if V is None:
             V = np.zeros(self.num_states)
         
@@ -294,13 +277,17 @@ class MDP(TransitionProbabilities):
         return V_opt, pi_opt
 
     def _linear_program(self, V=None):
+        """Compute value function via a linear program."""
+
+        mask = np.ones([self.num_actions, self.num_states, self.num_states])
+        mask[:, list(self._abs_set), :] = 0.0
         c = np.ones(self.num_states)
         eye_tensor = np.zeros([self.num_actions, self.num_states,
                                self.num_states])
         eye_tensor[:, range(self.num_states), range(self.num_states)] = 1.0
-        A_ineq = np.concatenate(list(self._gamma * self._trans_tensor -
+        A_ineq = np.concatenate(list(self._gamma * self._p_trans * mask -
                                      eye_tensor))
-        b_ineq = - self._expR.flatten('F') + 10**-20        
+        b_ineq = - self._expR.flatten('F') + 10**-16        
         output = linprog(c, A_ineq, b_ineq)
         
         if  output['success']:
@@ -312,3 +299,78 @@ class MDP(TransitionProbabilities):
             V_opt, pi_opt = self._value_iteration()
 
         return V_opt, pi_opt
+    
+    def _compute_exp_reward(self):
+        """Compute expected immediate reward."""
+       
+        if self._p_trans is not None:
+            for s, a in product(range(self._num_states), range(self._num_actions)):
+                support, probs= super().__getitem__((s,a))
+                self._expR[s, a] = np.sum([self.reward(s, a, x[0]) * x[1] for
+                                           x in zip(support, probs)])
+
+    def v_pi_opt(self, V=None, method='pi',force_run=False):
+        """Rerurn optimal value function and policy.
+            
+            Args:
+                V (1D np array): Initial value function.
+                    Size is number of states (only used by vi and pi)
+                method(string): Method for computing optimal value function.
+                    'vi': value iteration, 'pi': policy iteration, 'lp':
+                    linear_programming
+            Returns:
+                v_opt (1D np array): Optimal value function.
+                    Size is number of states.
+                pi_opt (1D np array): Optimal policy
+                    Size is number of states.
+        """
+
+        if self._pi_opt is None or self._v_opt is None or force_run:
+            self._compute_exp_reward()
+        else:
+            return self._v_opt, self._pi_opt
+
+        name = {'vi': 'value iteration',
+                'pi': 'policy_iteration',
+                'lp': 'linear programming'}[method]
+        print("Computing optimal value function " + 
+              "and policy using {}... ".format(name))
+        
+        t_start = time.time()
+        self._v_opt, self._pi_opt = {'vi': self._value_iteration,
+                         'pi': self._policy_iteration,
+                         'lp': self._linear_program}[method](V)
+        
+        print("Done. Elapsed time {}.".format(time.time()-t_start))
+        return self._v_opt, self._pi_opt
+
+    @property
+    def v_opt(self):
+        if self._v_opt is None:
+            self.v_pi_opt() 
+        return self._v_opt
+
+    @property
+    def pi_opt(self):
+        if self._pi_opt is None:
+            self.v_pi_opt()      
+        return self._pi_opt
+
+    @property
+    def abs_set(self):
+        return self._abs_set
+
+    @abs_set.setter
+    def abs_set(self, abs_set, ):
+        self._abs_set = abs_set
+
+    def add_abs(new_abs):
+        """Add new absorbing states.
+
+        Args:
+            new_abs (set/list of ints): Additional absorbing states.
+        """
+
+        self._abs_set.update(new_abs)
+
+    

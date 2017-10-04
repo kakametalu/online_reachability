@@ -1,7 +1,7 @@
 # This module provides a simple example of how to use the MDP class
 
 import numpy as np
-from mdp.mdp_environments import RandomWalk1D
+from mdp.random_walk_1D import RandomWalk1D
 import time	
 
 # def end_indicator(s, a, s_next): 
@@ -18,7 +18,7 @@ def end_indicator(s, a, s_next):
 if __name__ == "__main__":
     
     # Initialize a RandomWalk1D Model
-    nS = 500
+    nS = 10
 
     absorbing = [0, nS - 1]
     # Direction probabilities

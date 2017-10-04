@@ -1,5 +1,3 @@
-# Library containing various MDPs derived from the MDP class in mdp_base
-
 import numpy as np
 from mdp.mdp_base import MDP
 
@@ -23,22 +21,23 @@ class RandomWalk1D(MDP):
     """
 
     def __init__(self, num_states, dir_probs, 
-    	         reward_func = None, gamma = None, absorbing = None):
+    	         reward = None, gamma = None, absorbing = None):
         """Initializing model."""
         num_actions = dir_probs.shape[0]
-        super().__init__(num_states, num_actions, reward_func, gamma,
-                         absorbing)
+
         self._dir_probs = dir_probs
 
         # Populate transition probabilities
-        for state in range(num_states):                
-            next_states = [state - 1, state, state + 1]
-            if state == 0 or state == num_states - 1 :
-                next_states = [state, state, state]
+        p_trans = np.zeros([num_actions, num_states, num_states])
 
-            for action in range(num_actions):
-                super().add_transition(state, action, next_states,
-                	                   dir_probs[action,:])
+        for i, action in enumerate(dir_probs):
+            p_trans[i,range(1, num_states), range(num_states - 1)] = action[0]
+            p_trans[i,range(num_states), range(num_states)] = action[1]
+            p_trans[i,range(num_states - 1), range(1, num_states)] = action[2]
+
+        super().__init__(num_states, num_actions, reward, gamma,
+                         absorbing, p_trans)
+
     
     @property
     def dir_probs(self):
