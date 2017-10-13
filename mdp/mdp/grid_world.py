@@ -43,44 +43,28 @@ class GridWorld(MDP):
             Element ij of this matrix correponds to the probability of taking
             action j when action i is desired. Matrix is deterministic by 
             default (i.e. identity matrix).
+        _p_trans(3d np array): State transition probabilities in a tensor.
+            Tensor dimension is num_actions by num_states by num_states.
+            Usage: _p_trans[action, state, next_state].
         obstacles (3D np array): Obstacles in the environment.
             Dimension 0 indexes the obstacles. For each obstacle there is 
             a matrix of size number of dimensions by 2 that defines a
             hyper-rectangle. The first column contains the minimum index along each dimension and the second column contains the maximum index.
     """
 
-    def __init__(self, num_nodes, action_probs=None, obstacles=[],
+    def __init__(self, num_nodes, p_trans, obstacles=[],
                  reward=None):
         """Initialize GridWorld."""
         
         # Creating state and actions
         dims = len(num_nodes)
+        num_actions, num_states, _ = p_trans.shape
         self._dims = dims
         self._num_nodes = np.array(num_nodes)
         state_axes = [np.arange(N_d) for N_d in num_nodes]
         self._all_states = cartesian(state_axes)
-        self._all_actions = np.concatenate([np.zeros([1, dims]),np.eye(dims),                                - np.eye(dims)], axis=0)\
-                                            .astype(int)
 
-        num_states = np.prod(self._num_nodes)
-        num_actions = 2 * dims + 1
         
-        # Prepare transition probabilities
-        if action_probs is None:
-            action_probs = np.eye(num_actions)
-        self._action_probs = action_probs
-        p_trans = np.zeros([num_actions, num_states, num_states])        
-        state_idxs = range(np.prod(self._num_nodes))
-        
-        for a_idx in range(num_actions): # a_idx : action index
-            action = self._all_actions[a_idx]
-            next_states = np.minimum(np.maximum(self._all_states + action, 0),
-                                     self._num_nodes - 1)
-            next_idxs = list(state_to_idx(next_states, self._num_nodes))
-            for da_idx in range(num_actions): # da_idx: desired action index
-                p_trans[da_idx, state_idxs, next_idxs] += action_probs[da_idx,
-                                                                      a_idx]
-
         # Creating obstacles
         obstacle_states = []
         for obs in obstacles:
@@ -89,13 +73,10 @@ class GridWorld(MDP):
             obstacle_states += list(cartesian(obs_axes)) 
         self._all_obstacles =  np.array(obstacle_states)  
         self._obs_set = set(state_to_idx(self._all_obstacles, num_nodes)) 
+        
         super().__init__(num_states, num_actions, reward=reward, gamma=0.95,
                          abs_set= deepcopy(self._obs_set), p_trans=p_trans)
         
-
-        # add some stuff for the goal
-
-
     def _state_to_idx(self, states):
         """Takes states and returns indices."""
         return state_to_idx(states, self._num_nodes)
@@ -256,8 +237,67 @@ class GridWorld(MDP):
         plt.pause(3) # Plot will last three seconds
         return
 
-class ReachGoal(GridWorld):
-    """Grid world with a target goal. 
+
+class SimpleWorld(GridWorld):
+    """Adds a simple motion model to the GridWorld class. 
+
+        For a d-dimensional grid, there are 2d + 1 desired actions: stay in place and move to adjacent states (not including diagonal neighbors).
+        
+        actions = { a in (-1, 0, 1)^d| ||a||_0<=1 } e.g. for 2D a grid the actions are {[0, 0], [-1, 0], [0, -1], [1, 0], [0, 1]}.
+        
+        next_state = state + action
+        
+        Attributes:
+            _action_probs (2d Np array): Action probs for a desired action.
+                Element ij of this matrix correponds to the probability of taking action j when action i is desired.
+            _all_actions (1D) np array): All actions.
+
+        Args:
+            num_nodes (list of uints): Number of nodes in each dimension.
+            action_probs (2d Np array): Action probs for a desired action.
+                Element ij of this matrix correponds to the probability of taking action j when action i is desired. Matrix is deterministic by default (i.e. identity matrix).
+            obstacles (3D np array): Obstacles in the environment.
+                Dimension 0 indexes the obstacles. For each obstacle there is 
+                a matrix of size number of dimensions by 2 that defines a
+                hyper-rectangle. The first column contains the minimum index along each dimension and the second column contains the maximum index.
+        """
+
+    def __init__(self, num_nodes, action_probs, obstacles):
+        dims = len(num_nodes)
+        self._all_actions = np.concatenate([np.zeros([1, dims]),
+                                           np.eye(dims), 
+                                           - np.eye(dims)],axis=0)\
+                                           .astype(int)
+
+        self._action_probs = action_probs
+        num_states = np.prod(num_nodes)
+        state_axes = [np.arange(N_d) for N_d in num_nodes]
+        all_states = cartesian(state_axes)
+        num_actions = 2 * dims + 1
+        # Prepare transition probabilities
+        if action_probs is None:
+            action_probs = np.eye(num_actions)
+        else:
+            assert ((action_probs >= 0).all() and 
+                    (np.abs(np.sum(action_probs,axis=1)-1.0)<(10**-6)).all())\
+                ,"Probabilities not valid."
+        
+        p_trans = np.zeros([num_actions, num_states, num_states])        
+        state_idxs = range(np.prod(num_nodes))
+
+        for a_idx in range(num_actions): # a_idx : action index
+            action = self._all_actions[a_idx]
+            next_states = np.minimum(np.maximum(all_states + action, 0),
+                                     np.array(num_nodes) - 1)
+            next_idxs = list(state_to_idx(next_states, np.array(num_nodes)))
+            for da_idx in range(num_actions): # da_idx: desired action index
+                p_trans[da_idx, state_idxs, next_idxs] += action_probs[da_idx,
+                                                                      a_idx]
+        super().__init__(num_nodes, p_trans, obstacles)
+
+
+class ReachGoal(SimpleWorld):
+    """Simple Grid world with a target goal state. 
 
     This class includes a reward function designed to push the state towards 
     a goal. In particular the trajectory reward function is an infinite horizon sum of discounted rewards, and the immediate reward is just an indicator function on the goal state.
@@ -282,14 +322,19 @@ class ReachGoal(GridWorld):
     def __init__(self, num_nodes, action_probs=None,
                  obstacles=None, goal=None, gamma=.95):
         """Initialize MDP Object."""
+        
+        super().__init__(num_nodes, action_probs, obstacles)
+        self._goal = goal
         if goal is not None:
             assert ((0 <= goal).all() and
                     (goal < np.array(num_nodes)).all()),\
                 "At least one goal element is out of range."
-        super().__init__(num_nodes, action_probs, obstacles)
-        self._goal = goal
+            goal_idx = super()._state_to_idx(goal)
+            super().add_abs([goal_idx]) #Goal is absorbing state.
+
         self._gamma = gamma
-    
+
+
     def _compute_exp_reward(self):
         """Compute expected immediate reward."""
 
@@ -331,7 +376,10 @@ class ReachGoal(GridWorld):
         # plot obstacles
         if list(self._all_obstacles) != []:
             plt.plot(self._all_obstacles[:, 0], self._all_obstacles[:,1],
-                     'ko', markersize=ms*1.1)
+                     'bo', markersize=ms*1.1)
+
+        # plot goal
+        plt.plot(self._goal[0], self._goal[1], 'go', markersize=ms*1.1)
 
         plt.title("Optimal Policy", fontsize=20)
         plt.savefig('optimal_policy.png')
@@ -385,7 +433,7 @@ class ReachGoal(GridWorld):
         if goal_idx in self._abs_set:
             self._abs_set.remove(goal_idx)
         self._goal = goal
-        self.add_abs(self._state_to_idx(self._goal))
+        self.add_abs(self._state_to_idx([self._goal]))
         
         # Compute new value function and policy.
         self._v_opt, self._pi_opt = self.v_pi_opt(force_run=True)

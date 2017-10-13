@@ -6,12 +6,12 @@ from mdp.grid_world import ReachGoal
     
 if __name__ == "__main__":
     # Number of nodes per dimension
-    num_nodes = [10, 10]
+    num_nodes = [30, 30]
 
     # Creating action probabilities
     # f (intended), l (left of intended), r (right of intended), s(stay)
     f ,l, r, s = [0.7, 0.1, 0.1, 0.1]
-    action_probs = np.array([[0.7, 0.1, 0.1, 0.1, 0.1],
+    action_probs = np.array([[0.6, 0.1, 0.1, 0.1, 0.1],
                              [s, f, l, 0, r],
                              [s, r, f, l, 0],
                              [s, 0, r, f, l],
@@ -30,6 +30,7 @@ if __name__ == "__main__":
     	                 action_probs=action_probs)
 
     # Compute optimal value function and policy.
-    v_opt, pi_opt = my_world.v_pi_opt(method='pi')
+    v_opt, pi_opt = my_world.v_pi_opt(method='lp')
+    print(np.max(v_opt))
     my_world.visualize_policy(pi_opt) # Visualize policy.
     my_world.simulate(start_state, horizon, visualize_on=True) # Simulate.

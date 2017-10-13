@@ -1,8 +1,9 @@
 import numpy as np
-from scipy.optimize import linprog
+from scipy.sparse import csr_matrix, linalg
 from copy import deepcopy
 from itertools import product
-import time 
+import time
+from cvxopt import matrix, solvers
 
 class TransitionModel(object):
     """Dictionary containing the state transition probabilities for an MDP.
@@ -34,8 +35,6 @@ class TransitionModel(object):
         self._p_trans = p_trans
         self._num_states = num_states
         self._num_actions = num_actions
-        self._pi_opt = None
-        self._v_opt = None
 
     def add_transition(self, state, action, support, probs,
                        skip_prob_assert=False):
@@ -156,11 +155,12 @@ class MDP(TransitionModel):
         self._reward = reward
 
         if gamma is None:
-            gamma = 0.95
+            gamma = 0.99
         self._gamma = gamma
 
         self._abs_set = set(abs_set)
-
+        self._pi_opt = None
+        self._v_opt = None
 
     def add_transition(self, state, action, support, probs):
         """Add new transition and expected reward.
@@ -236,85 +236,119 @@ class MDP(TransitionModel):
 
         return V_out, pi_greedy
 
-    def _value_iteration(self, V=None):
+    def _value_iteration(self, V=None, pi=None):
         """Value iteration initialized with initial value function V.
         """        
         if V is None:
             V = np.zeros(self.num_states)
         V_opt = deepcopy(V)
-        tol = 10 ** (-16)
+        tol = 10 ** (-8)
         err = tol * 2
 
+        count=0
+        print("    err (inf norm)")
         while err > tol:
             V_old = deepcopy(V_opt)
             V_opt, pi_opt = self._bellman_backup(V_old)
             err = np.linalg.norm(V_old - V_opt, ord= float('inf'))
-
+            print("%i:  %.6e" %(count,err))
+            count += 1
         return V_opt, pi_opt
 
-    def _policy_iteration(self, V=None):
+    def _policy_iteration(self, V=None, pi=None, solve_lin_sys=True):
         """Policy iteration initialized with initial value function V."""
-
-        if V is None:
-            V = np.zeros(self.num_states)
         
-        V_pi, pi = self._bellman_backup(V)
-        tol = 10 ** (-16)
+        nS = self.num_states
+        if V is None:
+            V = np.zeros(nS)
+        
+        if pi is None:
+            V_pi, pi = self._bellman_backup(V)
+        else:
+            V_pi = V
 
+        tol = 10 ** (-8)
+        
+        eye_mat = np.eye(nS)
+        mask = np.ones([self.num_states, self.num_states])
+        mask[list(self._abs_set), :] = 0.0
+        count=0
+        print("    err (inf norm)")
         while True:
-            err = tol * 2
-            while err > tol:
-                V_old = V_pi
-                V_pi = self._policy_backup(V_old, pi)
-                err = np.linalg.norm(V_old - V_pi, ord= float('inf'))
-            V_opt, pi_opt = self._bellman_backup(V_pi)
+            err_in = tol * 2
+            V_old_out = deepcopy(V_pi)
             
+            if solve_lin_sys:
+                A = eye_mat - self._p_trans[pi, range(nS), :]*mask*self._gamma
+                b = self._expR[range(nS), pi]
+                V_pi = linalg.spsolve(csr_matrix(A),b)
+            else:
+                while err_in > tol:
+                    V_old_in = deepcopy(V_pi)
+                    V_pi = self._policy_backup(V_old_in, pi)
+                    err_in = np.linalg.norm(V_old_in - V_pi, ord= float('inf'))
+            
+
+            V_opt, pi_opt = self._bellman_backup(V_pi)
+            err_out = np.linalg.norm(V_opt - V_old_out, ord= float('inf'))
+            print("%i:  %.6e" %(count, err_out))
+            count += 1
             # Check for policy convergence.
-            if (pi_opt == pi).all(): 
+            if (pi_opt == pi).all() or err_out<tol: 
                 break
             pi = pi_opt
             V_pi = V_opt
         return V_opt, pi_opt
 
-    def _linear_program(self, V=None):
+    def _linear_program(self, V=None, pi=None):
         """Compute value function via a linear program."""
-
+ 
+        # mask used to block transitions from absorbing states.
         mask = np.ones([self.num_actions, self.num_states, self.num_states])
         mask[:, list(self._abs_set), :] = 0.0
-        c = np.ones(self.num_states)
-        eye_tensor = np.zeros([self.num_actions, self.num_states,
-                               self.num_states])
-        eye_tensor[:, range(self.num_states), range(self.num_states)] = 1.0
-        A_ineq = np.concatenate(list(self._gamma * self._p_trans * mask -
-                                     eye_tensor))
-        b_ineq = - self._expR.flatten('F') + 10**-16        
-        output = linprog(c, A_ineq, b_ineq)
-        
-        if  output['success']:
+        nS = self.num_states
+        nA = self. num_actions
+        c = np.ones(nS)
+        c[-1] = -1.0
+        eye_tensor = np.zeros([nA, nS, nS])
+        eye_tensor[:, range(nS), range(nS)] = 1.0
+        A_ineq = np.ones([nS * nA, nS]) # Will include slack term.
+        temp = self._p_trans * self._gamma * mask - eye_tensor
+        A_ineq = temp.reshape([nS * nA, nS ])
+        b_ineq = - self._expR.flatten('F')
+
+        output = solvers.lp(matrix(c), matrix(A_ineq), matrix(b_ineq))
+
+        if  output['status'] == 'optimal':
+            V_opt = np.array(output['x'])
             print("\nLP Successful.")
-            V_opt = output['x']
             V_opt, pi_opt = self._bellman_backup(V_opt)
         else:
-            print("\nLP FAILED. Returning solution using value iteration.")
-            V_opt, pi_opt = self._value_iteration()
+            print("\nLP FAILED. Returning solution using policy iteration.")
+            V_opt, pi_opt = self._policy_iteration(V)
 
         return V_opt, pi_opt
     
     def _compute_exp_reward(self):
         """Compute expected immediate reward."""
        
+        print("Computing expected immediate reward...")
         if self._p_trans is not None:
             for s, a in product(range(self._num_states), range(self._num_actions)):
-                support, probs= super().__getitem__((s,a))
+                support, probs = super().__getitem__((s,a))
                 self._expR[s, a] = np.sum([self.reward(s, a, x[0]) * x[1] for
                                            x in zip(support, probs)])
+        print("Expected immediate reward computed.")
 
-    def v_pi_opt(self, V=None, method='pi',force_run=False):
+    def v_pi_opt(self, V=None, pi=None, method='pi',force_run=False):
         """Rerurn optimal value function and policy.
             
             Args:
                 V (1D np array): Initial value function.
-                    Size is number of states (only used by vi and pi)
+                    Size is number of states. Only used by value iteration
+                    and policy iteration.
+                pi (1D np array): Initial policy.
+                    Size is number of states. Only used by policy iteration.
                 method(string): Method for computing optimal value function.
                     'vi': value iteration, 'pi': policy iteration, 'lp':
                     linear_programming
@@ -339,9 +373,9 @@ class MDP(TransitionModel):
         t_start = time.time()
         self._v_opt, self._pi_opt = {'vi': self._value_iteration,
                          'pi': self._policy_iteration,
-                         'lp': self._linear_program}[method](V)
+                         'lp': self._linear_program}[method](V,pi)
         
-        print("Done. Elapsed time {}.".format(time.time()-t_start))
+        print("Done. Elapsed time {}.\n".format(time.time()-t_start))
         return self._v_opt, self._pi_opt
 
     @property
@@ -364,13 +398,13 @@ class MDP(TransitionModel):
     def abs_set(self, abs_set, ):
         self._abs_set = abs_set
 
-    def add_abs(new_abs):
+    def add_abs(self, new_abs):
         """Add new absorbing states.
 
         Args:
             new_abs (set/list of ints): Additional absorbing states.
         """
 
-        self._abs_set.update(new_abs)
+        self._abs_set.update(set(new_abs))
 
     

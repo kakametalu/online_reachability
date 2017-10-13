@@ -29,12 +29,14 @@ class RandomWalk1D(MDP):
 
         # Populate transition probabilities
         p_trans = np.zeros([num_actions, num_states, num_states])
-
+        next_states = np.minimum(np.maximum(np.arange(num_states) + 1, 0),
+            num_states - 1)
+        prev_states = np.minimum(np.maximum(np.arange(num_states) - 1, 0),
+            num_states - 1)
         for i, action in enumerate(dir_probs):
-            p_trans[i,range(1, num_states), range(num_states - 1)] = action[0]
-            p_trans[i,range(num_states), range(num_states)] = action[1]
-            p_trans[i,range(num_states - 1), range(1, num_states)] = action[2]
-
+            p_trans[i,range(num_states), list(prev_states)] += action[0]
+            p_trans[i,range(num_states), range(num_states)] += action[1]
+            p_trans[i,range(num_states), list(next_states)] += action[2]
         super().__init__(num_states, num_actions, reward, gamma,
                          absorbing, p_trans)
 
