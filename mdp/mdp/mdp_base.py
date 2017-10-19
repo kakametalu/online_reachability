@@ -108,13 +108,11 @@ class MDP(TransitionModel):
     
 
     Attributes:
-        _reward (func): Scalar reward function.
-            Usage reward = _reward(state, action, next_state).
+        _reward (2D np array): Reward function R(s,a)
+            Size is number of states by number of actions.
         _gamma (float): Discount rate in (0 1].
             If gamma is 1, then the reward is undiscounted, and absorbing
             states must be provided.
-        _expR (np array): Expected immediate reward for state action pair.
-            Shape is num_states by num_actions.
         _abs_set (list of uints): Set of absorbing states.
         _pi_opt(np array): Optimal action to reach goal from each state.
             Size is total number of states by 1.
@@ -124,8 +122,8 @@ class MDP(TransitionModel):
     Args:
         num_states (uint): Number of states.
         num_actions(uint): Number of actions.
-        _reward (func): Scalar reward function.
-            Usage reward = _reward(state, action, next_state).
+        _reward (2D np array): Reward function R(s,a)
+            Size is number of states by number of actions.
         gamma (float): Discount rate between 0 and 1.
             If gamma is 1, then the reward is undiscounted, and absorbing
             states must be provided.
@@ -136,7 +134,7 @@ class MDP(TransitionModel):
     """
 
     def __init__(self, num_states, num_actions,
-                 reward = None, gamma=None, abs_set=None,
+                 reward = None, gamma=None, abs_set=set([]),
                  p_trans=None):
         """Initialize MDP Object."""
         
@@ -149,9 +147,8 @@ class MDP(TransitionModel):
         super().__init__(num_states, num_actions, p_trans)
 
         # Handling rewards
-        self._expR = np.zeros([num_states, num_actions])
         if reward is None:
-            reward = lambda s, a, s_next: 0
+            reward = np.zeros([num_states, num_actions])
         self._reward = reward
 
         if gamma is None:
@@ -161,22 +158,6 @@ class MDP(TransitionModel):
         self._abs_set = set(abs_set)
         self._pi_opt = None
         self._v_opt = None
-
-    def add_transition(self, state, action, support, probs):
-        """Add new transition and expected reward.
-
-        Args:
-            state (uint): State index.
-            action (uint): Action index.
-            support (1D np array): Possible next transition stats.
-            probs (1D np array): Transition probabilities.
-        """
-
-        self._expR[state, action] = np.sum([self.reward(state, action, x[0])
-                                            * x[1]for x in zip(support,
-                                                               probs)])
-
-        super().add_transition(state, action, support, probs)
 
     def __getitem__(self, state_action):
         """Takes state and action and returns (support, probs, exp rewards).
@@ -193,12 +174,9 @@ class MDP(TransitionModel):
             support, probs = [[state], [1.0]]
         else:
             support, probs = super().__getitem__(state_action)
-        exp_reward = self._expR[state, action]
-        return support, probs, exp_reward
-
-    def reward(self, state, action, next_state):
-        """Return reward."""
-        return self._reward(state, action, next_state)
+        
+        reward = self._reward[state, action]
+        return support, probs, reward
 
     def _policy_backup(self, V, pi):
         """Does one policy back up on the value function."""
@@ -269,7 +247,8 @@ class MDP(TransitionModel):
 
         tol = 10 ** (-8)
         
-        eye_mat = np.eye(nS)
+        eps = 10 ** -6 # For numerical stability.
+        eye_mat = np.eye(nS) * (1 + eps)
         mask = np.ones([self.num_states, self.num_states])
         mask[list(self._abs_set), :] = 0.0
         count=0
@@ -280,7 +259,7 @@ class MDP(TransitionModel):
             
             if solve_lin_sys:
                 A = eye_mat - self._p_trans[pi, range(nS), :]*mask*self._gamma
-                b = self._expR[range(nS), pi]
+                b = self._reward[range(nS), pi]
                 V_pi = linalg.spsolve(csr_matrix(A),b)
             else:
                 while err_in > tol:
@@ -310,12 +289,13 @@ class MDP(TransitionModel):
         nA = self. num_actions
         c = np.ones(nS)
         c[-1] = -1.0
-        eye_tensor = np.zeros([nA, nS, nS])
+        eps = 10 ** -6 # For numerical stability.
+        eye_tensor = np.zeros([nA, nS, nS]) * (1 + eps)
         eye_tensor[:, range(nS), range(nS)] = 1.0
         A_ineq = np.ones([nS * nA, nS]) # Will include slack term.
         temp = self._p_trans * self._gamma * mask - eye_tensor
         A_ineq = temp.reshape([nS * nA, nS ])
-        b_ineq = - self._expR.flatten('F')
+        b_ineq = - self._reward.flatten('F')
 
         output = solvers.lp(matrix(c), matrix(A_ineq), matrix(b_ineq))
 
@@ -329,16 +309,6 @@ class MDP(TransitionModel):
 
         return V_opt, pi_opt
     
-    def _compute_exp_reward(self):
-        """Compute expected immediate reward."""
-       
-        print("Computing expected immediate reward...")
-        if self._p_trans is not None:
-            for s, a in product(range(self._num_states), range(self._num_actions)):
-                support, probs = super().__getitem__((s,a))
-                self._expR[s, a] = np.sum([self.reward(s, a, x[0]) * x[1] for
-                                           x in zip(support, probs)])
-        print("Expected immediate reward computed.")
 
     def v_pi_opt(self, V=None, pi=None, method='pi',force_run=False):
         """Rerurn optimal value function and policy.
@@ -360,7 +330,7 @@ class MDP(TransitionModel):
         """
 
         if self._pi_opt is None or self._v_opt is None or force_run:
-            self._compute_exp_reward()
+            pass
         else:
             return self._v_opt, self._pi_opt
 
@@ -377,6 +347,10 @@ class MDP(TransitionModel):
         
         print("Done. Elapsed time {}.\n".format(time.time()-t_start))
         return self._v_opt, self._pi_opt
+
+    @property
+    def reward(self):
+        return self._reward
 
     @property
     def v_opt(self):
