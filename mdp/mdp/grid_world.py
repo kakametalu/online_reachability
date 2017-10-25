@@ -152,7 +152,9 @@ class ReachAvoid(GridWorld):
     """Simple Grid world with a target goal state. 
 
     This class includes a reward function designed to push the state towards 
-    a goal. In particular the trajectory reward function is an infinite horizon sum of discounted rewards, and the immediate reward is just an indicator function on the goal state.
+    a goal. In particular the trajectory reward function is an infinite horizon
+    sum of discounted rewards, and the immediate reward is just an indicator
+    function on the goal state.
 
     Attributes:
         _gamma (float): Discount factor in [0, 1)
