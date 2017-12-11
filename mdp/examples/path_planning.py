@@ -11,7 +11,7 @@ if __name__ == "__main__":
     # Creating action probabilities
     # f (intended), l (left of intended), r (right of intended), b(backward)
     # s(stay)
-    f ,l, r, b, s = [0.6, 0.1, 0.1, 0.1, 0.1]
+    f, l, r, b, s = [0.6, 0.1, 0.1, 0.1, 0.1]
     action_probs = np.array([[0.0, 0.25, 0.25, 0.25, 0.25],
                              [s, f, l, b, r],
                              [s, r, f, l, b],
