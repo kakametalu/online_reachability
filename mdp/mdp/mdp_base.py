@@ -152,7 +152,7 @@ class MDP(TransitionModel):
         self._reward = reward
 
         if gamma is None:
-            gamma = 0.99
+            gamma = 0.95
         self._gamma = gamma
 
         self._abs_set = set(abs_set)
@@ -247,7 +247,7 @@ class MDP(TransitionModel):
 
         tol = 10 ** (-8)
         
-        eps = 10 ** -6 # For numerical stability.
+        eps = 10 ** -14 # For numerical stability.
         eye_mat = np.eye(nS) * (1 + eps)
         mask = np.ones([self.num_states, self.num_states])
         mask[list(self._abs_set), :] = 0.0
@@ -261,6 +261,8 @@ class MDP(TransitionModel):
                 A = eye_mat - self._p_trans[pi, range(nS), :]*mask*self._gamma
                 b = self._reward[range(nS), pi]
                 V_pi = linalg.spsolve(csr_matrix(A),b)
+                #V_pi, _ = linalg.bicgstab(csr_matrix(A),b)
+
             else:
                 while err_in > tol:
                     V_old_in = deepcopy(V_pi)
@@ -289,7 +291,7 @@ class MDP(TransitionModel):
         nA = self. num_actions
         c = np.ones(nS)
         c[-1] = -1.0
-        eps = 10 ** -6 # For numerical stability.
+        eps = 10 ** -12 # For numerical stability.
         eye_tensor = np.zeros([nA, nS, nS]) * (1 + eps)
         eye_tensor[:, range(nS), range(nS)] = 1.0
         A_ineq = np.ones([nS * nA, nS]) # Will include slack term.
@@ -378,7 +380,9 @@ class MDP(TransitionModel):
         Args:
             new_abs (set/list of ints): Additional absorbing states.
         """
-
-        self._abs_set.update(set(new_abs))
+        if isinstance(new_abs, set):
+            self._abs_set.update(new_abs)
+        else:
+            self._abs_set.update(set(new_abs))
 
     

@@ -30,9 +30,7 @@ class GridWorld(MDP):
     A discrete d-dimensional grid where each state (s) is a grid
     point. A state is an array of indices s=[dim1_idx, dim2_idx,...dimd_idx].
 
-    This class also takes in a transition model and obstacles. Obstacles
-    states are treated as absorbing states, see MDP class in mdp_base.py 
-
+    This class also takes in a transition model.
     Attributes:
         _num_nodes (uint): Number of nodes per dimension.
         _all_states (2d np array): All states.
@@ -45,11 +43,14 @@ class GridWorld(MDP):
         p_trans(3d np array): State transition probabilities in a tensor.
             Tensor dimension is num_actions by num_states by num_states.
             Usage: _p_trans[action, state, next_state].
-        absorbing (2D np array): Absorbing states.
-            Size is number of absorbing states by state dimension. 
+        all_states (2d np array): All states.
+            Size is product(num_nodes) by len(num_nodes).
+        all_actions (2d np array): All actions.
+        gamma(float): Discount factor for MDP.
     """
 
-    def __init__(self, num_nodes, p_trans, all_states=None, all_actions=None):
+    def __init__(self, num_nodes, p_trans, all_states=None,
+                 all_actions=None, gamma=None):
         """Initialize GridWorld."""
         
         # Creating state and actions
@@ -62,7 +63,7 @@ class GridWorld(MDP):
             all_states = cartesian(state_axes)
         self._all_states = all_states
         self._all_actions = all_actions
-        super().__init__(num_states, num_actions, gamma=0.95, p_trans=p_trans)
+        super().__init__(num_states, num_actions, gamma=gamma, p_trans=p_trans)
         
     def _state_to_idx(self, states):
         """Takes states and returns indices."""
@@ -98,7 +99,6 @@ class GridWorld(MDP):
     def _step(self, state, action_idx, deterministic=False):
         """Returns a next state.
         """
-        #print(action_idx)
         support, probs = self.support(state, action_idx)
         cum_probs = np.cumsum(probs)
         idx = 0
@@ -148,6 +148,22 @@ class GridWorld(MDP):
         """Visualize the state trajetory in two dimensions."""
         pass
 
+
+    @property 
+    def gamma(self):
+        """Return current discount factor."""
+        return self._gamma
+
+    @property 
+    def dims(self):
+        """Return dimension of the state space."""
+        return self._dims
+
+    @property 
+    def num_nodes(self):
+        """Return dimension of the state space."""
+        return self._num_nodes
+
 class ReachAvoid(GridWorld):
     """Simple Grid world with a target goal state. 
 
@@ -184,8 +200,8 @@ class ReachAvoid(GridWorld):
         else:
             self._avoid_set = set(state_to_idx(avoid, num_nodes))        
         
-        self._gamma = gamma
-        super().__init__(num_nodes, p_trans, all_states, all_actions)
+        super().__init__(num_nodes, p_trans, all_states,
+                         all_actions, gamma=gamma)
         super().add_abs(self._reach_set) # Add reach set to absorbing set.
         super().add_abs(self._avoid_set) # Add avoid set to absorbing set.
         reward = np.zeros([self._num_states, self._num_actions])
@@ -331,7 +347,7 @@ class ReachAvoid(GridWorld):
         plt.savefig('optimal_policy.png')
         plt.pause(3) # Plot will last three seconds
 
-    def visualize_v_func(self, v_func = None):
+    def visualize_v_func(self, v_func = None, contours=None):
         """Visualize contour plot of value function.
 
         Args:
@@ -339,19 +355,24 @@ class ReachAvoid(GridWorld):
                 Size is number of states.
         """
 
-        assert(self._dims==2),\
-            "Can only visualize value functions for 2D grids."
+        assert(self._dims==2 or self._dims==1),\
+            "Can only visualize value functions for 1D and 2D grids."
 
         plt.figure(figsize=(8, 8))
+        if self._dims ==1:
+            plt.plot(v_func)
+        else:
 
-        x = range(self._num_nodes[0])
-        y = range(self._num_nodes[1])
-
-        plt.contourf(x, y, v_func.reshape(self._num_nodes))
-
+            x = range(self._num_nodes[0])
+            y = range(self._num_nodes[1])
+        
+            if contours is None:
+                plt.contour(x, y, v_func.reshape(self._num_nodes).T)
+            else:
+                plt.contour(x, y, v_func.reshape(self._num_nodes).T, contours)
         plt.ion()
         plt.savefig('value_function.png')
-        plt.pause(3) # Plot will last three seconds
+        plt.pause(1) # Plot will last three seconds
 
     @property 
     def reach(self):
@@ -362,10 +383,5 @@ class ReachAvoid(GridWorld):
     def avoid(self):
         """Return avoid states."""
         return self._avoid
-
-    @property 
-    def gamma(self):
-        """Return current discount factor."""
-        return self._gamma
 
     
