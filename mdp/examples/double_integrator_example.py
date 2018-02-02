@@ -10,9 +10,9 @@ if __name__ == "__main__":
     
     # Grid parameters
     num_nodes = np.array([41, 41])
-    s_lims = np.array([[-1,-5],[5,5]])
+    s_lims = np.array([[-1,-5],[5,5]]) #state space limits
     num_nodes_a = np.array([2])
-    a_lims = np.array([[0],[1]])
+    a_lims = np.array([[0],[1]]) #action/control limits
 
     #Dynamical system (double integrator model)
     grav = 9.81 # gravity
@@ -28,18 +28,12 @@ if __name__ == "__main__":
     avoid_func = lambda x: dist_hypercube_int(x, cube_lims=cube_lims)
  
     # Make MDP
-    lamb = 0.1
+    lamb = 0.1 #lambda
     my_world = Avoid(num_nodes, s_lims, num_nodes_a,
                      a_lims, dynamics, avoid_func, lamb=lamb)
 
-    # Make MDP
-    #my_world_2 = Avoid(num_nodes, s_lims, num_nodes_a,
-    #                 a_lims, dynamics_2, avoid_func)
-    
     # Compute value function and policy
     v_opt, pi_opt = my_world.v_pi_opt()
-    #v_opt, pi_opt = my_world_2.v_pi_opt(method='pi',pi=pi_opt)
-
 
     # Computing anaylytic safe set
     s_min = s_lims[0]
@@ -48,17 +42,23 @@ if __name__ == "__main__":
     y = range(my_world.num_nodes[1]) * my_world.ds[1] + s_min[1]
     u_lims = cube_lims[1]
     l_lims = cube_lims[0]
-    z = [min((-2*min_u*(u_lims[0]-min(x_e, u_lims[0])))**0.5,u_lims[1]) for x_e in x]
-    z2 = [max(-(2*max_u*(max(x_e,0)))**0.5, l_lims[1]) for x_e in x]
+    
+    analytic_1 = [min((-2*min_u*(u_lims[0]-min(x_e, u_lims[0])))**0.5,
+                  u_lims[1]) for x_e in x]
+    analytic_2 = [max(-(2*max_u*(max(x_e,0)))**0.5, l_lims[1]) for x_e in x]
 
-    v_func_conts = [0, 2 * (1 - np.exp(-lamb * 1)) ]
+    # level sets to be visualized
+    L = np.max(my_world.reward)
+    tau = 1 
+    c = L * (1 - np.exp(-lamb * tau)) #under approximation level curve
+    v_func_conts = [0, c]
 
     # Plot contours of value function
     plt.figure(1)
     CS = plt.contour(x, y, v_opt.reshape(num_nodes).T, levels=v_func_conts)
     plt.clabel(CS, inline=1, fontsize=10)
-    plt.plot(x,z,'b-.')
-    plt.plot(x,z2,'r-.')
+    plt.plot(x, analytic_1,'b-.')
+    plt.plot(x, analytic_2,'r-.')
     plt.title('Value Function Contours')
  
     plt.pause(100) 
