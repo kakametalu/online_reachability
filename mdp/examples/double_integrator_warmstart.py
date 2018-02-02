@@ -1,3 +1,7 @@
+# In this script we create two dynamical models from the same parametric class
+# but with different parameter values. We first compute the value function for # the first model, and use it to initialize computations of the value 
+# function for the second model.
+
 import numpy as np
 from mdp.dynamics import double_integrator
 from mdp.signed_distance import dist_hypercube_int
@@ -23,6 +27,14 @@ if __name__ == "__main__":
     sys_params['min_u'] = min_u
     dynamics = partial(double_integrator, **sys_params)
     
+    #model 2 (modified thrust)
+    sys_params = {} # parameters of dynamical system
+    max_u = 0.3 * grav
+    min_u = -0.3 * grav
+    sys_params['max_u'] = max_u
+    sys_params['min_u'] = min_u
+    dynamics_2 = partial(double_integrator, **sys_params)
+
     # Construct avoid region, system should stay within hypercube 
     cube_lims = np.array([[0, -3], [4, 3]])
     avoid_func = lambda x: dist_hypercube_int(x, cube_lims=cube_lims)
@@ -32,10 +44,16 @@ if __name__ == "__main__":
     my_world = Avoid(num_nodes, s_lims, num_nodes_a,
                      a_lims, dynamics, avoid_func, lamb=lamb)
 
+    my_world_2 = Avoid(num_nodes, s_lims, num_nodes_a,
+                     a_lims, dynamics_2, avoid_func, lamb=lamb)
+    
     # Compute value function and policy
-    v_opt, pi_opt = my_world.v_pi_opt()
+    v_opt_1, _ = my_world.v_pi_opt()
 
-    # Computing anaylytic safe set
+    v_opt_2, _ = my_world_2.v_pi_opt(V=v_opt_1)
+
+
+    # Computing anaylytic safe set (Model 2)
     s_min = s_lims[0]
     s_max = s_lims[1]
     x = range(my_world.num_nodes[0]) * my_world.ds[0] + s_min[0] 
@@ -47,21 +65,15 @@ if __name__ == "__main__":
                   u_lims[1]) for x_e in x]
     analytic_2 = [max(-(2*max_u*(max(x_e,0)))**0.5, l_lims[1]) for x_e in x]
 
-    # level sets to be visualized
-    L = np.max(my_world.reward)
-    tau = 1 
-    c = L * (1 - np.exp(-lamb * tau)) #under approximation level curve
-    v_func_conts = [0, c]
-
-    # Plot contours of value function
+    # Plot contours of value functions
     plt.figure(1)
-    CS = plt.contour(x, y, v_opt.reshape(num_nodes).T, levels=v_func_conts)
-    
-    labels = ['V_$\\lambda$ zero level', 'Safe Set Under-approx']
+    CS = plt.contour(x, y, v_opt_1.reshape(num_nodes).T, levels=[0], colors='g')
+    CS.collections[0].set_label('V_$\\lambda$ zero level Model 1')
 
-    for i in range(len(labels)):
-        CS.collections[i].set_label(labels[i])
-    plt.plot(x, analytic_1,'b-.', label='Analytic Safe Set')
+    CS_2 = plt.contour(x, y, v_opt_2.reshape(num_nodes).T, levels=[0], colors='r')
+    CS_2.collections[0].set_label('V_$\\lambda$ zero level Model 2')
+
+    plt.plot(x, analytic_1,'b-.', label='Analytic Safe Set Model 2')
     plt.plot(x, analytic_2,'b-.')
     plt.title('Value Function Contours')
     plt.legend()
