@@ -1,0 +1,433 @@
+\documentclass{journal}
+\pdfoutput=1
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage{mathabx}
+\usepackage[ruled,vlined,titlenotnumbered]{algorithm2e} 
+\usepackage{graphicx} 
+\usepackage{subcaption}
+\usepackage{epsfig} 
+\usepackage{cancel}
+\usepackage{amssymb}
+\usepackage{color}
+\usepackage{resizegather} 
+\usepackage{amssymb}
+
+
+\usepackage{todonotes}
+\newcommand{\smalltodo}{\todo[size=\footnotesize]}
+\newcommand{\linetodo}{\todo[inline]}
+\setlength{\marginparwidth}{1.3cm}
+
+
+\usepackage{ifthen}
+\newboolean{include-notes}
+\setboolean{include-notes}{true}
+ \newcommand{\jfnote}[1]{\ifthenelse{\boolean{include-notes}}%
+ {\textcolor{blue}{\textbf{[JF: #1]}}}{}}
+
+\usepackage{enumerate}
+
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage[%
+    style=numeric-comp,
+    sorting=nyt,
+    backend=bibtex,
+    sortcites=true,
+    doi=false,
+    firstinits=true,
+    hyperref,
+    isbn=false,
+    eprint=false,
+    maxcitenames=3,
+    block=none]
+    {biblatex}
+    
+    \renewbibmacro{in:}{}
+    \AtEveryBibitem{
+  	\clearlist{language}
+	\clearfield{pages}
+	}
+      
+\DeclareBibliographyCategory{needsurl}
+\newcommand{\entryneedsurl}[1]{\addtocategory{needsurl}{#1}}
+\renewbibmacro*{url+urldate}{%
+  \ifcategory{needsurl}{
+    \printfield{url}%
+    \iffieldundef{urlyear}
+      {}
+      {\setunit*{\addspace}%
+       \printurldate}}
+    {}}
+
+
+\bibliography{library}
+\entryneedsurl{Mitchell2004}
+
+
+
+
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\C}{\mathcal{C}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\E}{\mathcal{E}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\G}{\mathcal{G}}
+\renewcommand{\H}{\mathcal{H}}
+\newcommand{\I}{\mathcal{I}}
+\newcommand{\J}{\mathcal{J}}
+\newcommand{\K}{\mathcal{K}}
+\renewcommand{\L}{\mathcal{L}}
+\newcommand{\M}{\mathcal{M}}
+\newcommand{\N}{\mathcal{N}}
+\renewcommand{\O}{\mathcal{O}}
+\renewcommand{\P}{\mathcal{P}}
+\newcommand{\Q}{\mathcal{Q}}
+\newcommand{\R}{\mathcal{R}}
+\renewcommand{\S}{\mathcal{S}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\U}{\mathcal{U}}
+\newcommand{\V}{\mathcal{V}}
+\newcommand{\W}{\mathcal{W}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Y}{\mathcal{Y}}
+\newcommand{\Z}{\mathcal{Z}}
+
+
+\renewcommand{\AA}{\mathbb{A}}
+\newcommand{\BB}{\mathbb{B}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\DD}{\mathbb{D}}
+\newcommand{\EE}{\mathbb{E}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\GG}{\mathbb{G}}
+\newcommand{\HH}{\mathbb{H}}
+\newcommand{\II}{\mathbb{I}}
+\newcommand{\JJ}{\mathbb{J}}
+\newcommand{\KK}{\mathbb{K}}
+\newcommand{\LL}{\mathbb{L}}
+\newcommand{\MM}{\mathbb{M}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\OO}{\mathbb{O}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\RR}{\mathbb{R}}
+\renewcommand{\SS}{\mathbb{S}}
+\newcommand{\TT}{\mathbb{T}}
+\newcommand{\UU}{\mathbb{U}}
+\newcommand{\VV}{\mathbb{V}}
+\newcommand{\WW}{\mathbb{W}}
+\newcommand{\XX}{\mathbb{X}}
+\newcommand{\YY}{\mathbb{Y}}
+\newcommand{\ZZ}{\mathbb{Z}}
+
+\newcommand{\fixwidth}[1]{\resizebox{\columnwidth}{!}{\ensuremath{\displaystyle{#1}}}} 
+
+
+\newcommand{\Dx}{\hat\D(x)}
+\newcommand{\XXD}{\XX_{\hat{\D}}}
+\newcommand{\bu}{\bm{u}}
+\newcommand{\bdelta}{\bm{d}}
+\newcommand{\bgamma}{\bm{\gamma}}
+\newcommand{\bbeta}{\bm{\beta}}
+\newcommand{\bphi}{\bm{\phi}}
+\newcommand{\bx}{\xi}
+
+\newcommand{\Disc}{\text{Disc}}
+\DeclareMathOperator{\interior}{int}
+
+\newcommand{\optud}{\underset{u\in\U}{\max}\text{ }\underset{ d\in\D}{\min}}
+\newtheorem{claim}{Claim}
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{remark}{Remark}
+\newtheorem{proposition}{Proposition}
+\newtheorem{assumption}{Assumption}
+
+
+\title{\LARGE \bf
+Fast Computation of Parameterized Reachable Sets via Learning 
+}
+\author{
+Anayo K. Akametalu\textsuperscript{$*$} \and Shromona Ghosh \and Claire J. Tomlin
+\thanks{
+ Department of Electrical Engineering and Computer Sciences, 
+        University of California, Berkeley , United States.\newline
+        {\tt\small \{kakametalu, shromona.ghosh, tomlin\}~@eecs.berkeley.edu }}%  
+}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\pagestyle{empty}
+
+\begin{abstract}
+Reachability analysis has proven to be a useful tool when designing controllers for constraint satisfaction in systems that can be modeled. This is typically done by finding an invariant set of constraint-satisfying states and policy, such that it is guaranteed the system never exits this invariant set. Models in control often contain parameters that capture physical properties of the system (e.g. mass, moment of intertia) being studied or some intentionality of an agent (e.g. parameterized policy), thus the results obtained from reachability analysis depend on the values of the parameters. Unfortunately, the solutions are often not analytic and must be computed numerically for any given parameter values. In this paper we leverage computations for previously given parameter values to speed-up the analysis for new values of the parameters. This work is relevant if one wants to construct a library of reachable sets indexed by parameter values, if the parameters in our model are slowly time-varying, or if the parameters are unknown and thus are constantly estimated.
+\end{abstract}
+
+
+\section{Introduction}
+(Copy and paste abstract for now) Reachability analysis has proven to be a useful tool when designing controllers for constraint satisfaction in systems that can be modeled. This is typically done by finding an invariant set of constraint-satisfying states and policy, such that it is guaranteed the system never exits this invariant set. Models in control often contain parameters that capture physical properties of the system (e.g. mass, moment of intertia) being studied or some intentionality of an agent (e.g. parameterized policy), thus the results obtained from reachability analysis depend on the values of the parameters. Unfortunately, the solutions are often not analytic and must be computed numerically for any given parameter values. In this paper we leverage computations for previously given parameter values to speed-up the analysis for new values of the parameters. This work is relevant if one wants to construct a library of reachable sets indexed by parameter values, if the parameters in our model are slowly time-varying, or if the parameters are unknown and thus are constantly estimated.
+
+\subsection*{Notation}
+
+Throughout the paper, we use boldface symbols to denote time signals or trajectories.
+For any nonempty set $\M\subset\RR^m$, $s_{\M}:\RR^m\to\RR$ denotes the \emph{signed distance function} to $\M$
+\[s_\M(z) := \begin{cases}\inf_{y\in\M} |z-y|,&z\in\RR^m\setminus\M, \\ -\inf_{y\in\RR^m\setminus\M} |z-y|,&z\in\M,\end{cases}\]
+where $|\cdot|$ denotes a norm on $\RR^m$.
+
+\section{Background: Optimal Control and Safety \label{sec:back}} \
+In this section we will show how the constraint satisfaction problem can be posed as two different infinite horizon optimal control problem. 
+
+% !TEX root = SafeLearning.tex
+\subsection{System Model \label{subsec:dynamics}}
+
+The analysis in this paper considers a fully observable parameterized system whose underlying dynamics may be non-deterministic. 
+We can formalize this as a dynamical system with state $x\in\RR^n$, and two inputs, $u\in\U\subset\RR^{n_u},  d\in\D\subset\RR^{n_d}$
+(with $\U$ and $\D$ compact)
+which we will refer to as the \emph{controller} and the \emph{disturbance}:
+\begin{equation}\label{fxud}
+\dot{x} = f(x,u, d).
+\end{equation}
+In this context, however, 
+$d$ is thought of as a disturbance capturing the non-deterministic or unknown portions of the dynamics, and the flow field $f: \RR^n \times \U \times \D\rightarrow\RR^n$ is assumed to be uniformly continuous and bounded. Later we will consider working with a parameterized class of flow fields.
+
+Letting $\UU $ and $\DD$ denote the collections of measurable%
+	\footnote{A function $f:X\to Y$ between two measurable spaces $(X,\Sigma_X)$ and $(Y,\Sigma_Y)$
+	is said to be measurable if the preimage of a measurable set in $Y$ is a measurable set in $X$, that is:
+	$\forall V\in\Sigma_Y, f^{-1}(V)\in\Sigma_X$, with $\Sigma_X,\Sigma_Y$ $\sigma$-algebras on $X$,$Y$.}
+functions $\bm u: [0,\infty)\to \U $ and $\bm d: [0,\infty)\to \D$ respectively,
+and allowing the controller and disturbance to choose any such signals,
+the evolution of the system
+from any initial state $x$
+is determined (see for example \cite{Coddington1955}, Ch. 2, Theorems 1.1, 2.1) by the unique continuous trajectory $\bx:[0,\infty)\to\RR^n$ solving
+\begin{equation}\label{eq:xdot}
+\begin{split}
+\dot{\bx}(s) &= f(\bx(s),\bu(s),\bdelta(s)), \text{ a.e. }s\ge 0,\\
+\bx(0) &= x.
+\end{split}
+\end{equation}
+Note that this is a solution in Carath\'eodory's \emph{extended sense}, that is, it satisfies the differential equation \emph{almost everywhere} (i.e. except on a subset of Lebesgue measure zero).
+
+
+Throughout our analysis, we will use the notation $\bx_{x}^{\bu,\bdelta}(\cdot)$ to denote the state trajectory $t\mapsto x$ corresponding to the initial condition $x\in\RR^n$, the control signal $\bu\in\UU$ and the disturbance signal $\bdelta\in\DD$.
+
+
+
+% !TEX root = SafeLearning.tex
+\subsection{State Constraints and Optimal Control}\label{subsec:formulation_constraints}
+A central element in our problem is the \emph{constraint set}, which defines a region $\K\subseteq \RR^n$ of the state space, typically resulting from safety considerations, where the system is required to remain at all times. For technical purposes detailed below, we assume that this set is closed; no further assumptions (boundedness, connectedness, convexity, etc.) are made in the analysis. Our problem can thus be stated as finding the \emph{safe set} $\Omega(\K)$ , the set of states $x$ from which our system can start and we can guarantee that a control signal exists to keep the state trajectory within $\K$ irrespective of the disturbance signal. This can be formulated as an optimal control problem, and here we will consider two formulations: minimum distance to target, and maximum time to reach target. Before explaining the two formulations it will be useful to introduce the target set, $\T=\overline{\K}$, which is the complement of the constraint. Note that throughout the document the target set may be referred to as the keep-out set or avoid set. 
+
+Here we will only present the problem formulations, and the methods for solving the problems will be addressed in Section \ref{sec:solns}.
+
+\subsubsection{Minimum distance to target}
+The target set can be implicitly characterized as the sub-zero level set of a Lipschitz \emph{surface function} $l:\RR^n\rightarrow\RR$: 
+\begin{equation}\label{eq:l}
+x\in\T\iff l(x)<0.
+\end{equation}
+This function always exists, since we can simply choose the function $l(x) = s_{\T}(x)$, 
+which is Lipschitz continuous by construction. 
+
+To express whether a given trajectory \emph{ever} violates the constraints, let the functional $\V:\RR^n\times\UU\times\DD\to\RR$ assign to each initial state $x$ and input signals $\bu(\cdot)$, $\bdelta(\cdot)$ the lowest value of $l(\cdot)$ achieved by trajectory $\bx_{x,\hat\D}^{\bu,\bdelta}(\cdot)$ over all times $t\ge0$: 
+\begin{equation}\label{eq:V}
+\mathcal{V}\big(x,\bu(\cdot),\bdelta(\cdot)\big) := \inf_{t\ge 0}l\big(\bx_{x}^{\bu,\bdelta}(t)\big).
+\end{equation}
+This outcome $\V$ will be strictly smaller than zero if there exists any $t\in[0,\infty)$ at which the trajectory leaves the constraint set, and will be nonnegative if the system remains in the constraint set for all of $t\ge 0$. Denoting $\V^{\bu,\bdelta}(x) = \V\big(x,\bu(\cdot),\bdelta(\cdot)\big)$, the following statement follows from \eqref{eq:l} and \eqref{eq:V} by construction. 
+
+Guaranteeing safe evolution from a given point $x\in\RR^n$ requires determining whether there exists a control input $\bu(\cdot)\in\UU$ such that, for all disturbance inputs $\bdelta(\cdot)\in\DD$ satisfying $\bdelta(t)\in\D$, the evolution of the system remains in $\K$, or equivalently $\V^{\bu,\bdelta}(x)\ge 0$.
+
+Our safe set can then be obtained by solving a differential game (or optimal control problem in the case where there is no disturbance). The game is played between the control and disturbance signal with the restriction that the disturbance signal can  only use  \emph{nonanticipative strategies}. The set of nonanticipative strategies for the disturbance is $\B = \{\bbeta:\UU\to\DD\;|\;
+\forall t\ge 0,\; \forall \bu(\cdot),\hat{\bu}(\cdot)\in\UU,$
+${\big(\bu(\tau) \!=\! \hat{\bu}(\tau)\text{ a.e.} \tau\ge0\big)\Rightarrow
+{\big(\bbeta[\bu](\tau) \!=\! \bbeta[\hat{\bu}](\tau)}{\text{ a.e.} \tau\ge0\big)}}\}$. With this in place we can define the value function $V(x)$ and ultimately the safe set. 
+
+\begin{equation}
+V(x)=\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU}\mathcal{V}\big(x,\bu(\cdot),\bdelta(\cdot)\big) .
+\end{equation}
+
+The safe set can thus be characterized as 
+\begin{equation}
+\Omega(\K) = \{x \mid V(x) \ge 0\}.
+\end{equation}  
+
+It's known that the value function can be obtained from the \emph{finite-horizon value function} $V(x,t)$ which is the unique viscosity solution for a Hamilton Jacobi variational inequality.\footnote{$V(x,t)$ characterizes the set of initial states from which the system can be kept inside $\K$ for a horizon of $t$.
+} 
+\begin{subequations}\label{eq:HJI}\begin{align}
+    & 0 = \min\left\{l(x)-V(x,t), \frac{\partial V}{\partial t}(x,t)+ \max_{u\in\U} \min_{ d\in\D} \!\!\frac{\partial V}{\partial x}(x,t) f(x,u, d)\right\}\label{eq:HJIa}\\
+    &V(x,0) = l(x).\label{eq:HJIb}\\
+    &V(x) = \lim_{t \rightarrow \infty} V(x,t)
+\end{align}\end{subequations}
+
+
+\subsubsection{Maximum time to reach target}
+
+A time to reach formulation can also be used to characterize the safe set. Take the following time to reach functional
+
+\begin{equation}\label{eq:t}
+t\big(x,\bu(\cdot),\bdelta(\cdot)\big) := 
+\begin{cases}
+ \{t \in \RR_{+} \mid \bx_{x}^{\bu,\bdelta}(t) \in \T \}  &\text{if $\bx_{x}^{\bu,\bdelta}(t) \in \T$ for some $t$}, \\
++ \infty  &otherwise,
+\end{cases}
+\end{equation}
+
+For a given state $x$, control, and disturbance the outcome of this functional will be the first time the state trajectory enters the target set, or $+\infty$ in the case that the trajectory does not enter the target set. Similar to before we could characterize our safe set by considering a game between the disturbance and control, in which the disturbance wants to minimize the time to reach and the control wants to maximize it. Define the \emph{maximum time to reach value function}
+
+\begin{equation} \label{eq:max_ttr}
+T(x):=\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU}t\big(x,\bu(\cdot),\bdelta(\cdot)\big) .
+\end{equation}
+
+There is a problem however. The function in \ref{eq:max_ttr} is potentially unbounded, and even worse yet it is unbounded in the safe set. Instead, we apply the Kruzkhov transform to obtain the \emph{modified time to reach value function}
+\begin{equation}\label{eq:t}
+U\big(x) :=
+\begin{cases} 
+\frac{1}{\lambda}(1-\exp(-\lambda T(x))) & T(x) < +\infty \\
+\frac{1}{\lambda} & T(x) = +\infty 
+\end{cases}, \quad \lambda >0,
+\end{equation}
+
+\noindent which is the unique viscosity solution of the boundary value problem (BVP)
+
+\begin{equation}\label{eq:HJI_2}
+\begin{cases}
+\lambda U(x) = \underset{u\in\U}{\max}\text{ }\underset{ d\in\D}{\min} \! \dfrac{\partial U}{\partial x}(x) f(x,u,d) +1 & x\in \RR^n \setminus \T\\
+U(x) = 0 & x \in \mathcal{T}
+\end{cases}
+\end{equation}
+
+Thus another characterization of the safe set is
+\begin{equation}
+\Omega(\K) = \{x \mid U(x) = \frac{1}{\lambda}\}.
+\end{equation}  
+
+\subsection{Approximate Solutions through Dynamic Programming (DP)} \label{sec:solns}
+
+Typically the differential equations presented in Section \ref{sec:back} are solved using an approximation scheme on a fixed grid $G$. Here we will use a semi-Lagrangian approximation based on a Discrete Time Dynamic Programming Principle. In this section we will apply this approach to solving the value functions of interest. 
+
+\subsubsection{Minimum Distance to Target Solution}
+For the minimum distance formulation we consider the following discrete approximation of equation \ref{eq:HJI},
+\begin{subequations}
+\begin{align}
+&V_{\Delta t}^{k+1}(x) = \min\{l(x),  \underset{u\in\U}{\max}\text{ }\underset{ d\in\D}{\min} V^{k}_{\Delta t}(x+\Delta t f(x,u,d))\}\\
+&V_{\Delta t}^{0}(x) = l(x)\\
+&V_{\Delta t} = \lim_{k\rightarrow \infty} V^{k}_{\Delta t},
+\end{align}
+\end{subequations}
+
+\noindent where $V_{\Delta t}(x)$ converges to $V(x)$ as $\Delta t \rightarrow 0$. Since the value function is being solved on a grid it can be represented in vectorized form, $\vec{V} \in \RR^{N_G}$, and the above equations can be written in fixed point-form as
+
+\begin{subequations}
+\begin{align}
+&\vec{V}_{i}^{k+1} = \min\{l(x_i),  \underset{u\in\U}{\max}\text{ }\underset{ d\in\D}{\min} I[\vec{V}^{k}](x+\Delta t f(x,u,d))\} \label{eq:dp_min_dist}\\
+&\vec{V}_{i}^{0} = l(x_i)\\
+&\vec{V} = \lim_{k\rightarrow \infty} \vec{V}^{k},
+\end{align}
+\end{subequations}
+
+\noindent for  $i=1, ..., N_G$, where $\{x_i\}_{i=1}^{N_G}$ are the grid nodes, $\vec{V}_i^k$ is the approximate value for $V(x_i, k \Delta t)$ and $I[\vec{V}^k]:\RR^n \rightarrow \RR$ represents an interpolation operator defining, for every point $x$, the polynomial reconstruction based on the values $\vec{V}_i^k$. To recap one can obtain an approximation to the value function $V$ by initializing a grid $G$ with the values $l(x_i)$ at the grid nodes $\{x_i\}_{i=1}^{N_G}$, and then iteratively updating the grid values using equation \ref{eq:dp_min_dist} until convergence. This is a standard dynamic programming solution, and equation \ref{eq:dp_min_dist} is referred to as a Bellman operator. Note that $k$ here is associated with a number of time steps, in particular the time horizon is $k \Delta t$.
+
+\subsubsection{Maximum Time to Reach Solution}
+For the maximum time to reach value function we consider a discrete approximate to equation \ref{eq:HJI_2},
+\begin{equation}
+\begin{cases}
+U_{\Delta t}(x)=
+\dfrac{1-e^{-\lambda \Delta t}}{\lambda}+\optud \{e^{-\lambda \Delta t} U_{\Delta t}(x+\Delta t f(x,u,d))\}  & x\in \RR^n \setminus \T \\
+0 & x \in \mathcal{T}
+\end{cases},
+\end{equation}
+
+\noindent where $U_{\Delta t}(x)$ converges to $U(x)$ as $\Delta t \rightarrow 0$. Similar to before we write the value function in vectorized form, $\vec{U} \in \RR^{N_G}$, and express the approximation in fixed-point form as 
+
+\begin{subequations} \label{eq:vi}
+\begin{align}
+&\vec{U}_{i}^{k+1} = 
+  \begin{cases}  \label{eq:dp_max_ttr}
+    \dfrac{1-e^{-\lambda \Delta t}}{\lambda}+\optud \{e^{-\lambda \Delta t} I[\vec{U}^{k}](x_i+\Delta t f(x_i,u,d))\} & x_i \in G\cap\K \\
+    0 & \text{o.w.}
+  \end{cases}\\
+&\vec{U} = \lim_{k\rightarrow \infty} \vec{U}^{k}\\
+&\vec{U}^{0} = 0
+\end{align}
+\end{subequations}
+
+\noindent for $i=1, ..., N_G$, where $\{x_i\}_{i=1}^{N_G}$ are the grid nodes, $\vec{U}_i^k$'s are improving approximations of $U(x_i)$ (as $k$ increases) and $I[\vec{U}^k]:\RR^n \rightarrow \RR$ represents an interpolation operator defining, for every point $x$, the polynomial reconstruction based on the values $\vec{U}_i^k$. Again this yields a standard dynamic programming solution to approximate the value function $U$ by iteratively applying \ref{eq:dp_max_ttr}. In this context dynamic programming is referred to as value iteration. For convenience we can then represent equations \ref{eq:vi} more compactly by defining the Bellman operator $B[\cdot]: \RR^{N_G} \rightarrow \RR^{N_G}$, which maps the space of vectorized value functions onto itself.
+
+\begin{equation} \label{eq:bell}
+ B[\vec{A}]_i :=
+  \begin{cases}
+    \dfrac{1-e^{-\lambda \Delta t}}{\lambda}+\optud \{e^{-\lambda \Delta t} I[\vec{A}](x_i+\Delta t f(x_i,u,d))\} & x_i \in G\cap\K \\
+    0 & \text{o.w.}
+   \end{cases}
+\end{equation}
+
+\noindent for $i=1, ..., N_G$.\footnote{The two optimal control problems have their own respective Bellman operators, but we do not express the minimum distance Bellman operator in shorthand because it will not be used in the document.} The value iteration algorithm can thus be written as
+\begin{subequations} \label{eq:vi}
+\begin{align}
+&\vec{U}^{k+1} = B[\vec{U}^{k}]\\
+&\vec{U} = \lim_{k\rightarrow \infty} \vec{U}^{k}\\
+&\vec{U}^{0} = 0
+\end{align}
+\end{subequations}
+
+
+
+One important difference between the two Bellman operators \ref{eq:dp_min_dist} and \ref{eq:dp_max_ttr} is that the latter has a unique fixed point, and convergence is guaranteed so long as $\vec{U}_i^0 =0$ for $x_i \in \T$ (assuming a linear interpolation scheme $I$). This means that $\vec{U}_i^0$ can be set arbitrarily for $x_i \in \K$. Since the approximations to $U$ improve as $k$ increases one can imagine that if we initialize $\vec{U}^0$ with better approximations to $U$ then we should converge in fewer iterations. This idea will be important later when our algorithm is introduced. 
+
+% Need to update notation on policy iteration section 
+%There is also another approach to approximating $U$ known as policy iteration. The idea is that we can come up with an initial guess of the control and disturbance policy, $u(\cdot):\RR^n \rightarrow U$ and $d(\cdot):\RR^n \rightarrow D$. For a fixed policy the Bellman operator becomes linear (we don't need to perform minimax). Once the Bellman operator converges under this fixed policy, the policy is then updated and the process is repeated until the policies no longer change. The value function will also converge to the same result obtained from value iteration. 
+%
+%\begin{subequations}
+%\begin{align}
+%&U_{i}^{k,m+1} = \dfrac{1-e^{-\lambda \Delta t}}{\lambda}+ e^{-\lambda \Delta t} I[U^{k,m}](x_i+\Delta t f(x_i,u^{k}(x_i),d^{k}(x_i)))   \quad x_i \in G\cap\K \\
+%&U_{i}^k = \lim_{m\rightarrow \infty} U^{k,m}_i\\
+%&u^{k+1}(x_i), d^{k+1}(x_i) = \arg\optud \{e^{-\lambda \Delta t} I[U^{k}](x_i+\Delta t f(x_i,u,d))\}\\
+%&U_{i}^{k+1, 0} = U_{i}^k\\
+%&U_{i} = \lim_{k\rightarrow \infty} U^{k}_i\\
+%&u^*(x_i):=\lim_{k\rightarrow \infty} u^{k+1}(x_i),  \quad d^*:=\lim_{k\rightarrow \infty} d^{k+1}(x_i)
+%\end{align}
+%\end{subequations}
+%
+%\noindent where $u^*(\cdot)$ and $d^*(\cdot)$ are the optimal policies. The initial policies, $u^{0}(\cdot)$ and $d^{0}(\cdot)$ can be set arbitrarily. The initial value function $U_i^{0,0}$ is also arbitrary but must satisfy the constraint $U_i^{0,0}=0$ for $x_i \in \T$. Policy iteration consists of two nested iterations. In the outer loop, referred to as policy improvement, the algorithm iterates through policies, and in the inner loop, referred to as policy evaluation, it iterates the value function for a fixed policy. Note that the inner loop can also be handled by solving a linear system, but as the problem space grows inverting a matrix becomes prohibitive and we again end up using an iterative method like Gauss-Seidel. Policy iteration has fewer iterations (outer loop) than value iteration, but does more work per iteration. In practice it typically converges faster. As one would imagine the the closer the initial policy is to the optimal policy (what we will ultimately converge to) the faster the algorithm converges. This idea will be important later when our algorithm is introduced. 
+
+
+\section{Problem Formulation}
+Unfortunately the dynamic programming based methods mentioned above are computationally expensive. For this reason the value function is typically computed offline, and the results are used once the system is online. However, in some cases we may want to compute new value functions online due to either the system model changing, or the estimate of the model changing. Depending on the size of the problem it may not be practical to do this online. Another approach is to generate a library of value functions for different system models, which can then be used as a look up table. Generating this library is still costly, and there are no guarantees that the library will include the value function for a particular model of interest. 
+
+In general, for each new model encountered  a value function must be computed via dynamic programming. However, in the case where the system model belongs to a parameterized class, our objective is to develop a method for computing the value functions online, that is more efficient than employing standard dynamic programming. By more efficient, we mean converging to the value function in fewer iterations.
+
+\subsection{Parameterized Models}
+
+Let's consider a dynamics model from a  parameterized class, $\dot{x}=f_{\theta}(x,u,d)$ for $\theta \in \Theta$. The parameters can represent a number of things like physical attributes (mass, moment of inertia, etc.), the intentionality of an underlying agent (parameterized policy), or even stochasticity (parameterized process noise). The parameterized model ultimately results in parameterized value functions $\vec{V}_\theta$ and $\vec{U}_\theta$ for the minimum distance, and maximum time to reach formulations respectively. The bellman operator will also have a dependence on $\theta$, so we express this as $B_\theta$. In the context that we are considering there is a process in charge of learning the model, which yields estimates of the model parameter at every time step (or every couple of time steps). Ideally, the safe set (value function) should be updated to reflect the current estimate of the model parameter. However, this would not be feasible and may not even be necessary. It would be more practical to only require a new safe set once the parameter value has converged. 
+
+\section{Methodology}
+Computing the safe set upon convergence of the parameter estimate still presents some challenges in an online setting. The issue is that we would have to perform dynamic programming, and there would be a significant delay between when the model parameter converges, and when the associated safe set is produced. 
+
+We propose a method that draws inspiration from reinforcement learning (RL). In RL local updates are made to the value function based on the current observations being made. As new observations are made, more updates are made. In our method the safe set gets updated globally at every time step using the Bellman operator of the current parameter estimate. One Bellman update is far cheaper than computing the safe set, which requires applying the operator until convergence. In addition as the parameter estimate converges, this procedure ultimately converges to the appropriate safe set.   
+
+\subsection{Dynamic Bellman Operator}
+
+Before going into the algorithm let's take some time to understand the rationale behind it. If we assume that the mapping from parameter $\theta$ to value function $\vec{V}_{\theta}$ ($\vec{U}_{\theta}$ ) is continuous, then informally we expect if two parameter values $\theta_1$ and $\theta_2$ are close together then their safe sets will also be close.\footnote{This statement can be made more precise by introducing metrics and epsilon-delta arguments, but this will do for now.} Furthermore it would be useful if in computing the safe set for $\theta_2$ we could take advantage of the safe set for $\theta_1$ (assuming we had it).
+
+In the case of the minimum distance value function having $\vec{V}_{\theta_1}$ does not aide in the computation of $\vec{V}_{\theta_2}$. However, for the maximum time to reach value function, having $\vec{U}_{\theta_1}$ can help in obtaining $\vec{U}_{\theta_2}$. It can be shown that the value iteration algorithm in the previous section has linear convergence.
+
+\begin{equation}
+||\vec{U}-\vec{U}^k|| \leq \gamma^k ||\vec{U}-\vec{U}^0||,
+\end{equation}
+
+\noindent where $\gamma= e^{-\lambda \Delta t}$, and the metric is with respect to the infinity norm. Clearly, the closer $\vec{U}^0$ is to $\vec{U}$ the lower the maximum number of iterations it takes to converge. Thus in performing value iteration with $B_{\theta_2}$ a good initialization would be $\vec{U}^0=\vec{U}_{\theta_1}$. Furthermore, any value function close to $\vec{U}_{\theta_1}$ would also be a good initialization, thus even if we applied value iteration under $B_{\theta_1}$ and terminated before convergence the result would be useful in finding $\vec{U}_{\theta_2}$.
+
+Given an estimation process that returns a convergent sequence of parameter estimates $\{\theta^k\}$  with $\lim_{k \rightarrow \infty} \theta_k = \theta^*$ we propose a dynamic online Bellman update scheme 
+
+\begin{equation} \label{eq:dyn_bell}
+\vec{U}^{k+1}=B_{\theta_k}[\vec{U}^k],
+\end{equation}
+
+\noindent where $\vec{U}^{0}$ is set arbitrarily. This sequence of value functions ultimately converges to $\vec{U}_{\theta^*}$. The hope behind this update rule is that  once the parameter $\theta$ converges it should not require many more Bellman updates to produce the desired value function. This update scheme is similar to how one would update the value function in model-free reinforcement learning, but rather than performing local updates the updates are applied globally since the parameters apply to the entire space and not just necessarily to the region of space that the system is currently in.
+\end{document}

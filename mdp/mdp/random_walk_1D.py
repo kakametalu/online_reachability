@@ -1,5 +1,6 @@
 import numpy as np
 from mdp.mdp_base import MDP
+from mdp.grid_world import state_to_idx
 
 class RandomWalk1D(MDP):
     """Controlled random walk on a line.

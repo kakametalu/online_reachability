@@ -1,7 +1,7 @@
 # This module contains classes to extend the MDP to multi-dimensional grids
 
 import numpy as np
-from mdp.mdp_base import MDP
+from mdp.mdp_base_reach import MDP
 from sklearn.utils.extmath import cartesian
 from copy import deepcopy
 import matplotlib.pyplot as plt

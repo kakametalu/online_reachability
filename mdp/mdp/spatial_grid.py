@@ -3,11 +3,13 @@
 
 import numpy as np
 from mdp.grid_world import GridWorld as GridWorldDiscrete, state_to_idx
-from mdp.dynamics import Dynamics
+from mdp.dynamics import Dynamics, double_integrator
 from mdp.signed_distance import dist_hypercube_int
 from sklearn.utils.extmath import cartesian
+import matplotlib.pyplot as plt
 import time
 from copy import deepcopy
+from mpl_toolkits.mplot3d import Axes3D
 
 
 class GridWorld(GridWorldDiscrete):
@@ -32,7 +34,7 @@ class GridWorld(GridWorldDiscrete):
         dynamics(function): Continous dynamics model.
              Function takes in state (x) and action(a), and returns
              the state derivative (x_dot) 
-        gamma(float): Discount factor.
+        gamma 
     """
 
     def __init__(self, num_nodes, s_lims, num_nodes_a, a_lims=None, dynamics=None, gamma=None):
@@ -135,26 +137,107 @@ class GridWorld(GridWorldDiscrete):
 class Avoid(GridWorld):
     """MDP to compute safe set for a specified avoid set.
 
-    The value function corresponds to the minimum distance to the avoid 
-    set. 
-
     Args:
-        num_nodes (1D np array): Number of nodes in each state dimension.
-        s_lims(2d np array): Range on the states. 
-            First (second) column lower (upper) bound for each state dim.
-        num_nodes_a (1D np array): Number of nodes in each action dimension.
-        a_lims(2d np array): Range on the actions. 
-            First (second) column lower (upper) bound for each action dim.
-        dynamics(function): Continous dynamics model.
-             Function takes in state (x) and action(a), and returns
-             the state derivative (x_dot) 
-        avoid_func(function): A signed distance function to the avoid set.
+
+
+
     """
-    def __init__ (self, num_nodes, s_lims, num_nodes_a, a_lims=None, dynamics=None, avoid_func=None, lamb=0):
+    def __init__ (self, num_nodes, s_lims, num_nodes_a, a_lims=None, dynamics=None, avoid_func=None):
         
         super().__init__(num_nodes, s_lims, num_nodes_a, 
                          a_lims, dynamics)        
+        impl_avoid = avoid_func(self._all_states)
+        avoid = (impl_avoid <= 0).nonzero()[0]
+        self._avoid_set = set(avoid)
+        super().add_abs(avoid)
         dt = self._dt
-        self._gamma = np.exp(-dt * lamb)
-        self._reward = avoid_func(self._all_states)
+        self._gamma = np.exp(-dt)
+        self._reward[:,:] = 1.0 - np.exp(-dt)
+        self._reward[avoid, :] = 0.0
+
+# def visualize_v_func(self, v_func = None, contours=None):
+#     """ Visualize contour plot of value function.
+
+#         Args:
+#             v_func(1D np array): Value function to be visualized.
+#                 Size is number of states.
+#         """
+
+#         assert(self._dims==2 or self._dims==1),\
+#             "Can only visualize value functions for 1D and 2D grids."
+
+#         plt.figure(figsize=(8, 8))
+#         if self._dims ==1:
+#             plt.plot(v_func)
+#         else:
+#             s_min = self._s_lims[:,0]
+#             s_max = self._s_lims[:,1]
+
+#             x = range(self._num_nodes[0]) * self._ds[0] + s_min[0] 
+#             y = range(self._num_nodes[1]) * self._ds[1] + s_min[1]
+#             # z = [min((-2*self.a_lims[0]*(self.u_lims[0]-min(x_e,self.u_lims[0])))**0.5,self.u_lims[1]) for x_e in x]
+
+#             # z2 = [max(-(2*self.a_lims[1]*(max(x_e,0)))**0.5, self.l_lims[1]) for x_e in x]
+#             #y=-sqrt(max(vs{1},0)*(uMax1-g)*2);
+
+#             if contours is None:
+#                 plt.contour(x, y, v_func.reshape(self._num_nodes).T)
+#             else:
+#                 plt.contour(x, y, v_func.reshape(self._num_nodes).T, contours)
+#                 # fig = plt.figure()
+#                 # ax = fig.gca(projection='3d')
+#                 # X, Y = np.meshgrid(x, y)
+
+#                 # ax.plot_surface(X, Y, v_func.reshape(self._num_nodes).T)
+#                 # plt.plot(x,z,'b-.')
+#                 # plt.plot(x,z2,'r-.')
+    
+#             # plt.savefig('value_function.png')
+#             plt.pause(100) 
+
+
+if __name__ == "__main__":
+    
+    num_nodes = np.array([41, 41])
+    s_lims = np.array([[-1,-5],[5,5]])
+    num_nodes_a = np.array([2])
+    a_lims = np.array([[-0.2],[0.2]]) * 9.81
+    dynamics = double_integrator 
+    cube_lims = np.array([[0, -3], [4, 3]])
+
+    k_func = lambda x: dist_hypercube_int(x, cube_lims=cube_lims)
+ 
+    my_world = Avoid(num_nodes, s_lims, num_nodes_a, a_lims, dynamics, k_func)
+    v_opt, pi_opt = my_world.v_pi_opt(method='pi')
+    exit_time = np.linspace(1.0, 1.5, 10)
+    dt = my_world._dt
+    gamma = my_world._gamma
+    Ns = [time/dt for time in exit_time]
+    contours=[(1-gamma**(N+1)) * dt / (1 - gamma) for N in Ns]
+
+    ttr = (np.log(1 - v_opt * (1 - gamma)/dt)/np.log(gamma) - 1) * dt
+    ttr_2 = -np.log(1 -  v_opt)
+    contours_2 = 1 - np.exp(-exit_time)
+    grad, grad_mag = my_world.gradient()
+    contours_3=np.linspace(0, 3.0, 20) 
+    print(np.min(grad_mag[:]))
+    print(np.max(grad_mag[:]))
+
+    # Plot contours
+    s_min = s_lims[0]
+    s_max = s_lims[1]
+    x = range(my_world.num_nodes[0]) * my_world.ds[0] + s_min[0] 
+    y = range(my_world.num_nodes[1]) * my_world.ds[1] + s_min[1]
+    print(s_min)
+    plt.contour(x, y, v_opt.reshape(num_nodes).T)
+
+    u_lims = cube_lims[1]
+    l_lims = cube_lims[0]
+
+    z = [min((-2*a_lims[0]*(u_lims[0]-min(x_e, u_lims[0])))**0.5,u_lims[1]) for x_e in x]
+
+    z2 = [max(-(2*a_lims[1]*(max(x_e,0)))**0.5, l_lims[1]) for x_e in x]
+    plt.plot(x,z,'b-.')
+    plt.plot(x,z2,'r-.')
+    plt.pause(100) 
 

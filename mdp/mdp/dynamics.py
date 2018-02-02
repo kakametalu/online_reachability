@@ -69,9 +69,9 @@ def double_integrator(state, control, **sys_params):
     min_u = sys_params.get('min_u', 0)
     return np.array([state[1], control * (max_u - min_u) + min_u])
 
-def simple_dyn(x, u):
+def simple_dyn(x, u, **sys_params):
     return np.array(u * (1 - np.abs(x)))
 
-def vdp_oscillator(x, u):
+def vdp_oscillator(x, u, **sys_params):
     """Van Der Pol Oscillator Dynamics."""
     return np.array([x[1], (1-x[0]**2) * x[1] - x[0] + u[0]])

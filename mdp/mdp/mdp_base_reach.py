@@ -108,7 +108,7 @@ class MDP(TransitionModel):
     
 
     Attributes:
-        _reward (2D np array): Reward function R(s,a)
+        _reward (2D np array): Reward function R(s)
             Size is number of states by number of actions.
         _gamma (float): Discount rate in (0 1].
             If gamma is 1, then the reward is undiscounted, and absorbing
@@ -122,8 +122,8 @@ class MDP(TransitionModel):
     Args:
         num_states (uint): Number of states.
         num_actions(uint): Number of actions.
-        _reward (2D np array): Reward function R(s,a)
-            Size is number of states by number of actions.
+        _reward (1D np array): Reward function R(s)
+            Size is number of states.
         gamma (float): Discount rate between 0 and 1.
             If gamma is 1, then the reward is undiscounted, and absorbing
             states must be provided.
@@ -148,7 +148,7 @@ class MDP(TransitionModel):
 
         # Handling rewards
         if reward is None:
-            reward = np.zeros([num_states, num_actions])
+            reward = np.zeros([num_states])
         self._reward = reward
 
         if gamma is None:
@@ -175,26 +175,25 @@ class MDP(TransitionModel):
         else:
             support, probs = super().__getitem__(state_action)
         
-        reward = self._reward[state, action]
+        reward = self._reward[state]
         return support, probs, reward
 
     def _policy_backup(self, V, pi):
         """Does one policy back up on the value function."""
 
-        V_out = np.zeros(self.num_states)
+        V_out = np.zeros([self.num_states])
         for state in range(self.num_states):
-            support, probs, exp_r= self[state, pi[state]]
-            V_out[state] = exp_r
-            if state not in self._abs_set:
-                for next_state, p in zip(support, probs):
-                    V_out[state] += (V[next_state] * p) * self._gamma
+            support, probs, _ = self[state, pi[state]]
+            for next_state, p in zip(support, probs):
+                V_out[state] += (V[next_state] * p)
         return V_out
 
     def _bellman_backup(self, V=None):
         """Performs one bellman backup on the value function V."""
 
+        max_reward = np.max(self._reward)
         if V is None:
-            V = np.zeros(self.num_states)
+            V = self._reward 
 
         ones_vec = np.ones(self.num_states).astype(int)
         pi = ones_vec * 0
@@ -211,6 +210,8 @@ class MDP(TransitionModel):
             pi_greedy = pi_greedy * (V_out >= V_act) +\
                         pi * (V_out < V_act)
             V_out = np.maximum(V_out, V_act)
+        V_out = np.minimum((V_out - max_reward) * self._gamma,
+         self._reward - max_reward) + max_reward 
 
         return V_out, pi_greedy
 
@@ -218,9 +219,9 @@ class MDP(TransitionModel):
         """Value iteration initialized with initial value function V.
         """        
         if V is None:
-            V = np.zeros(self.num_states)
+            V = self._reward + (np.random.rand(self._num_states)-0.5) * 0
         V_opt = deepcopy(V)
-        tol = 10 ** (-8)
+        tol = 10 ** (-3)/2
         err = tol * 2
 
         count=0
@@ -233,91 +234,7 @@ class MDP(TransitionModel):
             count += 1
         return V_opt, pi_opt
 
-    def _policy_iteration(self, V=None, pi=None, solve_lin_sys=False):
-        """Policy iteration initialized with initial value function V."""
-        
-        nS = self.num_states
-        if V is None:
-            V = np.zeros(nS)
-        
-        if pi is None:
-            V_pi, pi = self._bellman_backup(V)
-        else:
-            V_pi = V
-
-        tol = 10 ** (-4)
-        
-        eps = 10 ** -14 # For numerical stability.
-        eye_mat = np.eye(nS) * (1 + eps)
-        mask = np.ones([self.num_states, self.num_states])
-        mask[list(self._abs_set), :] = 0.0
-        count=0
-        print("    err (inf norm)")
-        while True:
-            err_in = tol * 2
-            V_old_out = deepcopy(V_pi)
-            
-            if solve_lin_sys:
-                A = eye_mat - self._p_trans[pi, range(nS), :]*mask*self._gamma
-                b = self._reward[range(nS), pi]
-                V_pi = linalg.spsolve(csr_matrix(A),b)
-                #V_pi, _ = linalg.bicgstab(csr_matrix(A),b)
-
-            else:
-                evals, _ = np.linalg.eig(self._p_trans[pi, range(nS), :]*mask*self._gamma)
-                print("lambda: {}".format(np.amax(evals)))
-                count=0
-                while err_in > tol:
-                    V_old_in = deepcopy(V_pi)
-                    V_pi = self._policy_backup(V_old_in, pi)
-                    err_in = np.linalg.norm(V_old_in - V_pi, ord= float('inf'))
-                    #print(err_in)
-                    count+=1
-                    print("count: {}".format(count))
-
-            V_opt, pi_opt = self._bellman_backup(V_pi)
-            err_out = np.linalg.norm(V_opt - V_old_out, ord= float('inf'))
-            print("%i:  %.6e" %(count, err_out))
-            count += 1
-            # Check for policy convergence.
-            if (pi_opt == pi).all() or err_out<tol: 
-                break
-            pi = pi_opt
-            V_pi = V_opt
-        return V_opt, pi_opt
-
-    def _linear_program(self, V=None, pi=None):
-        """Compute value function via a linear program."""
- 
-        # mask used to block transitions from absorbing states.
-        mask = np.ones([self.num_actions, self.num_states, self.num_states])
-        mask[:, list(self._abs_set), :] = 0.0
-        nS = self.num_states
-        nA = self. num_actions
-        c = np.ones(nS)
-        c[-1] = -1.0
-        eps = 10 ** -12 # For numerical stability.
-        eye_tensor = np.zeros([nA, nS, nS]) * (1 + eps)
-        eye_tensor[:, range(nS), range(nS)] = 1.0
-        A_ineq = np.ones([nS * nA, nS]) # Will include slack term.
-        temp = self._p_trans * self._gamma * mask - eye_tensor
-        A_ineq = temp.reshape([nS * nA, nS ])
-        b_ineq = - self._reward.flatten('F')
-
-        output = solvers.lp(matrix(c), matrix(A_ineq), matrix(b_ineq))
-
-        if  output['status'] == 'optimal':
-            V_opt = np.array(output['x'])
-            print("\nLP Successful.")
-            V_opt, pi_opt = self._bellman_backup(V_opt)
-        else:
-            print("\nLP FAILED. Returning solution using policy iteration.")
-            V_opt, pi_opt = self._policy_iteration(V)
-
-        return V_opt, pi_opt
-    
-
-    def v_pi_opt(self, V=None, pi=None, method='pi',force_run=False):
+    def v_pi_opt(self, V=None, pi=None, method='vi',force_run=False):
         """Rerurn optimal value function and policy.
             
             Args:
@@ -327,8 +244,7 @@ class MDP(TransitionModel):
                 pi (1D np array): Initial policy.
                     Size is number of states. Only used by policy iteration.
                 method(string): Method for computing optimal value function.
-                    'vi': value iteration, 'pi': policy iteration, 'lp':
-                    linear_programming
+                    'vi': value iteration, 'pi': policy iteration
             Returns:
                 v_opt (1D np array): Optimal value function.
                     Size is number of states.
@@ -342,15 +258,12 @@ class MDP(TransitionModel):
             return self._v_opt, self._pi_opt
 
         name = {'vi': 'value iteration',
-                'pi': 'policy_iteration',
-                'lp': 'linear programming'}[method]
+                'pi': 'policy_iteration'}[method]
         print("Computing optimal value function " + 
               "and policy using {}... ".format(name))
         
         t_start = time.time()
-        self._v_opt, self._pi_opt = {'vi': self._value_iteration,
-                         'pi': self._policy_iteration,
-                         'lp': self._linear_program}[method](V,pi)
+        self._v_opt, self._pi_opt = {'vi': self._value_iteration}[method](V,pi)
         
         print("Done. Elapsed time {}.\n".format(time.time()-t_start))
         return self._v_opt, self._pi_opt

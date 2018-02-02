@@ -23,23 +23,33 @@ if __name__ == "__main__":
     sys_params['min_u'] = min_u
     dynamics = partial(double_integrator, **sys_params)
     
+    #Dynamical system_2
+    grav = 9.81 # gravity
+    sys_params = {} # parameters of dynamical system
+    max_u = 0.8 * grav
+    min_u = -0.8 * grav
+    sys_params['max_u'] = max_u
+    sys_params['min_u'] = min_u
+    dynamics_2 = partial(double_integrator, **sys_params)
+
     # Construct avoid region, system should stay within hypercube 
     cube_lims = np.array([[0, -3], [4, 3]])
     avoid_func = lambda x: dist_hypercube_int(x, cube_lims=cube_lims)
  
     # Make MDP
-    lamb = 0.1
     my_world = Avoid(num_nodes, s_lims, num_nodes_a,
-                     a_lims, dynamics, avoid_func, lamb=lamb)
+                     a_lims, dynamics, avoid_func)
 
     # Make MDP
     #my_world_2 = Avoid(num_nodes, s_lims, num_nodes_a,
     #                 a_lims, dynamics_2, avoid_func)
     
     # Compute value function and policy
-    v_opt, pi_opt = my_world.v_pi_opt()
+    v_opt, pi_opt = my_world.v_pi_opt(method='pi')
     #v_opt, pi_opt = my_world_2.v_pi_opt(method='pi',pi=pi_opt)
 
+    # Gradient of value function
+    grad, grad_mag = my_world.gradient()
 
     # Computing anaylytic safe set
     s_min = s_lims[0]
@@ -51,7 +61,12 @@ if __name__ == "__main__":
     z = [min((-2*min_u*(u_lims[0]-min(x_e, u_lims[0])))**0.5,u_lims[1]) for x_e in x]
     z2 = [max(-(2*max_u*(max(x_e,0)))**0.5, l_lims[1]) for x_e in x]
 
-    v_func_conts = [0, 2 * (1 - np.exp(-lamb * 1)) ]
+    exit_time = np.linspace(2.0, 4.0, 10)
+    dt = my_world._dt
+    gamma = my_world._gamma
+
+    ttr = - np.log(1 -  v_opt)
+    v_func_conts = 1 - np.exp(-exit_time)
 
     # Plot contours of value function
     plt.figure(1)
@@ -61,4 +76,13 @@ if __name__ == "__main__":
     plt.plot(x,z2,'r-.')
     plt.title('Value Function Contours')
  
+    # Plot contours of gradient magnitude
+    grad_contours = np.linspace(.7,4.0,10)
+    plt.figure(2)
+    print(np.max(grad_mag))
+    plt.contour(x, y, grad_mag.reshape(num_nodes).T, levels=grad_contours)
+    plt.plot(x,z,'b-.')
+    plt.plot(x,z2,'r-.')
+    plt.title('Gradient (magnitude) Contours')
+
     plt.pause(100) 
