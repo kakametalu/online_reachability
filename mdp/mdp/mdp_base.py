@@ -84,7 +84,7 @@ class TransitionModel(object):
     
     @p_trans.setter
     def p_trans(self, p_trans):
-        assert (p_trans.shape == self._ptrans.shape),\
+        assert (p_trans.shape == self._p_trans.shape),\
             "Transition tensor should have shape {}.".format(self._ptrans.shape)
         # TODO(AKA): check that tensor consist of stochastic matrices.
         self._p_trans = p_trans
@@ -376,7 +376,7 @@ class MDP(TransitionModel):
         return self._abs_set
 
     @abs_set.setter
-    def abs_set(self, abs_set, ):
+    def abs_set(self, abs_set):
         self._abs_set = abs_set
 
     def add_abs(self, new_abs):

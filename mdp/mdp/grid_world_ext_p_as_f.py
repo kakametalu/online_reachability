@@ -48,6 +48,7 @@ class GridWorld_f(GridWorldDiscrete):
         da = (a_max - a_min)/(num_nodes_a - 1) 
         self._ds = ds
         self._da = ds
+        self._num_nodes_a = num_nodes_a
 
 
         num_states = np.prod(num_nodes)
@@ -118,8 +119,8 @@ class GridWorld_f(GridWorldDiscrete):
         dim_ord = list(range(0,self._dims))
         grad_mag = 0
         for k in range(0,self._dims):
-            dim_ord[0] = k;
-            dim_ord[k] = 0;
+            dim_ord[0] = k
+            dim_ord[k] = 0
             v_grid_tran = np.transpose(v_grid, tuple(dim_ord))
             temp = np.zeros(v_grid_tran.shape)
             temp[0,:] = (v_grid_tran[1,:] - v_grid_tran[0,:]) / ds[k]
@@ -141,6 +142,74 @@ class GridWorld_f(GridWorldDiscrete):
     def ds(self):
         """Return dimension of the state space."""
         return self._ds
+
+    @property
+    def dynamics(self):
+        return self._dynamics
+
+    @dynamics.setter
+    def dynamics(self, dynamics):
+        self._dynamics = dynamics
+        s_min = self._s_lims[0, :]
+        s_max = self._s_lims[1, :]
+        a_min = self._a_lims[0, :]
+        a_max = self._a_lims[1, :]
+        # All states (actions) as grid indices
+        state_axes = [np.arange(N_d) for N_d in self._num_nodes]
+        all_states = cartesian(state_axes) * self._ds + s_min
+
+        action_axes = [np.arange(N_d) for N_d in self._num_nodes_a]
+        all_actions = cartesian(action_axes) * self._da + a_min
+
+        # Construct interpolation weights (transition probabilities)
+        dyn = Dynamics(dynamics, self._num_nodes.size)  # dynamics model
+
+        # Hypercube defining interpolation region
+        dims = self._num_nodes.size
+        interp_axes = [np.array([0, 1]) for _ in range(dims)]
+        interp_region = cartesian(interp_axes).astype(int)
+        deriv = np.zeros([self._num_actions, self._num_states, dims])
+
+        for act_idx, action in enumerate(all_actions):
+            deriv[act_idx, :, :] = dyn.deriv(all_states, action)
+
+        # State moves at most one grid cell in any dimension over one time
+        # step.
+
+        dt = (1.0 / np.amax(np.abs(deriv.reshape([-1, dims])) / ds))
+        self._dt = dt
+
+        # next_states = np.zeros([num_actions, num_states, dims])
+        # print('Time step, dt = {}'.format(dt))
+        def f_trans(state, action):
+            # print(state)
+            state = np.atleast_2d(all_states[state])
+            action = np.atleast_1d(all_actions[action])
+            next_state = dyn.integrate(state, action, dt)
+            temp = (next_state - s_min) / self._ds
+            # Lower grid idx of interpolating hypercube.
+            grid_idx_min = np.floor(temp).astype(int)
+            # Interp weight for the lower idx of each dimension
+            alpha = 1 - (temp - grid_idx_min)
+            # print(interp_region)
+            interp_region_states = []
+            interp_region_weights = []
+            for shift in interp_region:
+                interp_grid_idx = np.minimum(np.maximum(grid_idx_min + shift,
+                                                        0),
+                                             np.array(self._num_nodes) - 1)
+                interp_weight = np.prod(alpha * (1 - shift) +
+                                        (1 - alpha) * shift, axis=1)
+                temp = list(state_to_idx(interp_grid_idx, np.array(
+                    self._num_nodes)))
+                interp_region_states.append(temp)
+                interp_region_weights.append(interp_weight)
+            # print(interp_region_states, interp_region_weights)
+            return np.array(interp_region_states), np.array(
+                interp_region_weights)
+
+        self._f_trans = f_trans
+
 
 class Avoid_f(GridWorld_f):
     """MDP to compute safe set for a specified avoid set.
