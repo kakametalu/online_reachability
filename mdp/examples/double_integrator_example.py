@@ -2,6 +2,7 @@ import numpy as np
 from mdp.dynamics import double_integrator
 from mdp.signed_distance import dist_hypercube_int
 from mdp.grid_world_ext import Avoid
+from mdp.grid_world_ext_p_as_f import Avoid_f
 from functools import partial
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -29,8 +30,8 @@ if __name__ == "__main__":
  
     # Make MDP
     lamb = 0.1 #lambda
-    my_world = Avoid(num_nodes, s_lims, num_nodes_a,
-                     a_lims, dynamics, avoid_func, lamb=lamb)
+    my_world = Avoid_f(num_nodes, s_lims, num_nodes_a, a_lims, dynamics,
+                     avoid_func, lamb=lamb)
 
     # Compute value function and policy
     v_opt, pi_opt = my_world.v_pi_opt()
