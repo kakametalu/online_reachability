@@ -29,8 +29,8 @@ if __name__ == "__main__":
     
     #model 2 (modified thrust)
     sys_params = {} # parameters of dynamical system
-    max_u = 0.3 * grav
-    min_u = -0.3 * grav
+    max_u = 0.8 * grav
+    min_u = -0.8 * grav
     sys_params['max_u'] = max_u
     sys_params['min_u'] = min_u
     dynamics_2 = partial(double_integrator, **sys_params)
