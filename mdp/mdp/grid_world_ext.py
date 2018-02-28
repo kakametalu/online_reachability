@@ -2,9 +2,9 @@
 # grid_world.py to approximations of continous spaces. 
 
 import numpy as np
+from scipy.interpolate import RegularGridInterpolator
 from mdp.grid_world import GridWorld as GridWorldDiscrete, state_to_idx
 from mdp.dynamics import Dynamics
-from mdp.signed_distance import dist_hypercube_int
 from sklearn.utils.extmath import cartesian
 import time
 from copy import deepcopy
@@ -35,19 +35,20 @@ class GridWorld(GridWorldDiscrete):
         gamma(float): Discount factor.
     """
 
-    def __init__(self, num_nodes, s_lims, num_nodes_a, a_lims=None, dynamics=None, gamma=None):
+    def __init__(self, num_nodes, s_lims, num_nodes_a, a_lims, dynamics=None, gamma=None):
 
         # Preparing grid
-        self._a_lims = s_lims
+        self._a_lims = a_lims
         self._s_lims = s_lims
         s_min = s_lims[0, :]
         s_max = s_lims[1, :]
         a_min = a_lims[0, :]
         a_max = a_lims[1, :]
-        ds = (s_max - s_min)/(num_nodes - 1)
-        da = (a_max - a_min)/(num_nodes_a - 1) 
+        eps = 10**(-10) # for numerical stability
+        ds = (s_max - s_min)/(num_nodes - 1 + eps)
+        da = (a_max - a_min)/(num_nodes_a - 1 + eps) 
         self._ds = ds
-        self._da = ds
+        self._da = da
 
         self._num_nodes_a = num_nodes_a
 
@@ -56,14 +57,21 @@ class GridWorld(GridWorldDiscrete):
         dims = len(num_nodes)
         deriv = np.zeros([num_actions, num_states, dims])
         p_trans = np.zeros([num_actions, num_states, num_states])
-
-
         # All states (actions) as grid indices
-        state_axes = [np.arange(N_d) for N_d in num_nodes]
-        all_states = cartesian(state_axes) * ds + s_min
-
+        self._axes = [np.arange(num_nodes[i]) * ds[i] + s_min[i]
+                    for i in range(dims)]
+        all_states = cartesian(self._axes)
+        self._all_states_c = all_states
+        
         action_axes = [np.arange(N_d) for N_d in num_nodes_a]
         all_actions = cartesian(action_axes) * da + a_min
+        self._all_actions_c = all_actions
+
+        if dynamics is None: # Just exit after grid has been built
+            self._dt = 1
+            super().__init__(num_nodes, p_trans, all_states, 
+                             all_actions, gamma)
+            return
 
         # Construct interpolation weights (transition probabilities)
         dyn = Dynamics(dynamics, num_nodes.size) # dynamics model
@@ -80,9 +88,8 @@ class GridWorld(GridWorldDiscrete):
         # step.
 
         dt = (1.0 / np.amax(np.abs(deriv.reshape([-1,dims])) / ds))
-        self._dt = dt
+        self._dt = dt 
         next_states = np.zeros([num_actions, num_states, dims])
-        print('Time step, dt = {}'.format(dt))
 
         for act_idx, action in enumerate(all_actions):
             next_states = dyn.integrate(all_states, action, dt)
@@ -128,12 +135,73 @@ class GridWorld(GridWorldDiscrete):
         """Takes states and returns indices."""
         states_disc= (states - self._s_lims[0, :]) / self._ds
         return state_to_idx(states_disc, self._num_nodes)
-    
+
+    def interp_grid(self, values, points):
+        """Returns the interpolation of values at points.
+
+            Args:
+                values(1D np array): The values of the function on the grid.
+                   Size is equal to the number of states in the grid. Values
+                   should correspond to the rows of self._all_states_c.
+                points (2D np array): Points to be interpolated.
+                    Shape is number of points by self._dims.
+            
+            Returns:
+                new_values(1D np array): Values at points.
+                   Size is equal to the number of points. 
+        """ 
+        gi =RegularGridInterpolator(self._axes,
+                                    values.reshape(self._num_nodes),)
+        new_values = gi(points)
+        return new_values
+
+    def slice_grid(self, values, dim_fix, val_fix):
+        """Returns slice of the grid.
+
+            Args: 
+                values(1D np array): The values of the function on the grid.
+                    Size is equal to the number of states in the grid. Values
+                    should correspond to the rows of self._all_states_c.
+                dim_fix (1D array of ints): The dims that are being held fixed.
+                val_fix (1D array of floats): Value for fixed dims.
+                    The order of val_fix should coincide with dim_fix.
+            Return:
+                new_values(1D np array): A grid slice of values.
+                new_grid_shape (1D np array ints): Shape of new grid.
+                new_axes_flat(list of 1D np arrays): Axes of remaining dims.
+        """
+        
+        new_axes = []
+        new_axes_flat = []
+        new_grid_shape = np.zeros([self.dims - len(dim_fix)])
+        dim_fix_count = 0
+        grid_shape_count = 0
+
+        for k in range(self.dims):
+            if k not in dim_fix:
+                new_axes.append(self.axes[k])
+                new_axes_flat.append(self.axes[k])
+                new_grid_shape[grid_shape_count] = self._num_nodes[k]
+                grid_shape_count += 1
+
+            else:
+                new_axes.append(np.array([val_fix[dim_fix_count]]).astype(float))
+                dim_fix_count += 1
+        
+        points = cartesian(new_axes)
+        new_values = self.interp_grid(values, points)
+        return new_values, new_grid_shape.astype(int), new_axes_flat
+
     @property 
     def ds(self):
         """Return dimension of the state space."""
         return self._ds
 
+    @property
+    def axes(self):
+        """Return list of axes values for each dimension."""
+        return self._axes
+    
     @property
     def dynamics(self):
         return self._dynamics
@@ -149,12 +217,8 @@ class GridWorld(GridWorldDiscrete):
         p_trans = np.zeros([self._num_actions, self._num_states,
                             self._num_states])
 
-        # All states (actions) as grid indices
-        state_axes = [np.arange(N_d) for N_d in self._num_nodes]
-        all_states = cartesian(state_axes) * self._ds + s_min
-
-        action_axes = [np.arange(N_d) for N_d in self._num_nodes_a]
-        all_actions = cartesian(action_axes) * self._da + a_min
+        all_states = self._all_states_c
+        all_actions = self._all_actions_c
 
         # Construct interpolation weights (transition probabilities)
         dyn = Dynamics(dynamics, self._num_nodes.size)  # dynamics model
@@ -172,7 +236,6 @@ class GridWorld(GridWorldDiscrete):
         dt = (1.0 / np.amax(np.abs(deriv.reshape([-1, dims])) / self._ds))
         self._dt = dt
         next_states = np.zeros([self._num_actions, self._num_states, dims])
-        print('Time step, dt = {}'.format(dt))
 
         for act_idx, action in enumerate(all_actions):
             next_states = dyn.integrate(all_states, action, dt)
@@ -194,6 +257,7 @@ class GridWorld(GridWorldDiscrete):
                     interp_weight
 
         self._p_trans = p_trans
+
 
 class Avoid(GridWorld):
     """MDP to compute safe set for a specified avoid set.

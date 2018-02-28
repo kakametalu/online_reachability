@@ -180,18 +180,17 @@ class MDP(TransitionModel):
 
     def _policy_backup(self, V, pi):
         """Does one policy back up on the value function."""
-
-        V_out = np.zeros([self.num_states])
-        for state in range(self.num_states):
-            support, probs, _ = self[state, pi[state]]
-            for next_state, p in zip(support, probs):
-                V_out[state] += (V[next_state] * p)
+        max_reward = np.max(self._reward)
+        nS = self.num_states
+        p_pi = self._p_trans[pi, range(nS), :]
+        V_out = p_pi.dot(V)
+        V_out = np.minimum((V_out - max_reward) * self._gamma,
+         self._reward - max_reward) + max_reward 
         return V_out
 
     def _bellman_backup(self, V=None):
         """Performs one bellman backup on the value function V."""
 
-        max_reward = np.max(self._reward)
         if V is None:
             V = self._reward 
 
@@ -210,16 +209,15 @@ class MDP(TransitionModel):
             pi_greedy = pi_greedy * (V_out >= V_act) +\
                         pi * (V_out < V_act)
             V_out = np.maximum(V_out, V_act)
-        V_out = np.minimum((V_out - max_reward) * self._gamma,
-         self._reward - max_reward) + max_reward 
+
 
         return V_out, pi_greedy
 
-    def _value_iteration(self, V=None, pi=None):
+    def _value_iteration(self, V=None, pi=None, one_step=False):
         """Value iteration initialized with initial value function V.
         """        
         if V is None:
-            V = self._reward + (np.random.rand(self._num_states)-0.5) * 0
+            V = self._reward
         V_opt = deepcopy(V)
         tol = 10 ** (-3)/2
         err = tol * 2
@@ -230,8 +228,45 @@ class MDP(TransitionModel):
             V_old = deepcopy(V_opt)
             V_opt, pi_opt = self._bellman_backup(V_old)
             err = np.linalg.norm(V_old - V_opt, ord= float('inf'))
+            if one_step:
+                break
             print("%i:  %.6e" %(count,err))
             count += 1
+        return V_opt, pi_opt
+    def _policy_iteration(self, V=None, pi=None):
+        """Policy iteration initialized with initial value function V."""
+        
+        nS = self.num_states
+        if V is None:
+            V = self._reward
+        
+        if pi is None:
+            V_pi, pi = self._bellman_backup(V)
+        else:
+            V_pi = V
+
+        tol = 10 ** (-3)/2
+        
+        print("    err (inf norm)")
+        while True:
+            err_in = tol * 2
+            V_old_out = deepcopy(V_pi)
+            count=0
+            while err_in > tol:
+                V_old_in = deepcopy(V_pi)
+                V_pi = self._policy_backup(V_old_in, pi)
+                err_in = np.linalg.norm(V_old_in - V_pi, ord= float('inf'))
+                #print(err_in)
+
+            V_opt, pi_opt = self._bellman_backup(V_pi)
+            err_out = np.linalg.norm(V_opt - V_old_out, ord= float('inf'))
+            print("%i:  %.6e" %(count, err_out))
+            count += 1
+            # Check for policy convergence.
+            if (pi_opt == pi).all() or err_out<tol: 
+                break
+            pi = pi_opt
+            V_pi = V_opt
         return V_opt, pi_opt
 
     def v_pi_opt(self, V=None, pi=None, method='vi',force_run=False):
@@ -263,10 +298,20 @@ class MDP(TransitionModel):
               "and policy using {}... ".format(name))
         
         t_start = time.time()
-        self._v_opt, self._pi_opt = {'vi': self._value_iteration}[method](V,pi)
+        self._v_opt, self._pi_opt = {'vi': self._value_iteration,
+                                     'pi': self._policy_iteration}\
+                                     [method](V,pi)
         
         print("Done. Elapsed time {}.\n".format(time.time()-t_start))
         return self._v_opt, self._pi_opt
+    
+    def update(self):
+        """Update the value function by applying one bellman update."""
+
+        self._v_opt, self._pi_opt = self._bellman_backup(self._v_opt)
+
+
+
 
     @property
     def reward(self):
