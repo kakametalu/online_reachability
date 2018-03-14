@@ -1,0 +1,45 @@
+% !TEX root = main_min_disc_dist.tex
+Thus far we have shown that over and under approximations of the reachable set can be obtained from the unique fixed-point of a contraction mapping. In this section we present methods that  may yield much faster convergence than value iteration. These approaches have been extensively applied to the SDR setting, and we now apply them to the minimum of discounted rewards setting. 
+
+\subsection{Policy Iteration}
+
+The DP algorithm presented in \eqref{eq:dp_lambda} is known as value iteration. Another way to find the fixed-point to the DP operator is through \emph{policy iteration}. First define the \emph{policy backup operator} $B^{\pi_u, \pi_d}[\cdot]: \RR^{N_G} \rightarrow \RR^{N_G}$, 
+
+\begin{equation}
+B^{\pi_u, \pi_d}[\vec{A}] = \min\left\{ \vec{h}, \gamma P_{\pi_u, \pi_d} \vec{A} \right \}.
+\end{equation}
+\noindent This operator is a contraction mapping. The policy iteration algorithm is then given by
+
+\begin{subequations}\label{eq:pi}
+\begin{align}
+&\vec{U}^{\pi_u^k, \pi_d^k} = B^{\pi_u^k, \pi_d^k}[\vec{U}^{\pi_u^k, \pi_d^k}] \label{eq:pi_a}\\
+&\pi_u^{k+1}, \pi_d^{k+1} = \arg\underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min}B^{\pi_u, \pi_d}[\vec{U}^{\pi_u^k, \pi_d^k}]\\ 
+&\vec{U} = \lim_{k\rightarrow \infty} \vec{U}^{\pi_u^k, \pi_d^k}.
+\end{align}
+\end{subequations}
+
+We show here that the above algorithm converges.
+%
+%\begin{lemma} \label{seq}
+%Consider the sequence $\vec{A}^{k+1}=\min\left\{\vec{g}, \gamma P\vec{A}^k \right\}$ where $\vec{A}^0 \in \RR^{N_G}$, $P$ is stochastic,  and $\vec{g}<0$, then $\lim_{k \rightarrow \infty}\vec{A}^k = \min\left\{\{(\gamma P)^i\vec{g}\}_{i=0}^\infty\right \}$. \footnote{Note that $\vec{A}^k = \min\left\{(\gamma P)^0\vec{g}, (\gamma P)^1\vec{g},..., (\gamma P)^{k-1}\vec{g}, (\gamma P)^k\vec{A}^0 \right\}$ and take the limit.}
+%\end{lemma}
+
+
+\begin{proposition}
+Assuming a finite control and disturbance set, $\U=\{u_i\}_{i=1}^{N_U}$ and $\D=\{d_i\}_{i=1}^{N_D}$, the policy iteration algorithm converges to the vectorized value function defined by \eqref{eq:dp_lambda}.
+\end{proposition}
+
+\noindent \begin{proof}
+It's sufficient to show that the algorithm is nondecreasing, i.e. $\vec{U}^{\pi_u^{k+1}, \pi_d^{k+1}} \geq \vec{U}^{\pi_u^k, \pi_d^k}$ $\forall k$. \footnote{Since the number of policies is finite the nondecreasing criteria implies that the sequence of vectors will converge. Also note that $\underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min}B^{\pi_u, \pi_d}[\cdot] = B[\cdot]$ as defined in \eqref{eq:dp_lambda}, so the sequence converges to the vectorized value function.} Consider two sequences $\vec{X}^{i+1}=\min\left\{\vec{U}^{\pi_u^k, \pi_d^k}, \gamma P_{\pi_u^{k+1}, \pi_d^{k+1}}\vec{X}^i \right\}$ and $\vec{Y}^{i+1}=\min\left\{\vec{h}, \gamma P_{\pi_u^{k+1}, \pi_d^{k+1}}\vec{Y}^i \right\}$ with $\vec{X}^0=\vec{Y}^0=\vec{U}^{\pi_u^k, \pi_d^k}$. Since $\vec{h}\geq \vec{U}^{\pi_u^k, \pi_d^k}$ by \eqref{eq:pi_a} we have $\vec{Y}^i \geq \vec{X}^i$ $\forall i \geq 0$. Note that $\vec{X}^{1}=\min\left\{\vec{U}^{\pi_u^k, \pi_d^k},\gamma P_{\pi_u^{k+1}, \pi_d^{k+1}}\vec{U}^{\pi_u^k, \pi_d^k}\right\}=\min\left\{\vec{h}, \gamma P_{\pi_u^{k}, \pi_d^{k}}\vec{U}^{\pi_u^k, \pi_d^k},\gamma P_{\pi_u^{k+1}, \pi_d^{k+1}}\vec{U}^{\pi_u^k, \pi_d^k}\right\}$. Furthermore, the third term in the $\min\{\}$ is greater than the second so $\vec{X}^{1}=\min\left\{\vec{h}, \gamma P_{\pi_u^{k}, \pi_d^{k}}\vec{U}^{\pi_u^k, \pi_d^k} \right\} =  \vec{U}^{\pi_u^k, \pi_d^k}$, thus $\vec{X}^{i} =  \vec{U}^{\pi_u^k, \pi_d^k}$ $\forall i \geq 0$. Lastly, $\lim_{i\rightarrow \infty}\vec{Y}^i= \vec{U}^{\pi_u^{k+1}, \pi_d^{k+1}}$, which is the fixed-point of the contraction mapping that generates the sequence. Bringing everything together we have $\vec{U}^{\pi_u^{k+1}, \pi_d^{k+1}} = \lim_{i\rightarrow \infty}\vec{Y}^i \geq   \lim_{i\rightarrow \infty}\vec{X}^i = \vec{U}^{\pi_u^{k}, \pi_d^{k}}.$
+\end{proof}
+
+In practice policy iteration is typically recommended over value iteration because policies can converge faster than values resulting in faster convergence of the algorithm \cite{Russell2003}. A more detailed analysis of policy iteration (as it pertains to SDR) can be found for optimal control \cite{Howard1964, Kalaba1959, Puterman1979} and differential games \cite{Bokanowski2009}. 
+
+\subsection{Multigrid Approach}
+
+To solve PDEs and VIs an important choice needs to be made on the fineness of the discretization. Finer grids have lower approximation error, but at the cost of increased computational effort. Multigrid approaches have been proposed as a way to manage this trade-off in the case where the DP operator is a contraction mapping. The basic idea is to first solve for the approximation on a coarse grid and then use the final solution to initialize the DP algorithm on a finer grid. 
+
+This procedure can be stacked, i.e. we can have $m$ grids of increasing fineness and produce approximations of increasing accuracy by using each as an initialization for the subsequent grid.  This approach was used in \cite{Chow1991} where value iteration was used to solve for each approximation. They prove some theoretical convergence improvements of their method over standard methods.
+
+In \cite{Alla2015} an accelerated policy iteration technique is proposed, which uses value iteration to solve for a coarse approximation and policy iteration to solve for the fine approximation (initialized with the coarse approximation). The key insight is that value iteration is more robust to poor initialization, and policy iteration has better convergence when initialized near the solution. The empirical results show a clear improvement in their approach over standard value iteration and policy iteration.
+%The authors also provide a mechanism for deciding the grid resolution necessary for a desired accuracy (or error). The coarsest grid is selected to have twice the error, and the grid resolution is doubled until the desired error is achieved. 
