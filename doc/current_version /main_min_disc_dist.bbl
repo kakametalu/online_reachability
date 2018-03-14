@@ -45,6 +45,11 @@ H.~Huang, J.~Ding, W.~Zhang, and C.~J. Tomlin, ``{A differential game approach
   {\em International Conference on Robotics and Automation (ICRA)},
   pp.~1451--1456, may 2011.
 
+\bibitem{Bertsekas1995}
+D.~P. Bertsekas, D.~P. Bertsekas, D.~P. Bertsekas, and D.~P. Bertsekas, {\em
+  Dynamic programming and optimal control}, vol.~1.
+\newblock Athena scientific Belmont, MA, 1995.
+
 \bibitem{Akametalu2015}
 A.~K. Akametalu and C.~J. Tomlin, ``Temporal-difference learning for online
   reachability analysis,'' in {\em Control Conference (ECC), 2015 European},
@@ -112,11 +117,6 @@ J.~Sethian, ``{A fast marching level set method for monotonically advancing
 M.~Bardi and I.~Capuzzo-Dolcetta, {\em Optimal control and viscosity solutions
   of Hamilton-Jacobi-Bellman equations}.
 \newblock Springer Science \& Business Media, 2008.
-
-\bibitem{Bertsekas1995}
-D.~P. Bertsekas, D.~P. Bertsekas, D.~P. Bertsekas, and D.~P. Bertsekas, {\em
-  Dynamic programming and optimal control}, vol.~1.
-\newblock Athena scientific Belmont, MA, 1995.
 
 \bibitem{Evans1984}
 L.~C. Evans and P.~E. Souganidis, ``{Differential games and representation

@@ -26,7 +26,7 @@ Temporal difference (TD) learning is at the heart of many model-free RL techniqu
 \begin{equation}
 \begin{split}
 &\L(w)=\big(V_{w}(x) - (r(x)+\gamma V_{w}(x^+))\big)^2\\
-&w_{i+1} \leftarrow w_i + \alpha\frac{\partial V_{w_i}}{\partial \theta}(x)\big((r(x)+\gamma V_{w_i}(x^+))\big)- \big(V_{w_i}(x)\big),
+&w_{i+1} \leftarrow w_i + \alpha\frac{\partial V_{w_i}}{\partial w}(x)\big((r(x)+\gamma V_{w_i}(x^+))\big)- \big(V_{w_i}(x)\big),
 \end{split}
 \end{equation}
 
@@ -34,8 +34,8 @@ Temporal difference (TD) learning is at the heart of many model-free RL techniqu
 
 \begin{equation}
 \begin{split}
-&\L(w)=\big(U_{w}(x) - \min\{h(x),\gamma U_{\theta}(x^+)\}\big)^2\\
-&w_{i+1} \leftarrow w_i + \alpha\frac{\partial U_{\theta_i}}{\partial \theta}(x)\big(\min\{h(x),\gamma U_{w_i}(x^+)\}- \big(U_{w_i}(x)\big).
+&\L(w)=\big(U_{w}(x) - \min\{h(x),\gamma U_{w}(x^+)\}\big)^2\\
+&w_{i+1} \leftarrow w_i + \alpha\frac{\partial U_{w_i}}{\partial w}(x)\big(\min\{h(x),\gamma U_{w_i}(x^+)\}- \big(U_{w_i}(x)\big).
 \end{split}
 \end{equation}
 
