@@ -1,0 +1,47 @@
+% !TEX root = main_min_disc_dist.tex
+
+Recently, there has been interest in leveraging data, either from real systems or simulators, to learn reachable sets. This has been applied in instances where a system model is unknown or for training function approximators to more efficiently approximate reachable sets for high dimensional systems. 
+
+In this section we briefly explore how the MDR formulation allows one to leverage algorithms from RL. A key insight to be taken from here is that much of RL has been aimed at finding the fixed point solution to a contraction mapping (known as the Bellman operator), associated with the infinite-horizon SDR problem, thus many of the techniques developed for RL can be applied to solving minimum discounted reward problems with an appropriate change in the operator.
+
+\subsection{Model-based Learning}
+
+When the system model is unknown then the value function must be computed from data. There are two approaches for this: model-based RL and model-free RL. Here we focus on the former. 
+
+In the model-based case the model is assumed to be parameterized and the parameters are fit using the data. In \cite{Akametalu2014,Gillula2012a} the authors alternate between collecting data, fitting a parametric model, and computing the value function under formulation \eqref{eq:min_dist_functional}.
+
+If we take the model parameter to be $\theta$, we can look at this process as generating a sequence of models $\{f_{\theta_k}(x,u)\}$ and vectorized value functions $\{\vec{V}_{\theta_k}\}$. Given formulation \eqref{eq:min_dist_functional}the DP algorithm must be initialized with $\vec{l}$ every time a new value function is computed. However, if the model parameters do not change much, then $\vec{V}_{\theta_k}$ is a good estimate of $\vec{V}_{\theta_{k+1}}$, and with the discounted formulation it can be used to initialize the DP algorithm for faster convergence.\footnote{Technically $\vec{U}_{\theta_{k+1}}= \vec{V}_{\theta_{k+1}}-L$ would be used.} Better yet, the contraction mapping can provide insight on whether $\vec{V}_{\theta_{k+1}}$ or $\vec{l}$ is a better initialization. Consider this classical result on contraction mappings. 
+
+\begin{proposition} If $M(\cdot): \RR^{N_G} \rightarrow \RR^{N_G}$ is a contraction mapping in the norm $|| \cdot ||$ over the space $\RR^{N_G}$ with Lipschitz constant $0\leq \beta < 1$ and fixed-point $\vec{A}^*$, then for any $\vec{A} \in \RR^{N_G}$,  $||\vec{A}^* - \vec{A}|| \leq \frac{1}{1-\beta}||M(\vec{A}) - \vec{A}||$. 
+\end{proposition}
+
+An upper bound for the distance between a potential initialization and the fixed-point can be obtained by applying the operator once, after which one can choose the initialization with the lowest upper bound.
+
+\subsection{Temporal Difference Learning}
+
+\emph{Note: Here parameterization refers to a function approximation, in the previous section it referred to the model.}
+
+Temporal difference (TD) learning is at the heart of many model-free RL techniques that try to learn some type of value function in the SDR setting including TD-lambda, Q-learning, Deep Q Networks, actor-critic methods, etc. The main idea behind TD is to parameterize the value function with a function approximator \footnote{A simple function approximator would be interpolation on a grid where the parameters are the grid node values}, define a loss function on the parameters that is minimized when the value function is the fixed-point of the Bellman operator, and to update the parameters by performing stochastic gradient descent with sample transitions from the system or simulator. For ease of presentation consider an autonomous system $f(x)$, and a sequence of state transitions obtained from the system $\{(x_i,x_i^+)\}$, where $x^+=\bx_x(\Delta t)$ and $\Delta t$ is the time step. If the value function is approximated by $V_w(x)$ with parameters $w$, then the loss function and update rule for TD are given by
+
+\begin{equation}
+\begin{split}
+&\L(w)=\big(V_{w}(x) - (r(x)+\gamma V_{w}(x^+))\big)^2\\
+&w_{i+1} \leftarrow w_i + \alpha\frac{\partial V_{w_i}}{\partial w}(x)\big((r(x)+\gamma V_{w_i}(x^+))\big)- \big(V_{w_i}(x)\big),
+\end{split}
+\end{equation}
+
+\noindent where $\alpha \in [0,1]$ is the learning rate. We propose an analogous loss function and update rule for the MDR setting,
+
+\begin{equation}
+\begin{split}
+&\L(w)=\big(U_{w}(x) - \min\{h(x),\gamma U_{w}(x^+)\}\big)^2\\
+&w_{i+1} \leftarrow w_i + \alpha\frac{\partial U_{w_i}}{\partial w}(x)\big(\min\{h(x),\gamma U_{w_i}(x^+)\}- \big(U_{w_i}(x)\big).
+\end{split}
+\end{equation}
+
+A similar modification can be made to most of the other algorithms TD-based algorithms mentioned. 
+
+In \cite{Akametalu2015} the authors present the TD algorithm for the MR setting, however the initialization of $w$ becomes critical for the overall convergence properties since the DP operator used to derive it has many fixed points.
+
+
+

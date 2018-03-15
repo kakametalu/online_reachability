@@ -1,0 +1,370 @@
+% !TEX root = main_min_disc_dist.tex
+Inspired by the SDR payoff, we present a minimum discounted rewards payoff. The new payoff admits a DP algorithm that is a contraction mapping.
+
+\subsection{The Right Payoff}
+
+A first proposal for the discounted payoff is given as 
+ 
+\begin{equation}\label{eq:V}
+\inf_{t\ge 0}l\big(\bx_{x}^{\bu,\bdelta}(t)\big)\exp(-\lambda  t).
+\end{equation}
+
+However, recall that discounting should reduce the impact of future events on the payoff of the trajectory. The signed distance function is positive outside of the target, and negative inside, so once discounting is applied then states inside the target have a greater discounted signed distance further in the future, and states outside the target have a lower discounted signed distance. Since we are taking the infimum of the discounted rewards distance along the entire trajectory, then being inside the target becomes less impactful to the payoff the later it happens in the trajectory (since the discounted distance becomes more positive), but being inside the target becomes more impactful the later it happens (since the discounted distance becomes more negative).
+
+One solution is to make the quantity being discounted nonpositive over the space, so that all events have a more positive effective distance in the future, and are thus less impactful when taking the infimum over the entire trajectory. Take an upper bound on the signed distance function $L$, such that $L\geq l(x)$, the \emph{minimum of discounted rewards} is defined as 
+
+\begin{equation}\label{eq:V_lambda}
+\mathcal{V}_{\lambda}\big(x,\bu(\cdot),\bdelta(\cdot)\big) := L + \inf_{t\ge 0}(l\big(\bx_{x}^{\bu,\bdelta}(t)\big)-L)\exp(-\lambda  t).
+\end{equation}
+
+\noindent Note that if the discounting is removed ($\lambda =0$) then we get back the original minimum distance functional. 
+
+We define the {discounted value function} 
+
+\begin{equation}
+V_{\lambda}(x):=\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU}\mathcal{V}_{\lambda}\big(x,\bu(\cdot),\bdelta(\cdot)\big).
+\end{equation}
+
+
+%Since $L$ is an additive constant, our attention can be focused on the payoff from the second term of equation (\ref{eq:V_lambda}), which yields a related value function
+%
+%\begin{equation}
+%U_{\lambda}(x)=\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU}\mathcal{V}_{\lambda}\big(x,\bu(\cdot),\bdelta(\cdot)\big)-L, 
+%\end{equation}
+%\noindent thus $V_{\lambda}(x) = U_{\lambda}(x)+L$. It can be shown that the above value function is the viscosity solution to the following variational equality
+
+\begin{for_journal}
+
+We will show that $U_{\lambda}(x):= V_{\lambda}(x) - L$ is the viscosity solution to a particular time-independent HJI VI. Thus the discounted value function can be obtained trivially once the VI is solved. We begin by presenting some Lemmas to facilitate the proof. For convenience define the function $h(x):=l(x)-L$.
+
+\begin{lemma}
+The function $U_\lambda(x)$ is well defined. 
+\end{lemma} 
+
+\begin{proof}
+Define the sequence $\{U_\lambda(x,k)\}_k$, where
+\begin{equation}
+U_\lambda(x,k) = \inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU} \inf_{t \in [0,k\Delta t]}(h\big(\bx_{x}^{\bu,\beta[\bu]}(t)\big))\exp(-\lambda  t),
+\end{equation}
+\noindent and $\Delta t>0$. The sequence is nonincreasing, since $U_\lambda(x,k+1) \leq U_\lambda(x,k)$, and is lower bounded by $-2L$, so it converges. Clearly in the limit the sequence also equals $U_{\lambda}(x)$.
+\end{proof}
+
+
+
+\begin{lemma} \label{dpp}
+\emph{Dynamic programming principle.} For $\delta>0$,
+\begin{equation} 
+\begin{split}
+&U_{\lambda}(x) =\\ 
+&\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU_\delta} 
+\big [\min\{\inf_{t \in [0, \delta]} h\big(\bx_{x}^{\bu,\beta[\bu]}(t)\big))\exp(-\lambda  t), \exp(-\lambda \delta)U_{\lambda}(\bx_{x}^{\bu,\beta[\bu]}(\delta))\}
+\big ]
+\end{split},
+\end{equation}
+
+\noindent where $\UU_{\delta}$ consists of measurable functions on the interval
+$[0,\delta]$.
+\end{lemma}
+
+\begin{proof}
+Splitting the time interval of the infimum in \eqref{eq:V_lambda} into $[0,\delta]$ and $t>\delta$, $U_{\lambda}(x)$ can be expressed as
+\begin{equation}
+\begin{split}{}{}{}
+&U_{\lambda}(x) =\\ 
+&\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU} 
+\big [\min\{\inf_{t \in [0, \delta]} h\big(\bx_{x}^{\bu,\beta[\bu]}(t)\big))\exp(-\lambda  t), \inf_{t > \delta} h\big(\bx_{x}^{\bu,\beta[\bu]}(t)\big))\exp(-\lambda  t)\}
+\big ]
+\end{split}.
+\end{equation}
+
+Due to time-invariance of the dynamics, if we define $s=t-\delta$, $u_\delta(s)=u(t+\delta)$ and $y=\bx_{x}^{\bu,\beta[\bu]}(\delta)$,
+\begin{equation}
+\begin{split}{}{}{}
+&U_{\lambda}(x) =\\ 
+&\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU} 
+\big [\min\{\inf_{t \in [0, \delta]} h\big(\bx_{x}^{\bu,\beta[\bu]}(t)\big))\exp(-\lambda  t),\exp(-\lambda \delta) \inf_{s > 0} h\big(\bx_{y}^{\bu_\delta,\beta[\bu_\delta]}(s)\big))\exp(-\lambda s)\}
+\big ]
+\end{split}.
+\end{equation}
+
+The game over the second interval can be optimized independently of the first interval once $y=\bx_{x}^{\bu,\bdelta}(\delta)$ is specified thus it can be replaced with $\exp(-\lambda \delta)U_{\lambda}(\bx_{x}^{\bu,\beta[\bu]}(\delta))$. Furthermore $\UU$ is replaced with $\UU_\delta$ since the game is only played explicitly on $[0,\delta]$.
+\end{proof}
+
+Now we present the major theoretical result for this section
+
+\begin{proposition}
+The function $U_{\lambda}(x)$ is the unique viscosity solution to the time-independent HJI VI
+\begin{equation}\label{eq:HJI_lambda}
+    0 = \min\left\{h(x)-U_{\lambda}(x), \max_{u\in\U} \min_{ d\in\D} \!\!\frac{\partial U_{\lambda}}{\partial x}(x) f(x,u, d) - \lambda U_{\lambda}(x)\right\}.
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+The structure of the proof follows the classical approach in \cite{Evans1984} and draws from viscosity solution theory. We start by assuming that $U_{\lambda}$ is not a viscosity solution and then derive a contradiction to Lemma \ref{dpp}. To simplify notation we introduce the \emph{Hamiltonian}:
+\begin{equation}
+H(x,p) = \max_{u\in\U} \min_{ d\in\D} \!\! f(x,u,d)\cdot p
+\end{equation}
+A continuous function is a viscosity solution if it is both a \emph{subsolution} and \emph{supersolution}. Note that $U_{\lambda}$ is uniformly continuous due to the continuity assumptions on $f$ and $l$. We now show $U_{\lambda}$ is a subsolution of the VI.
+
+% Subsolution proof
+\begin{definition} A function $\phi$ (in this case $U_{\lambda}$) on $\RR^n$  is a subsolution, if for all $\psi \in C^1(\RR^n)$ and $x_0$ such that $\phi(x_0) = \psi(x_0)$ and $x_0$ attains a local maximum on $\phi- \psi$, then
+
+\begin{equation}\label{eq:sub_sol}
+    \min\left\{h(x_0)-\psi(x_0), H(x_0,\frac{\partial \psi}{\partial x}) - \lambda \psi(x_0)\right\} \geq 0
+\end{equation}
+\end{definition}
+
+From the local maximum condition and continuity, we have
+
+\begin{equation*}
+U_{\lambda}(\bx_{x_0}^{\bu, \bdelta}(\delta)) \leq \psi(\bx_{x_0}^{\bu, \bdelta}(\delta))
+\end{equation*}
+
+\noindent for sufficiently small $\delta>0$ and all $u(\cdot) \in \UU$ and $d(\cdot) \in \DD$.
+
+For sake of contradiction, assume \eqref{eq:sub_sol} is false, then one of the following must be true
+
+\begin{subequations}
+\begin{align}
+&h(x_0) = \psi(x_0) - \theta_1 \label{eq:sub_contra_a}\\
+&H(x_0,\frac{\partial \psi}{\partial x}) - \lambda \psi(x_0) = -\theta_2 \label{eq:sub_contra_b},
+\end{align} 
+\end{subequations}
+
+for some small $\theta_1, \theta_2 < 0$. If \eqref{eq:sub_contra_a} is true, then 
+
+\begin{equation}
+h(\bx_{x_0}^{\bu, \bdelta}(\tau))\exp(-\lambda \tau) \leq \psi(x_0) - \frac{\theta_1}{2} = U_{\lambda}(x_0) - \frac{\theta_1}{2}
+\end{equation}
+
+Incorporating this into the dynamic programming principle (Lemma \ref{dpp}), we have 
+
+\begin{equation}
+U_{\lambda}(x_0) \leq \inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU_\delta}
+\big \{\inf_{t \in [0, \delta]} h\big(\bx_{x}^{\bu,\beta[\bu]}(t)\big))\exp(-\lambda  t) \big \} \leq U_{\lambda}(x_0) - \frac{\theta_1}{2},
+\end{equation}
+
+\noindent which is a contradiction since $\theta_1>0$. Similarly, if \eqref{eq:sub_contra_b}, then for a small enough $\delta>0$ and some nonanticipative strategy $\beta[\cdot]$ 
+
+\begin{equation}
+H(\bx_{x_0}^{\bu,\beta[\bu]}(\tau), \frac{\partial \psi}{\partial x}) - \lambda \psi(\bx_{x_0}^{\bu,\beta[\bu]}(\tau)) \leq \frac{\theta_2}{2}
+\end{equation}
+
+\noindent for all $\tau \in [0,\delta]$ and all inputs $\bu(\cdot) \in \UU$. Due to the infimum in the definition of the Hamiltonian the term on the left side of the inequality upper bounds the total derivative of $\exp(-\lambda t)\psi(\bx_{x_0}^{\bu,\beta[\bu]}(t))$ on the interval $[0,\delta]$,  which we integrate over the interval to get
+
+
+%Might use this later
+% total derivative along the trajectory $\frac{d\psi}{dt}=\frac{\partial \psi}{\partial x}(\bx_{x_0}^{\bu,\beta[\bu]}(\tau)) f(\bx_{x_0}^{\bu,\beta[\bu]}(\tau),\bu(\tau), \beta[\bu(\tau)]) - \lambda \psi(\bx_{x_0}^{\bu,\beta[\bu]}(\tau))$, so on $[0,\delta]$ we have 
+
+\begin{equation}
+\exp(-\lambda \delta)\psi(\bx_{x_0}^{\bu,\beta[\bu]}(\delta))-\psi(x_0) \leq \frac{\theta_2}{2} \delta
+\end{equation}
+
+Recalling that $U_{\lambda}-\psi$ has a local maximum at $x_0$,
+
+\begin{equation}
+\exp(-\lambda \delta)U_{\lambda}(\bx_{x_0}^{\bu,\beta[\bu]}(\delta)) \leq \frac{\theta_2}{2} \delta + U_{\lambda}(x_0)
+\end{equation}
+
+Incorporating this into the dynamic programming principle, we have
+
+\begin{equation}
+U_{\lambda}(x_0) \leq \exp(-\lambda \delta)U_{\lambda}(\bx_{x_0}^{\bu,\beta[\bu]}(\delta)) \leq \frac{\theta_2}{2} \delta + U_{\lambda}(x_0),
+\end{equation}
+
+\noindent which is a contradiction, thus we conclude that $U_{\lambda}$ is a subsolution.
+
+% Supersolution proof
+
+Now to show that $U_{\lambda}$ is a supersolution. 
+
+\begin{definition} A function $\phi$ (in this case $U_{\lambda}$) on $\RR^n$  is a supersolution, if for all $\psi \in C^1(\RR^n)$ and $x_0$ such that $\phi(x_0) = \psi(x_0)$ and $x_0$attains a local minimum on $\phi- \psi$, then by continuity of $l$ and system trajectories, there exists a sufficiently small $\delta>0$, such that for $\tau \in [0, \delta]$
+
+\begin{equation}\label{eq:sup_sol}
+    \min\left\{h(x_0)-\psi(x_0), H(x_0,\frac{\partial \psi}{\partial x}) - \lambda \psi(x_0)\right\} \leq 0
+\end{equation} 
+\end{definition}
+
+From the local minima condition and continuity, we have
+
+\begin{equation*}
+U_{\lambda}(\bx_{x_0}^{\bu, \bdelta}(\delta)) \geq \psi(\bx_{x_0}^{\bu, \bdelta}(\delta))
+\end{equation*}
+
+\noindent for sufficiently small $\delta>0$ and all $u(\cdot) \in \UU$ and $d(\cdot) \in \DD$.
+
+If we suppose \eqref{eq:sup_sol} is false, then both of the following must hold 
+
+\begin{subequations}
+\begin{align}
+&h(x_0) = \psi(x_0) + \theta_1 \label{eq:sup_contra_a}\\
+&H(x_0,\frac{\partial \psi}{\partial x}) - \lambda \psi(x_0) = \theta_2 \label{eq:sup_contra_b},
+\end{align} 
+\end{subequations}
+
+for some small $\theta_1, \theta_2 < 0$. If \eqref{eq:sup_contra_a} is true, then 
+
+\begin{equation}
+h(\bx_{x_0}^{\bu, \bdelta}(\tau))\exp(-\lambda \tau) \geq \psi(x_0) + \frac{\theta_1}{2} = U_{\lambda}(x_0) + \frac{\theta_1}{2}
+\end{equation}
+
+Similarly, if \eqref{eq:sub_contra_b}, then for small enough $\delta>0$ and  some input $\bu(\cdot) \in \UU$ 
+
+\begin{equation}
+H(\bx_{x_0}^{\bu,\beta[\bu]}(\tau), \frac{\partial \psi}{\partial x}) - \lambda \psi(\bx_{x_0}^{\bu,\beta[\bu]}(\tau)) \geq \frac{\theta_2}{2}
+\end{equation}
+
+\noindent for all $\tau \in [0,\delta]$ and all nonanticipative strategies $\beta[\cdot]$ . Due to the supremum in the definition of the Hamiltonian the term on the left side of the inequality lower bounds the total derivative of $\exp(-\lambda t)\psi(\bx_{x_0}^{\bu,\beta[\bu]}(t))$ on the interval $[0,\delta]$,  which we integrate over the interval to get
+
+\begin{equation}
+\exp(-\lambda \delta)\psi(\bx_{x_0}^{\bu,\beta[\bu]}(\delta))-\psi(x_0) \geq \frac{\theta_2}{2} \delta
+\end{equation}
+
+Recalling that $U_{\lambda}-\psi$ has a local minimum at $x_0$,
+
+\begin{equation}
+\exp(-\lambda \delta)U_{\lambda}(\bx_{x_0}^{\bu,\beta[\bu]}(\delta)) \geq \frac{\theta_2}{2} \delta + U_{\lambda}(x_0)
+\end{equation}
+
+Incorporating this into the dynamic programming principle, we have
+
+\begin{equation} 
+\begin{split}
+&U_{\lambda}(x) =\\ 
+&\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU_\delta} 
+\big [\min\{\inf_{t \in [0, \delta]} h\big(\bx_{x}^{\bu,\beta[\bu]}(t)\big))\exp(-\lambda  t), \exp(-\lambda \delta)U_{\lambda}(\bx_{x}^{\bu,\beta[\bu]}(\delta))\} 
+\big ]\geq\\
+&U_{\lambda}(x) + \min\{\frac{\theta_1}{2}, \frac{\theta_2}{2} \delta \}
+\end{split},
+\end{equation}
+
+ 
+\noindent which is a contradiction, thus $U_{\lambda}$ is also a supersolution.
+
+Since we have shown that $U_{\lambda}$ is both a viscosity subsolution and viscosity supersolution of the variational inequality, this completes the proof that $U_{\lambda}$ is a viscosity solution of \eqref{eq:HJI_lambda}. Uniqueness follows from the classical comparison and uniqueness theorems for viscosity solutions (see Theorem 4.2 in \cite{Barron1989}).
+\end{proof}
+\end{for_journal}
+
+
+
+
+\subsection{Computing Discounted Value Function}
+Following a semi-Lagrangian approach, the discrete approximation of \eqref{eq:HJI_lambda} is given by
+
+\begin{equation}\label{eq:U_lambda_approx}
+    U_{\Delta t} (x) = \min\left\{h(x), \max_{u\in\U} \min_{ d\in\D}  \gamma U_{\Delta t}(x+\Delta tf(x,u,d))\right\},
+\end{equation}
+
+\noindent which can be solved on a grid $G$ via dynamic programming
+
+
+\begin{subequations}\label{eq:dp_lambda}
+\begin{align}
+&\vec{U}^{k+1} = B[U^k] := \min\left\{ \vec{h}, \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d} \vec{U}^k \right \} \label{eq:dp_bellman_lambda_a}  \\
+&\vec{U} = \lim_{k\rightarrow \infty} \vec{U}^{k}
+\end{align}
+\end{subequations}
+
+\noindent where $\vec{h}_i = h(x_i)$ and $\vec{U}^{0} \in \RR^N_G$ because the DP operator given by \eqref{eq:dp_lambda} is a contraction mapping, which we prove now.
+
+
+\begin{lemma}\label{lem:maxmin}
+\begin{equation} 
+|\max_a \min_b f(a,b) -\max_a \min_b g(a,b)| \leq \max_a \min_b |f(a,b) - g(a,b)|
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Define the minimax optimizers for $f$ as the pair $(a_f,b_f)$, and minimax optimizers of $g$ as the pair $(a_g, b_g)$. Without loss of generality we assume that $f(a_f,b_f) > g(a_g,b_g)$.
+
+\begin{equation*}
+\begin{split}
+&|\max_a \min_b f(a,b) -\max_a \min_b g(a,b)|\\
+&\leq |f(a_f,b_f) - \min_b g(a_f,b)|
+\end{split}
+\end{equation*}
+
+\noindent Next define $b_{gg} :=\arg\min_b g(a_f,b)$,
+
+\begin{equation*}
+\leq |f(a_f,b_{gg}) - g(a_f,b_{gg})| \leq \max_a \min_b |f(a,b) - g(a,b)|
+\end{equation*}
+\end{proof}
+
+
+\begin{proposition} 
+The operator given by \eqref{eq:dp_lambda} is a contraction mapping in the infinity norm $|| \cdot ||_{\infty}$ on the space $\RR^{N_G}$.
+\end{proposition}
+\begin{proof} Defining $B[\cdot]$ as in \eqref{eq:dp_lambda}, take two vectors $A_1, A_2 \in \RR^{N_G}$
+\begin{equation*}
+\begin{split}
+&||B[\vec{A}_1] - B[\vec{A}_2]||_{\infty}=\\
+&||\min\left\{ \vec{h}, \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d} \vec{A}_1 \right \}  - \min\left\{ \vec{h}, \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d} \vec{A}_2 \right \}||_{\infty}
+\end{split}
+\end{equation*}
+
+\noindent Leveraging the identity $\min\{a,b\} = \frac{1}{2}((a+b)- |a-b|)$ and using the shorthand $\Pi[\vec{A}]=\underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d} \vec{A}$ ,
+
+\begin{equation*}
+= \frac{1}{2} ||(\Pi[\vec{A}_1]  - \Pi[\vec{A}_2] ) -  (|\Pi[\vec{A}_1]-\vec{h}|  - |\Pi[\vec{A}_2]-\vec{h}|)||_{\infty}.
+\end{equation*}
+
+\noindent From the triangle inequality,
+
+\begin{equation*}
+\leq \frac{1}{2} ||(\Pi[\vec{A}_1]  - \Pi[\vec{A}_2] )||_{\infty} + \frac{1}{2}  ||(|\Pi[\vec{A}_1]-\vec{h}|  - |\Pi[\vec{A}_2]-\vec{h}|)||_{\infty}.
+\end{equation*}
+
+\noindent Given the inequality $|a-b| > |(|a|-|b|)|$,
+
+\begin{equation*}
+\begin{split}
+&\leq ||(\Pi[\vec{A}_1]  - \Pi[\vec{A}_2] )||_{\infty}=\\ 
+&||\underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d}\vec{A}_1 - \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d} \vec{A}_2||_{\infty}.
+\end{split}
+\end{equation*}
+
+\noindent Finally from Lemma \ref{lem:maxmin},
+\begin{equation*}
+\leq \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} ||\gamma P_{\pi_u, \pi_d} (\vec{A}_1 - \vec{A}_2)||_{\infty} \leq \gamma||\vec{A}_1 - \vec{A}_2||_{\infty},
+\end{equation*}
+
+\noindent where the last inequality comes from the fact that $P_{\pi_u, \pi_d}$ is a stochastic matrix for all policies, thus $||P_{\pi_u, \pi_d}||_{\infty} = 1$.
+\end{proof}
+
+
+
+\subsection{Under and Over Approximating the Reachable Set}
+With the new formulation there is no particular level curve of the value function that characterizes the reachable set. However, it is possible to find level curves that correspond to over and under approximations of the reachable set. 
+
+We have the inequality $V_{\lambda}(x) \geq V_0(x)$ because the terms being discounted in the payoff are nonpositive. It immediately follows
+
+\begin{equation} \label{eq:reach_set}
+\{x \mid V_{\lambda}(x) \le 0\} \subseteq \R(\T),
+\end{equation}  
+
+For an over approximation we first need to characterize the error between $V_{\lambda}(x)$ and $V_0(x)$. The difference between the two functions can be bounded. Define $\tau(x)$ as the time when the minimum distance to the target is achieved for a trajectory starting at state $x$ under the optimal control and disturbance signals. Then we have the following bound
+
+\begin{equation}
+V_{\lambda}(x) - V_0(x)  \leq (L - l(\bx_{x}^{\bu,\bdelta}(\tau(x))))( 1 -  \exp(-\lambda \tau(x))) 
+\end{equation}
+
+\noindent Noting that $V_0(x)=l(\bx_{x}^{\bu,\bdelta}(\tau(x)))$, we get the resulting inequality
+
+\begin{equation} \label{eq:val_error}
+V_{\lambda}(x) -  V_0(x) \exp(-\lambda \tau(x)) \leq L( 1 -  \exp(-\lambda \tau(x))), 
+\end{equation}
+
+\noindent Furthermore, outside the reachable set $V_0(x)>0$ leading to
+
+\begin{equation}
+V_{\lambda}(x) -  V_0(x)  \leq L( 1 -  \exp(-\lambda \tau(x))) \quad x \not\in \R(\T).
+\end{equation}
+
+Assuming an upper bound  $\bar{\tau} \geq \tau(x)$, we have the following over approximation for the reachable set
+
+\begin{equation} \label{eq:reach_set}
+\R(\T) \subseteq  \{x \mid V_{\lambda}(x) \le L( 1 -  \exp(-\lambda \bar{\tau})) \}.
+\end{equation} 
+
+It is clear from \eqref{eq:val_error} that the tightness of the approximations can be tuned via the discount factor $\lambda$.

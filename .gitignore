@@ -33,6 +33,10 @@ var/
 *.gz
 *.log
 *.out
+*.blg
+*.fdb_latexmk
+*.fls
+
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

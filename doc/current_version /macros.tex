@@ -1,6 +1,6 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
-\usepackage{amsthm}
+%\usepackage{amsthm}
 \usepackage{bm}
 \usepackage{mathabx}
 \usepackage[ruled,vlined,titlenotnumbered]{algorithm2e} 
@@ -30,40 +30,39 @@
 
 \usepackage{url}
 \usepackage{hyperref}
-\usepackage[%
-    style=numeric-comp,
-    sorting=nyt,
-    backend=bibtex,
-    sortcites=true,
-    doi=false,
-    firstinits=true,
-    hyperref,
-    isbn=false,
-    eprint=false,
-    maxcitenames=3,
-    block=none]
-    {biblatex}
-    
-    \renewbibmacro{in:}{}
-    \AtEveryBibitem{
-  	\clearlist{language}
-	\clearfield{pages}
-	}
-	
-\DeclareBibliographyCategory{needsurl}
-\newcommand{\entryneedsurl}[1]{\addtocategory{needsurl}{#1}}
-\renewbibmacro*{url+urldate}{%
-  \ifcategory{needsurl}{
-    \printfield{url}%
-    \iffieldundef{urlyear}
-      {}
-      {\setunit*{\addspace}%
-       \printurldate}}
-    {}}
+%\usepackage[%
+%    style=verbose,
+%    sorting=nyt,
+%    backend=bibtex,
+%    sortcites=true,
+%    doi=false,
+%    firstinits=true,
+%    hyperref,
+%    isbn=false,
+%    eprint=false,
+%    maxcitenames=3,
+%    block=none]
+%    {biblatex}
+%    
+%    \renewbibmacro{in:}{}
+%    \AtEveryBibitem{
+%  	\clearlist{language}
+%	\clearfield{pages}
+%	}
+%	
+%\DeclareBibliographyCategory{needsurl}
+%\newcommand{\entryneedsurl}[1]{\addtocategory{needsurl}{#1}}
+%\renewbibmacro*{url+urldate}{%
+%  \ifcategory{needsurl}{
+%    \printfield{url}%
+%    \iffieldundef{urlyear}
+%      {}
+%      {\setunit*{\addspace}%
+%       \printurldate}}
+%    {}}
 
 
-\bibliography{library}
-\entryneedsurl{Mitchell2004}
+
 
 
 
@@ -150,3 +149,6 @@
 
 
 \newcommand{\Vsdr}{V_2}
+
+\newenvironment{for_journal}{\par\color{blue}}{\par}
+
