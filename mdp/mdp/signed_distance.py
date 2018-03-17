@@ -83,6 +83,16 @@ def intersect(shapes):
         return output
     return func
 
+# This function does set(A) - set (B)
+# If ext is true, the outside is considered to be positive, apply intersect
+# then or apply union
+# By default all are -ve inside and +ve outside
+def set_minus(set_A, set_B, ext=True):
+    return lambda states: np.maximum(set_A(states), -set_B(states)) if ext \
+        else np.minimum(-set_A(states), set_B(states))
+
+
+
 
 
 
