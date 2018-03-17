@@ -1,5 +1,5 @@
 import numpy as np
-from mdp.dynamics import double_integrator
+from mdp.dynamics import double_integrator_dist
 from mdp.signed_distance import hypercube_int
 from mdp.grid_world_ext import Avoid
 from functools import partial
@@ -13,15 +13,21 @@ if __name__ == "__main__":
     s_lims = np.array([[-1,-5],[5,5]]) #state space limits
     num_nodes_a = np.array([2])
     a_lims = np.array([[0],[1]]) #action/control limits
+    num_nodes_d = np.array([2])
+    d_lims = np.array([[0],[1]]) #action/control limits
 
     #Dynamical system (double integrator model)
     grav = 9.81 # gravity
     sys_params = {} # parameters of dynamical system
-    max_u = 0.2 * grav
-    min_u = -0.2 * grav
+    max_u = 0.8 * grav
+    min_u = -0.8 * grav
+    max_d = 0.6 * grav
+    min_d = -0.6 * grav
     sys_params['max_u'] = max_u
     sys_params['min_u'] = min_u
-    dynamics = partial(double_integrator, **sys_params)
+    sys_params['max_d'] = max_d
+    sys_params['min_d'] = min_d
+    dynamics = partial(double_integrator_dist, **sys_params)
     
     # Construct avoid region, system should stay within hypercube 
     cube_lims = np.array([[0, -3], [4, 3]])
@@ -29,11 +35,13 @@ if __name__ == "__main__":
  
     # Make MDP
     lamb = 0.1 #lambda
-    my_world = Avoid(num_nodes, s_lims, num_nodes_a, a_lims, dynamics=dynamics,
-                     avoid_func=avoid_func, lamb=lamb)
+    my_world = Avoid(num_nodes, s_lims, num_nodes_a, a_lims, num_nodes_d,
+                     d_lims, dynamics=dynamics, avoid_func=avoid_func, 
+                     lamb=lamb)
 
     # Compute value function and policy
     v_opt, pi_opt = my_world.v_pi_opt(method='pi')
+
 
     # Computing anaylytic safe set
     s_min = s_lims[0]

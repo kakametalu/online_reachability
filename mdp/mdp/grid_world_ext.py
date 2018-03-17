@@ -20,6 +20,8 @@ class GridWorld(GridWorldDiscrete):
             First (second) column lower (upper) bound for each action dim.
         ds(1d np array): Grid spacing for each state dim.
         da(1d np array): Grid spacing for each action dim.
+        da2(1d np array): Grid spacing for each action_two dim.
+
         dt(float): Time step.
     
     Args:
@@ -29,34 +31,55 @@ class GridWorld(GridWorldDiscrete):
         num_nodes_a (1D np array): Number of nodes in each action dimension.
         a_lims(2d np array): Range on the actions. 
             First (second) column lower (upper) bound for each action dim.
+        num_nodes_a2 (1D np array): Number of nodes in each action_two dim.
+        a2_lims(2d np array): Range on the disturbances. 
+            First (second) column lower (upper) bound for each action dim.
         dynamics(function): Continous dynamics model.
              Function takes in state (x) and action(a), and returns
              the state derivative (x_dot) 
         gamma(float): Discount factor.
     """
 
-    def __init__(self, num_nodes, s_lims, num_nodes_a, a_lims, dynamics=None, gamma=None):
+    def __init__(self, num_nodes, s_lims, num_nodes_a=None, a_lims=None, 
+                 num_nodes_a2=None, a2_lims=None, dynamics=None, gamma=None):
 
         # Preparing grid
+        if num_nodes_a is None or a_lims is None:
+            num_nodes_a = np.array([1])
+            a_lims=np.array([[0],[1]])
+        
+        if num_nodes_a2 is None or a2_lims is None:
+            num_nodes_a2 = np.array([1])
+            a2_lims=np.array([[0],[1]])
+
         self._a_lims = a_lims
         self._s_lims = s_lims
         s_min = s_lims[0, :]
         s_max = s_lims[1, :]
         a_min = a_lims[0, :]
         a_max = a_lims[1, :]
+        a2_min = a2_lims[0, :]
+        a2_max = a2_lims[1, :]
         eps = 10**(-10) # for numerical stability
         ds = (s_max - s_min)/(num_nodes - 1 + eps)
         da = (a_max - a_min)/(num_nodes_a - 1 + eps) 
+        da2 = (a_max - a2_min)/(num_nodes_a2 - 1 + eps) 
+
         self._ds = ds
         self._da = da
+        self._da2 = da2
 
         self._num_nodes_a = num_nodes_a
+        self._num_nodes_a2 = num_nodes_a2
 
         num_states = np.prod(num_nodes)
         num_actions = np.prod(num_nodes_a)
+        num_actions2 = np.prod(num_nodes_a2)
+
         dims = len(num_nodes)
-        deriv = np.zeros([num_actions, num_states, dims])
-        p_trans = np.zeros([num_actions, num_states, num_states])
+        deriv = np.zeros([num_actions2, num_actions, num_states, dims])
+        p_trans = np.zeros([num_actions2, num_actions, num_states, 
+                            num_states])
         # All states (actions) as grid indices
         self._axes = [np.arange(num_nodes[i]) * ds[i] + s_min[i]
                     for i in range(dims)]
@@ -67,22 +90,29 @@ class GridWorld(GridWorldDiscrete):
         all_actions = cartesian(action_axes) * da + a_min
         self._all_actions_c = all_actions
 
+        action2_axes = [np.arange(N_d) for N_d in num_nodes_a2]
+        all_actions2 = cartesian(action2_axes) * da2 + a2_min
+        self._all_actions2_c = all_actions2
+
         if dynamics is None: # Just exit after grid has been built
             self._dt = 1
             super().__init__(num_nodes, p_trans, all_states, 
-                             all_actions, gamma)
+                             all_actions, all_actions2, gamma)
             return
 
         # Construct interpolation weights (transition probabilities)
-        dyn = Dynamics(dynamics, num_nodes.size) # dynamics model
+        dyn = Dynamics(dynamics, num_nodes.size, angular=None) # dynamics model
 
 
         # Hypercube defining interpolation region
         interp_axes = [np.array([0,1]) for d in range(dims)]
         interp_region = cartesian(interp_axes).astype(int)
+        
 
-        for act_idx, action in enumerate(all_actions):
-            deriv[act_idx,:,:] = dyn.deriv(all_states, action)
+        for act2_idx, action2 in enumerate(all_actions2):
+            for act_idx, action in enumerate(all_actions):
+                deriv[act2_idx, act_idx,:,:] = dyn.deriv(all_states, action,
+                                                         action2)
 
         # State moves at most one grid cell in any dimension over one time
         # step.
@@ -90,25 +120,30 @@ class GridWorld(GridWorldDiscrete):
         dt = (1.0 / np.amax(np.abs(deriv.reshape([-1,dims])) / ds))
         self._dt = dt 
         next_states = np.zeros([num_actions, num_states, dims])
+        
+        for act2_idx, action2 in enumerate(all_actions2):
+            for act_idx, action in enumerate(all_actions):
+                next_states = dyn.integrate(dt, all_states, action, action2)
+                temp = (next_states - s_min) / ds
+                # Lower grid idx of interpolating hypercube.
+                grid_idx_min = np.floor(temp).astype(int)
+                # Interp weight for the lower idx of each dimension 
+                alpha = 1 - (temp - grid_idx_min)
+                for shift in interp_region:
+                    interp_grid_idx = np.minimum(np.maximum(grid_idx_min +
+                                                            shift, 0),
+                                                 np.array(num_nodes) - 1)
 
-        for act_idx, action in enumerate(all_actions):
-            next_states = dyn.integrate(all_states, action, dt)
-            temp = (next_states - s_min) / ds
-            # Lower grid idx of interpolating hypercube.
-            grid_idx_min = np.floor(temp).astype(int)
-            # Interp weight for the lower idx of each dimension 
-            alpha = 1 - (temp - grid_idx_min)
-            for shift in interp_region:
-                interp_grid_idx = np.minimum(np.maximum(grid_idx_min + shift,
-                                             0), np.array(num_nodes) - 1)
-                interp_weight = np.prod(alpha * (1 - shift) +
-                                        (1 - alpha) * shift, axis=1)
-                temp = list(state_to_idx(interp_grid_idx, np.array(num_nodes)))
+                    interp_weight = np.prod(alpha * (1 - shift) +
+                                            (1 - alpha) * shift, axis=1)
+                    temp = list(state_to_idx(interp_grid_idx, 
+                                             np.array(num_nodes)))
 
-                p_trans[act_idx, range(num_states), temp] +=\
-                    interp_weight
+                    p_trans[act2_idx, act_idx, range(num_states), temp] += \
+                        interp_weight
+        
         super().__init__(num_nodes, p_trans, all_states,
-                 all_actions, gamma)
+                 all_actions, all_actions2, gamma)
 
     def gradient(self):
         v_grid = self.v_opt.reshape(self._num_nodes)
@@ -208,17 +243,20 @@ class GridWorld(GridWorldDiscrete):
 
     @dynamics.setter
     def dynamics(self, dynamics):
-        s_min = self._s_lims[0, :]
-        s_max = self._s_lims[1, :]
-        a_min = self._a_lims[0, :]
-        a_max = self._a_lims[1, :]
+        s_min = s_lims[0, :]
+        s_max = s_lims[1, :]
+        a_min = a_lims[0, :]
+        a_max = a_lims[1, :]
+        a2_min = a2_lims[0, :]
+        a2_max = a2_lims[1, :]
         dims = len(self._num_nodes)
         deriv = np.zeros([self._num_actions, self._num_states, dims])
-        p_trans = np.zeros([self._num_actions, self._num_states,
-                            self._num_states])
+        p_trans = np.zeros([self._num_actions2, self._num_actions, 
+                            self._num_states, self._num_states])
 
         all_states = self._all_states_c
         all_actions = self._all_actions_c
+        all_actions2 = self._all_actions2_c
 
         # Construct interpolation weights (transition probabilities)
         dyn = Dynamics(dynamics, self._num_nodes.size)  # dynamics model
@@ -227,37 +265,38 @@ class GridWorld(GridWorldDiscrete):
         interp_axes = [np.array([0, 1]) for d in range(dims)]
         interp_region = cartesian(interp_axes).astype(int)
 
-        for act_idx, action in enumerate(all_actions):
-            deriv[act_idx, :, :] = dyn.deriv(all_states, action)
+        for act2_idx, action2 in enumerate(all_actions2):
+            for act_idx, action in enumerate(all_actions):
+                deriv[act2_idx, act_idx,:,:] = dyn.deriv(all_states, action,
+                                                         action2)
 
         # State moves at most one grid cell in any dimension over one time
         # step.
 
-        dt = (1.0 / np.amax(np.abs(deriv.reshape([-1, dims])) / self._ds))
-        self._dt = dt
-        next_states = np.zeros([self._num_actions, self._num_states, dims])
+        dt = (1.0 / np.amax(np.abs(deriv.reshape([-1,dims])) / ds))
+        self._dt = dt 
+        next_states = np.zeros([num_actions, num_states, dims])
+        
+        for act2_idx, action in enumerate(all_actions2):
+            for act_idx, action in enumerate(all_actions):
+                next_states = dyn.integrate(dt, all_states, action, action2)
+                temp = (next_states - s_min) / ds
+                # Lower grid idx of interpolating hypercube.
+                grid_idx_min = np.floor(temp).astype(int)
+                # Interp weight for the lower idx of each dimension 
+                alpha = 1 - (temp - grid_idx_min)
+                for shift in interp_region:
+                    interp_grid_idx = np.minimum(np.maximum(grid_idx_min +
+                                                            shift, 0),
+                                                 np.array(num_nodes) - 1)
 
-        for act_idx, action in enumerate(all_actions):
-            next_states = dyn.integrate(all_states, action, dt)
-            temp = (next_states - s_min) / self._ds
-            # Lower grid idx of interpolating hypercube.
-            grid_idx_min = np.floor(temp).astype(int)
-            # Interp weight for the lower idx of each dimension
-            alpha = 1 - (temp - grid_idx_min)
-            for shift in interp_region:
-                interp_grid_idx = np.minimum(np.maximum(grid_idx_min + shift,
-                                                        0),
-                                             np.array(self._num_nodes) - 1)
-                interp_weight = np.prod(alpha * (1 - shift) +
-                                        (1 - alpha) * shift, axis=1)
-                temp = list(state_to_idx(interp_grid_idx, np.array(
-                    self._num_nodes)))
+                    interp_weight = np.prod(alpha * (1 - shift) +
+                                            (1 - alpha) * shift, axis=1)
+                    temp = list(state_to_idx(interp_grid_idx, 
+                                             np.array(num_nodes)))
 
-                p_trans[act_idx, range(self._num_states), temp] += \
-                    interp_weight
-
-        self._p_trans = p_trans
-
+                    p_trans[act2_idx, act_idx, range(num_states), temp] += \
+                        interp_weight
 
 class Avoid(GridWorld):
     """MDP to compute safe set for a specified avoid set.
@@ -277,9 +316,11 @@ class Avoid(GridWorld):
              the state derivative (x_dot) 
         avoid_func(function): A signed distance function to the avoid set.
     """
-    def __init__ (self, num_nodes, s_lims, num_nodes_a, a_lims=None, dynamics=None, avoid_func=None, lamb=0):
+    def __init__ (self, num_nodes, s_lims, num_nodes_a=None, a_lims=None, 
+                  num_nodes_a2=None, a2_lims=None, dynamics=None, 
+                  avoid_func=None, lamb=0):
         
-        super().__init__(num_nodes, s_lims, num_nodes_a, a_lims, dynamics)
+        super().__init__(num_nodes, s_lims, num_nodes_a, a_lims, num_nodes_a2, a2_lims, dynamics)
         dt = self._dt
         self._gamma = np.exp(-dt * lamb)
         self._reward = avoid_func(self._all_states)
