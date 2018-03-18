@@ -35,7 +35,7 @@ if __name__ == "__main__":
     # Compute value function and policy
     v_opt, pi_opt = my_world.v_pi_opt(method='pi')
 
-    # Computing anaylytic safe set
+    # Computing analytic safe set
     s_min = s_lims[0]
     s_max = s_lims[1]
     x = range(my_world.num_nodes[0]) * my_world.ds[0] + s_min[0] 
