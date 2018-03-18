@@ -46,16 +46,17 @@ class GridWorld(MDP):
         all_states (2d np array): All states.
             Size is product(num_nodes) by len(num_nodes).
         all_actions (2d np array): All actions.
+        all_actions2 (2d np array): All actions for player 2.
         gamma(float): Discount factor for MDP.
     """
 
     def __init__(self, num_nodes, p_trans, all_states=None,
-                 all_actions=None, gamma=None):
+                 all_actions=None, all_actions2=None, gamma=None):
         """Initialize GridWorld."""
         
         # Creating state and actions
         dims = len(num_nodes)
-        num_actions, num_states, _ = p_trans.shape
+        num_actions2, num_actions, num_states, _ = p_trans.shape
         self._dims = dims
         self._num_nodes = np.array(num_nodes)
         if all_states is None:
@@ -63,13 +64,16 @@ class GridWorld(MDP):
             all_states = cartesian(state_axes)
         self._all_states = all_states
         self._all_actions = all_actions
-        super().__init__(num_states, num_actions, gamma=gamma, p_trans=p_trans)
+        self._all_actions2 = all_actions2
+
+        super().__init__(num_states, num_actions, num_actions2,
+                         gamma=gamma, p_trans=p_trans)
         
     def _state_to_idx(self, states):
         """Takes states and returns indices."""
         return state_to_idx(states, self._num_nodes)
 
-    def support(self, state, action_idx):
+    def support(self, state, action_idx, action2_idx):
         """Takes state and action and returns (next states, probs).
 
         Args:
@@ -88,9 +92,13 @@ class GridWorld(MDP):
 
         assert (0 <= action_idx < self._num_actions),\
             "Action index is out of range."
-        
+     
+        assert (0 <= action2_idx < self._num_actions2),\
+            "Action index is out of range."
+
         state_idx = self._state_to_idx(state)
-        support_idxs, probs, _ = super().__getitem__((state_idx, action_idx))
+        support_idxs, probs, _ = super().__getitem__((state_idx, action_idx,
+                                                     action2_idx))
         
         support = self._all_states[list(support_idxs)]
 
@@ -108,46 +116,9 @@ class GridWorld(MDP):
         next_state = support[idx]
         return next_state
 
-    def simulate(self, start_state, horizon, policy, visualize_on=False,
-                 deterministic=False):
-        """Simulate trajectory.
-
-        Args:
-            start_state(np array): Starting state
-            policy(np array): Action for each state.
-                Size is size of all states by 1.
-            horizon(uint): Length of simulation.
-            visualize_on (bool): View the simulation.
-            goal(np array): Goal state.
-            deterministic (bool): Desired action is used in simulation.
-
-        Returns:
-            state_traj (2d np array): The state trajectory.
-        """
-
-        state = start_state
-        state_traj = [state]
-
-        run_sim = True 
-      
-        # Run simulation.
-        state_idx = self._state_to_idx(state)
-        #print(state_idx)
-        #print(policy[state_idx])
-        for k in range(horizon):
-            state = self._step(state, policy[state_idx])
-            state_traj.append(state)
-            state_idx = self._state_to_idx(state)
-    
-        if visualize_on:
-            self._visualize(state_traj)
-        
-        return np.array(state_traj) 
-
     def _visualize(self, state_traj, dims=[0,1]):
         """Visualize the state trajetory in two dimensions."""
         pass
-
 
     @property 
     def gamma(self):

@@ -23,20 +23,21 @@ class TransitionModel(object):
             Usage: _p_trans[action, state, next_state]
     """
 
-    def __init__(self,num_states, num_actions, p_trans=None):
+    def __init__(self,num_states, num_actions, num_actions2, p_trans=None):
         """Initialize TransitionModel object."""
 
         if p_trans is None:
             p_trans = np.zeros([num_actions, num_states, num_states])
 
-        p_trans_shape = (num_actions, num_states, num_states)
+        p_trans_shape = (num_actions2, num_actions, num_states, num_states)
         assert (p_trans.shape == p_trans_shape),\
             "Transition tensor should have shape {}.".format(p_trans_shape)
         self._p_trans = p_trans
         self._num_states = num_states
         self._num_actions = num_actions
+        self._num_actions2 = num_actions2
 
-    def add_transition(self, state, action, support, probs,
+    def add_transition(self, state, action, action2, support, probs,
                        skip_prob_assert=False):
         """Add new transition.
 
@@ -49,29 +50,32 @@ class TransitionModel(object):
         assert (state < self._num_states),\
             "State index {} out of range.".format(state)
         assert (action < self._num_actions), "Action index out of range."
+        assert (action2 < self._num_actions2), "Action index out of range."
         assert (np.sum(probs) == 1.0),\
             "Total prob = {}".format(np.sum(probs))
         for next_state in support:
             assert (next_state < self._num_states),\
                 "Next state {} index out of range.".format(next_state)
-        self._p_trans[action, state, support] = probs
+        self._p_trans[action2, action, state, support] = probs
 
-    def __getitem__(self, state_action):
+    def __getitem__(self, state_actions):
         """Takes state and action and returns (support, probs, exp rewards).
 
         Args:
-            state_action (tuple of uints): State index and action index.
+            state_actions (tuple of uints): State, action, action2 indexes.
         Returns:
             support (1D np array): Possible next transition states.
             probs (1D np array): Transition probabilities.
         """
         
-        state, action = state_action
+        state, action, action2 = state_actions
         assert (state < self._num_states), "State index is out of range."
         assert (action < self._num_actions), "Action index is out of range."
+        assert (action2 < self._num_actions2), "Action2 index is out of range."
 
-        support = self._p_trans[int(action), int(state)].nonzero()[0]
-        probs = self._p_trans[action, state, support]
+        probs = self._p_trans[int(action2), int(action),
+                                int(state)]
+        support = probs.nonzero()[0]
 
         if len(support) == 0:
             support =[state]
@@ -92,10 +96,14 @@ class TransitionModel(object):
     @property
     def num_states(self):
         return self._num_states
+    
     @property
     def num_actions(self):
         return self._num_actions
 
+    @property
+    def num_actions2(self):
+        return self._num_actions2
 
 class MDP(TransitionModel):
     """MDP tuple with states, actions, rewards, and transition function.
@@ -133,7 +141,7 @@ class MDP(TransitionModel):
             Usage: _p_trans[action, state, next_state]
     """
 
-    def __init__(self, num_states, num_actions,
+    def __init__(self, num_states, num_actions, num_actions2,
                  reward = None, gamma=None, abs_set=set([]),
                  p_trans=None):
         """Initialize MDP Object."""
@@ -144,7 +152,7 @@ class MDP(TransitionModel):
         assert(gamma_one_abs_none is False),\
             "Absorbing states needed for gamma == 1."
 
-        super().__init__(num_states, num_actions, p_trans)
+        super().__init__(num_states, num_actions, num_actions2, p_trans)
 
         # Handling rewards
         if reward is None:
@@ -159,58 +167,99 @@ class MDP(TransitionModel):
         self._pi_opt = None
         self._v_opt = None
 
-    def __getitem__(self, state_action):
+    def __getitem__(self, state_actions):
         """Takes state and action and returns (support, probs, exp rewards).
 
         Args:
-            state_action (tuple of uints): State index and action index.
+            state_action (tuple of uints): State, action, action2, indexes.
         Returns:
             support (1D np array): Possible next transition stats.
             probs (1D np array): Transition probabilities.
             rewards (float): Reward for state/action pair.
         """
-        state, action = state_action
+        state, action, action2 = state_actions
         if state in self._abs_set: 
             support, probs = [[state], [1.0]]
         else:
-            support, probs = super().__getitem__(state_action)
+            support, probs = super().__getitem__(state_actions)
         
         reward = self._reward[state]
         return support, probs, reward
 
-    def _policy_backup(self, V, pi):
+    def _policy_backup(self, V, pi, converge=False):
         """Does one policy back up on the value function."""
         max_reward = np.max(self._reward)
         nS = self.num_states
-        p_pi = self._p_trans[pi, range(nS), :]
-        V_out = p_pi.dot(V)
-        V_out = np.minimum((V_out - max_reward) * self._gamma,
-         self._reward - max_reward) + max_reward 
-        return V_out
+        act_pi = pi[:, 0]
+        act2_pi = pi[:, 1]
+        p_pi = self._p_trans[act2_pi, act_pi, range(nS), :]
+        
+        if not converge:
+            V_out = p_pi.dot(V)
+            V_out = np.minimum((V_out - max_reward) * self._gamma,
+                              self._reward - max_reward) + max_reward
+            return V_out
 
-    def _bellman_backup(self, V=None):
+        V_old = V
+        tol = 10 ** (-3)/2
+        err = tol * 2
+        
+        V_pi= deepcopy(V)
+        while err > tol:
+            V_old = deepcopy(V_pi)
+            V_pi = p_pi.dot(V_old)
+            V_pi = np.minimum((V_pi - max_reward) * self._gamma,
+                              self._reward - max_reward) + max_reward
+            err = np.linalg.norm(V_old - V_pi, ord= float('inf'))
+            print(err)
+        return V_pi
+
+    def _bellman_backup(self, V=None, pi_ref=None):
         """Performs one bellman backup on the value function V."""
 
         if V is None:
-            V = self._reward 
+            V = self._reward
+        
+        nS = self.num_states
 
-        ones_vec = np.ones(self.num_states).astype(int)
+        ones_vec = np.ones([self.num_states, 2]).astype(int)
         pi = ones_vec * 0
 
         V_out = self._policy_backup(V, pi)
-        pi_greedy = pi
+        pi_greedy = deepcopy(pi)
         
-        if self.num_actions == 1:
+        if self.num_actions == 1 and self.num_actions2 == 1:
             return V_out, pi_greedy
    
-        for act in range(1, self.num_actions):
-            pi = ones_vec * act
-            V_act = self._policy_backup(V, pi)
-            pi_greedy = pi_greedy * (V_out >= V_act) +\
-                        pi * (V_out < V_act)
-            V_out = np.maximum(V_out, V_act)
+        # for act2 in range(0, self.num_actions2)
+        #     for act in range(0, self.num_actions):
+        #         pi = ones_vec * np.array([act, act2])
+        #         V_act = self._policy_backup(V, pi)
+        #     pi_greedy = pi_greedy * (V_out >= V_act) +\
+        #                 pi * (V_out < V_act)
+        #     V_out = np.maximum(V_out, V_act)
+        
+        V_mat = np.zeros([self.num_actions2, self.num_actions,
+                          self.num_states])
+
+        for act2 in range(0, self.num_actions2):
+            for act in range(0, self.num_actions):
+                pi = ones_vec * np.array([act, act2])
+                V_mat[act2, act, :] = self._policy_backup(V, pi)
+        
+        temp = np.amin(V_mat, axis=0)
+        V_out = np.amax(temp, axis=0)
 
 
+        pi_greedy[:,0] = np.argmax(temp, axis=0)
+        pi_greedy[:, 1] = np.argmin(V_mat[:, pi_greedy[:, 0], range(nS)],
+                                    axis=0)
+        # print(V_mat[:, :, 0:4])
+        # print(V_out[0:4])
+        # print(pi_greedy[0:4,:])
+        if pi_ref is not None:
+            print("Pi_ref assertion")
+            assert((V_out>=self._policy_backup(V, pi_ref)).all())
         return V_out, pi_greedy
 
     def _value_iteration(self, V=None, pi=None, one_step=False):
@@ -219,7 +268,7 @@ class MDP(TransitionModel):
         if V is None:
             V = self._reward
         V_opt = deepcopy(V)
-        tol = 10 ** (-3)/2
+        tol = 10 ** (-3)
         err = tol * 2
 
         count=0
@@ -248,22 +297,24 @@ class MDP(TransitionModel):
         tol = 10 ** (-3)/2
         
         print("    err (inf norm)")
+        count = 0
         while True:
-            err_in = tol * 2
-            V_old_out = deepcopy(V_pi)
-            count=0
-            while err_in > tol:
-                V_old_in = deepcopy(V_pi)
-                V_pi = self._policy_backup(V_old_in, pi)
-                err_in = np.linalg.norm(V_old_in - V_pi, ord= float('inf'))
-                #print(err_in)
+            V_old = deepcopy(V_pi)
 
-            V_opt, pi_opt = self._bellman_backup(V_pi)
-            err_out = np.linalg.norm(V_opt - V_old_out, ord= float('inf'))
-            print("%i:  %.6e" %(count, err_out))
+            #V_old_in = deepcopy(V_pi)
+            V_pi = self._policy_backup(V_old, pi, converge=True)
+            V_pi_temp = self._policy_backup(V_pi, pi)
+            V_opt, pi_opt = self._bellman_backup(V_pi, pi)
+            err = np.linalg.norm(V_opt - V_old, ord= float('inf'))
+            print("%i:  %.6e" %(count, err))
+            if count > 0:
+                print("Assertion")
+                print(np.min(V_opt-V_pi_temp))
+                assert((V_opt>=V_pi).all())
             count += 1
             # Check for policy convergence.
-            if (pi_opt == pi).all() or err_out<tol: 
+            print(err)
+            if (pi_opt == pi).all() or err<tol: 
                 break
             pi = pi_opt
             V_pi = V_opt

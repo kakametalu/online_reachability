@@ -9,44 +9,52 @@ class Dynamics(object):
         self._dims = dims
         self._angular = angular
 
-    def deriv(self, state, control):
+    def deriv(self, state, control, disturbance):
         """Returns state derivative.
 
         Args:
             state (2d np array): States to be evaluated.
                 Each row corresponds to a state.
             control (1d or 2d np array): Controls to be evaluated.
-                If 2d, then each row corresponds to a control. There should be a control for each state. If control is 1D then the same control is used for all states. 
+                If 2d, then each row corresponds to a control. There should be a control for each state. If control is 1D then the same control is used for all states.
+            disturbance (1d or 2d np array): Disturbance to be evaluated.
+                If 2d, then each row corresponds to a control. There should be a control for each state. If control is 1D then the same control is used for all states.        
         """
         
         assert state.shape[1] == self._dims,\
           "State dimension is incompatible."
         
-        if len(control.shape) == 1:
-            con_rep = np.ones([state.shape[0], control.shape[0]]) * control
-            return self._x_dot(state, con_rep)
+        dis = disturbance
+        if len(dis.shape) == 1:
+            dis_array = np.ones([state.shape[0], dis.shape[0]]) * dis
         else:
-            assert state.shape[0] == control.shape[0],\
-            "Number of states not equal to number of controls."
-            return self._x_dot(state, control)
-                             
+            dis_array = dis
+        
+        if len(control.shape) == 1:
+            con_array = np.ones([state.shape[0], control.shape[0]]) * control
+        else:
+            con_array = control
+  
+        assert state.shape[0] == con_array.shape[0],\
+            "Number of states not equal to number of controls."        
+        
+        assert state.shape[0] == dis_array.shape[0],\
+            "Number of states not equal to number of disturbances."
 
-        # if len(control.shape) == 1:
-        #     return np.array([self._x_dot(state, control) for state in state])
-        # else:
-        #     assert state.shape[0] == control.shape[0],\
-        #      "Number of states not equal to number of controls."
-        #     return np.array([self._x_dot(x, u)
-        #                      for x, u in zip(state, control)])
+        return self._x_dot(state, con_array, dis_array)
 
-    def integrate(self, state, control, t, steps=10):
+
+    def integrate(self, t, state, control, disturbance, steps=10):
         """Intergrate ODE using Runge-Kutta 4 scheme.
 
         Args:
+            t (float): Time interval for integration.
             state (2d np array): States to be evaluated.
                 Each row corresponds to a state.
             control (1d or 2d np array): Controls to be evaluated.
-                If 2d, then each row corresponds to a control. There should be a control for each state. If control is 1D then the same control is used for all states. 
+                If 2d, then each row corresponds to a control. There should be a control for each state. If control is 1D then the same control is used for all states.
+            disturbance (1d or 2d np array): Disturbance to be evaluated.
+                If 2d, then each row corresponds to a control. There should be a control for each state. If control is 1D then the same control is used for all states.
         """
         dt = t/steps
         run_t = t/steps
@@ -54,19 +62,20 @@ class Dynamics(object):
     	
         #return n_states + t * self.deriv(n_states, control)
         while  run_t <= t:
-            k_1 = self.deriv(n_state, control)
-            k_2 = self.deriv(n_state + dt / 2 * k_1, control)
-            k_3 = self.deriv(n_state + dt / 2 * k_2, control)
-            k_4 = self.deriv(n_state + dt * k_3, control)
+            k_1 = self.deriv(n_state, control, disturbance)
+            k_2 = self.deriv(n_state + dt / 2 * k_1, control, disturbance)
+            k_3 = self.deriv(n_state + dt / 2 * k_2, control, disturbance)
+            k_4 = self.deriv(n_state + dt * k_3, control, disturbance)
             n_state = n_state + dt / 6 * (k_1 + 2 * k_2 + 2 * k_3 + k_4)
             run_t += dt
 
         if self._angular is not None:
+            angular = self._angular
             n_state[:, angular] = n_state[:, angular] % (2 * np.pi)
         return n_state
 
 
-def double_integrator(x, u, **sys_params):
+def double_integrator(x, u, d=0, **sys_params):
     """Double integrator Dynamics.
     
     Args:
@@ -87,7 +96,32 @@ def double_integrator(x, u, **sys_params):
     output[:, 1] = u[:,0]* (max_u - min_u) + min_u
     return output
 
-def dubins_car(x, u, **sys_params):
+
+def double_integrator_dist(x, u, d=0, **sys_params):
+    """Double integrator Dynamics.
+    
+    Args:
+        x(np array): Current state of the system.
+            x[0] - position, angle, velocity, etc.
+            x[1] - first derivative.
+        u(np array): Control being applied to the system.
+        sys_params (dict): Parameters of the system, see below.
+
+    sys_params:
+        min_u (float): Minimum applied thrust.
+        max_u (float): Maximum applied thrust.
+    """
+    max_u = sys_params.get('max_u', 1)
+    min_u = sys_params.get('min_u', 0)
+    max_d = sys_params.get('max_d', 1)
+    min_d = sys_params.get('min_d', 0)
+    output = np.zeros(x.shape)
+    output[:, 0] = x[:,1]
+    output[:, 1] = u[:,0] * (max_u - min_u) + min_u +\
+        d[:,0] * (max_d - min_d) + min_d
+    return output
+
+def dubins_car(x, u, d=0, **sys_params):
     """Dubin's car dynamics.
     
     Args:
@@ -114,6 +148,32 @@ def dubins_car(x, u, **sys_params):
 
     return output
 
+def pursuit_evasion(x, u, d, **sys_params):
+    """Pursuit Evasion Game Dynamics.
+
+        x(np array): Current state of the system.
+            x[0] - relative x position.
+            x[1] - relative y position.
+            x[2] - relative angle.
+        u(np array): Control being applied to the system.
+            u[0] - angular speed for evader.
+        d(np array): Disturbance being applied to the system.
+            d[0] - angular speed for pursuer.
+        sys_params (dict): Parameters of the system, see below.
+
+        sys_params:
+            v_u: Velocity of evader.
+            v_d: Velocity of pursuer.
+    """
+
+    v_u = sys_params.get('v_u', 5)
+    v_d = sys_params.get('v_d', 5)
+    output = np.zeros(x.shape)
+    output[:, 0] = -v_u + v_d * np.cos(x[:,2]) + u[:,0] * x[:,1]
+    output[:, 1] = v_d * np.sin(x[:,2]) - u[:,0] * x[:,0]
+    output[:, 2] = u[:,0]-d[:,0]
+
+    return output
 
 
 
