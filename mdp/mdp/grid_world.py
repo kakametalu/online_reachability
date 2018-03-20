@@ -5,6 +5,7 @@ from mdp.mdp_base_reach import MDP
 from sklearn.utils.extmath import cartesian
 from copy import deepcopy
 import matplotlib.pyplot as plt
+from scipy.sparse import csr_matrix
 from itertools import product
 
 # TODO (AKA): Update all docstrings!
@@ -56,7 +57,13 @@ class GridWorld(MDP):
         
         # Creating state and actions
         dims = len(num_nodes)
-        num_actions2, num_actions, num_states, _ = p_trans.shape
+        if isinstance(p_trans[0, 0], csr_matrix):
+            num_actions2 = len(all_actions2)
+            num_actions = len(all_actions)
+            #num_actions2, num_actions = p_trans.shape
+            num_states, _ = p_trans[0, 0].shape
+        else:
+            num_actions2, num_actions, num_states, _ = p_trans.shape
         self._dims = dims
         self._num_nodes = np.array(num_nodes)
         if all_states is None:

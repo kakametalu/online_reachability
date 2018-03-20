@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.sparse import csr_matrix, linalg
+from scipy.sparse import csr_matrix, lil_matrix, rand
 from copy import deepcopy
 from itertools import product
 import time
@@ -23,14 +23,20 @@ class TransitionModel(object):
             Usage: _p_trans[action, state, next_state]
     """
 
-    def __init__(self,num_states, num_actions, num_actions2, p_trans=None):
+    def __init__(self,num_states, num_actions, num_actions2=1, p_trans=None):
         """Initialize TransitionModel object."""
 
         if p_trans is None:
-            p_trans = np.zeros([num_actions, num_states, num_states])
-
+            p_trans = np.zeros([num_actions2, num_actions, num_states,
+                                num_states])
         p_trans_shape = (num_actions2, num_actions, num_states, num_states)
-        assert (p_trans.shape == p_trans_shape),\
+        if isinstance(p_trans[0, 0], csr_matrix):
+            self.sparse= True
+            #assert (p_trans.shape == p_trans_shape[:2]) and (p_trans[0,
+            #    0].shape == p_trans_shape[2:])
+        else:
+            self.sparse=False
+            assert (p_trans.shape == p_trans_shape),\
             "Transition tensor should have shape {}.".format(p_trans_shape)
         self._p_trans = p_trans
         self._num_states = num_states
@@ -56,7 +62,14 @@ class TransitionModel(object):
         for next_state in support:
             assert (next_state < self._num_states),\
                 "Next state {} index out of range.".format(next_state)
-        self._p_trans[action2, action, state, support] = probs
+        if self.sparse:
+            support_probs = np.zeros(self._num_states)
+            support_probs[support] = probs
+            m = self._p_trans.tolil()
+            m[action2, action][state] = lil_matrix(support_probs)
+            self._p_trans = m.tocsr()
+        else:
+            self._p_trans[action2, action, state, support] = probs
 
     def __getitem__(self, state_actions):
         """Takes state and action and returns (support, probs, exp rewards).
@@ -73,8 +86,12 @@ class TransitionModel(object):
         assert (action < self._num_actions), "Action index is out of range."
         assert (action2 < self._num_actions2), "Action2 index is out of range."
 
-        probs = self._p_trans[int(action2), int(action),
-                                int(state)]
+
+        if self.sparse:
+            probs = self._p_trans[int(action2), int(action)][int(
+                state)].tocsr()
+        else:
+            probs = self._p_trans[int(action2), int(action), int(state)]
         support = probs.nonzero()[0]
 
         if len(support) == 0:
@@ -88,7 +105,11 @@ class TransitionModel(object):
     
     @p_trans.setter
     def p_trans(self, p_trans):
-        assert (p_trans.shape == self._p_trans.shape),\
+        if self.sparse:
+            assert (p_trans.shape == self._p_trans.shape) and \
+                   (p_trans[0, 0].shape == self._p_trans[0, 0].shape)
+        else:
+            assert (p_trans.shape == self._p_trans.shape),\
             "Transition tensor should have shape {}.".format(self._ptrans.shape)
         # TODO(AKA): check that tensor consist of stochastic matrices.
         self._p_trans = p_trans
@@ -166,6 +187,7 @@ class MDP(TransitionModel):
         self._abs_set = set(abs_set)
         self._pi_opt = None
         self._v_opt = None
+        self.tol = 1e-3/2
 
     def __getitem__(self, state_actions):
         """Takes state and action and returns (support, probs, exp rewards).
@@ -186,35 +208,99 @@ class MDP(TransitionModel):
         reward = self._reward[state]
         return support, probs, reward
 
-    def _policy_backup(self, V, pi, converge=False):
+    def _policy_backup(self, V, pi=None, converge=False):
         """Does one policy back up on the value function."""
         max_reward = np.max(self._reward)
         nS = self.num_states
-        act_pi = pi[:, 0]
-        act2_pi = pi[:, 1]
-        p_pi = self._p_trans[act2_pi, act_pi, range(nS), :]
-        
-        if not converge:
-            V_out = p_pi.dot(V)
-            V_out = np.minimum((V_out - max_reward) * self._gamma,
-                              self._reward - max_reward) + max_reward
-            return V_out
+        if pi is not None:
+            act_pi = pi[:, 0]
+            act2_pi = pi[:, 1]
+        else:
+            act2_pi = range(self.num_actions2)
+            act_pi = range(self.num_actions)
+        if self.sparse:
+            t_pi_start = time.time()
+            if pi is not None:
+                p_pi = csr_matrix((nS, nS))
+                for p in np.unique(pi, axis=0):
+                    n_states = np.where(np.all(pi == p, axis=1))
+                    V_act = self._p_trans[p[1], p[0]]
+                    p_pi[n_states] = V_act[n_states]
+            t_pi = time.time() - t_pi_start
+            if not converge:
+                if pi is not None:
+                    V_out = p_pi.dot(V)
+                    V_out = np.minimum((V_out - max_reward) * self._gamma,
+                                       self._reward - max_reward) + max_reward
+                    return V_out, t_pi
+                else:
+                    V_mat = np.zeros([self.num_actions2, self.num_actions,
+                                      self.num_states])
+                    for a2 in range(self.num_actions2):
+                        for a1 in range(self.num_actions):
+                            p_pi = self.p_trans[a2, a1]
+                            V_out = p_pi.dot(V)
+                            V_out = np.minimum(
+                                (V_out - max_reward) * self._gamma,
+                                self._reward - max_reward) + max_reward
+                            V_mat[a2, a1, :] = V_out
+                    return V_mat, t_pi
 
-        V_old = V
-        tol = 10 ** (-3)/2
-        err = tol * 2
-        
-        V_pi= deepcopy(V)
-        while err > tol:
-            V_old = deepcopy(V_pi)
-            V_pi = p_pi.dot(V_old)
-            V_pi = np.minimum((V_pi - max_reward) * self._gamma,
-                              self._reward - max_reward) + max_reward
-            err = np.linalg.norm(V_old - V_pi, ord= float('inf'))
-            print(err)
-        return V_pi
+            tol = self.tol
+            err = tol * 2
 
-    def _bellman_backup(self, V=None, pi_ref=None):
+            if pi is not None:
+                V_pi = deepcopy(V)
+                while err > tol:
+                    V_old = deepcopy(V_pi)
+                    V_pi = p_pi.dot(V_old)
+                    V_pi = np.minimum((V_pi - max_reward) * self._gamma,
+                                      self._reward - max_reward) + max_reward
+                    err = np.linalg.norm(V_old - V_pi, ord=float('inf'))
+                return V_pi, t_pi
+            else:
+                V_mat = np.zeros([self.num_actions2, self.num_actions,
+                                      self.num_states])
+                for a2 in range(self.num_actions2):
+                    V_pi = deepcopy(V)
+                    for a1 in range(self.num_actions):
+                        while err > tol:
+                            V_old = deepcopy(V_pi)
+                            p_pi = self.p_trans[a2, a1]
+                            V_pi = p_pi.dot(V_old)
+                            V_pi = np.minimum((V_pi - max_reward) * self._gamma,
+                                              self._reward - max_reward) + max_reward
+                            err = np.linalg.norm(V_old - V_pi, ord=float('inf'))
+                            print(err)
+                    V_mat[a2, a1 :] = V_pi
+                return V_mat, t_pi
+
+
+
+        else:
+            t_pi_start = time.time()
+            p_pi = self._p_trans[act2_pi, act_pi, range(nS), :]
+            t_pi = time.time() - t_pi_start
+            if not converge:
+                V_out = p_pi.dot(V)
+                V_out = np.minimum((V_out - max_reward) * self._gamma,
+                              self._reward - max_reward) + max_reward
+                return V_out, t_pi
+
+            tol = self.tol
+            err = tol * 2
+        
+            V_pi= deepcopy(V)
+            while err > tol:
+                V_old = deepcopy(V_pi)
+                V_pi = p_pi.dot(V_old)
+                V_pi = np.minimum((V_pi - max_reward) * self._gamma,
+                              self._reward - max_reward) + max_reward
+                err = np.linalg.norm(V_old - V_pi, ord= float('inf'))
+                print(err)
+            return V_pi, t_pi
+
+    def _bellman_backup(self, V=None):
         """Performs one bellman backup on the value function V."""
 
         if V is None:
@@ -225,11 +311,20 @@ class MDP(TransitionModel):
         ones_vec = np.ones([self.num_states, 2]).astype(int)
         pi = ones_vec * 0
 
-        V_out = self._policy_backup(V, pi)
-        pi_greedy = deepcopy(pi)
+        V_mat = np.zeros([self.num_actions2, self.num_actions,
+                          self.num_states])
+
+        if not self.sparse:
+            for act2 in range(0, self.num_actions2):
+                for act in range(0, self.num_actions):
+                    pi = ones_vec * np.array([act, act2])
+                    V_mat[act2, act, :], _ = self._policy_backup(V, pi)
+        else:
+            V_mat, _ = self._policy_backup(V)
+
         
         if self.num_actions == 1 and self.num_actions2 == 1:
-            return V_out, pi_greedy
+            return V_mat[0,0,:], pi
    
         # for act2 in range(0, self.num_actions2)
         #     for act in range(0, self.num_actions):
@@ -239,36 +334,25 @@ class MDP(TransitionModel):
         #                 pi * (V_out < V_act)
         #     V_out = np.maximum(V_out, V_act)
         
-        V_mat = np.zeros([self.num_actions2, self.num_actions,
-                          self.num_states])
 
-        for act2 in range(0, self.num_actions2):
-            for act in range(0, self.num_actions):
-                pi = ones_vec * np.array([act, act2])
-                V_mat[act2, act, :] = self._policy_backup(V, pi)
-        
+
         temp = np.amin(V_mat, axis=0)
         V_out = np.amax(temp, axis=0)
 
-
+        pi_greedy = pi
         pi_greedy[:,0] = np.argmax(temp, axis=0)
         pi_greedy[:, 1] = np.argmin(V_mat[:, pi_greedy[:, 0], range(nS)],
                                     axis=0)
-        # print(V_mat[:, :, 0:4])
-        # print(V_out[0:4])
-        # print(pi_greedy[0:4,:])
-        if pi_ref is not None:
-            print("Pi_ref assertion")
-            assert((V_out>=self._policy_backup(V, pi_ref)).all())
         return V_out, pi_greedy
 
     def _value_iteration(self, V=None, pi=None, one_step=False):
         """Value iteration initialized with initial value function V.
-        """        
+        """
+        t_vi_start = time.time()
         if V is None:
             V = self._reward
         V_opt = deepcopy(V)
-        tol = 10 ** (-3)
+        tol = self.tol
         err = tol * 2
 
         count=0
@@ -281,10 +365,11 @@ class MDP(TransitionModel):
                 break
             print("%i:  %.6e" %(count,err))
             count += 1
-        return V_opt, pi_opt
+        t_vi = time.time() - t_vi_start
+        return V_opt, pi_opt, t_vi
     def _policy_iteration(self, V=None, pi=None):
         """Policy iteration initialized with initial value function V."""
-        
+        t_pi_start = time.time()
         nS = self.num_states
         if V is None:
             V = self._reward
@@ -294,31 +379,27 @@ class MDP(TransitionModel):
         else:
             V_pi = V
 
-        tol = 10 ** (-3)/2
+        tol = self.tol
         
         print("    err (inf norm)")
         count = 0
+        total_overhead = 0
         while True:
             V_old = deepcopy(V_pi)
 
-            #V_old_in = deepcopy(V_pi)
-            V_pi = self._policy_backup(V_old, pi, converge=True)
-            V_pi_temp = self._policy_backup(V_pi, pi)
-            V_opt, pi_opt = self._bellman_backup(V_pi, pi)
+            V_pi, t_overhead = self._policy_backup(V_old, pi, converge=True)
+            total_overhead += t_overhead
+            V_opt, pi_opt = self._bellman_backup(V_pi)
             err = np.linalg.norm(V_opt - V_old, ord= float('inf'))
             print("%i:  %.6e" %(count, err))
-            if count > 0:
-                print("Assertion")
-                print(np.min(V_opt-V_pi_temp))
-                assert((V_opt>=V_pi).all())
             count += 1
             # Check for policy convergence.
-            print(err)
-            if (pi_opt == pi).all() or err<tol: 
+            if (pi_opt == pi).all() or err<tol:
                 break
             pi = pi_opt
             V_pi = V_opt
-        return V_opt, pi_opt
+        t_pi = time.time() - t_pi_start - total_overhead
+        return V_opt, pi_opt, t_pi
 
     def v_pi_opt(self, V=None, pi=None, method='vi',force_run=False):
         """Rerurn optimal value function and policy.
@@ -349,11 +430,12 @@ class MDP(TransitionModel):
               "and policy using {}... ".format(name))
         
         t_start = time.time()
-        self._v_opt, self._pi_opt = {'vi': self._value_iteration,
+        self._v_opt, self._pi_opt, t_run = {'vi': self._value_iteration,
                                      'pi': self._policy_iteration}\
                                      [method](V,pi)
         
         print("Done. Elapsed time {}.\n".format(time.time()-t_start))
+        print("Time to run method", t_run)
         return self._v_opt, self._pi_opt
     
     def update(self):

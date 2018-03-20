@@ -6,6 +6,7 @@ from scipy.interpolate import RegularGridInterpolator
 from mdp.grid_world import GridWorld as GridWorldDiscrete, state_to_idx
 from mdp.dynamics import Dynamics
 from sklearn.utils.extmath import cartesian
+from scipy.sparse import csr_matrix
 import time
 from copy import deepcopy
 
@@ -41,7 +42,8 @@ class GridWorld(GridWorldDiscrete):
     """
 
     def __init__(self, num_nodes, s_lims, num_nodes_a=None, a_lims=None, 
-                 num_nodes_a2=None, a2_lims=None, dynamics=None, gamma=None):
+                 num_nodes_a2=None, a2_lims=None, dynamics=None, gamma=None,
+                 sparse=False):
 
         # Preparing grid
         if num_nodes_a is None or a_lims is None:
@@ -120,7 +122,9 @@ class GridWorld(GridWorldDiscrete):
         dt = (1.0 / np.amax(np.abs(deriv.reshape([-1,dims])) / ds))
         self._dt = dt 
         next_states = np.zeros([num_actions, num_states, dims])
-        
+        if sparse:
+            p_trans = {}
+        t_start = time.time()
         for act2_idx, action2 in enumerate(all_actions2):
             for act_idx, action in enumerate(all_actions):
                 next_states = dyn.integrate(dt, all_states, action, action2)
@@ -129,6 +133,8 @@ class GridWorld(GridWorldDiscrete):
                 grid_idx_min = np.floor(temp).astype(int)
                 # Interp weight for the lower idx of each dimension 
                 alpha = 1 - (temp - grid_idx_min)
+                if sparse:
+                    p_trans_indiv = csr_matrix((num_states, num_states))
                 for shift in interp_region:
                     interp_grid_idx = np.minimum(np.maximum(grid_idx_min +
                                                             shift, 0),
@@ -138,10 +144,16 @@ class GridWorld(GridWorldDiscrete):
                                             (1 - alpha) * shift, axis=1)
                     temp = list(state_to_idx(interp_grid_idx, 
                                              np.array(num_nodes)))
-
-                    p_trans[act2_idx, act_idx, range(num_states), temp] += \
+                    if sparse:
+                        shift_vals = csr_matrix((interp_weight, (range(
+                            num_states), temp)), shape=(num_states, num_states))
+                        p_trans_indiv = p_trans_indiv + shift_vals
+                    else:
+                        p_trans[act2_idx, act_idx, range(num_states), temp] += \
                         interp_weight
-        
+                if sparse:
+                    p_trans[(act2_idx, act_idx)] = p_trans_indiv
+        print('Time to convert to csr', time.time() - t_start)
         super().__init__(num_nodes, p_trans, all_states,
                  all_actions, all_actions2, gamma)
 
@@ -243,12 +255,10 @@ class GridWorld(GridWorldDiscrete):
 
     @dynamics.setter
     def dynamics(self, dynamics):
-        s_min = s_lims[0, :]
-        s_max = s_lims[1, :]
-        a_min = a_lims[0, :]
-        a_max = a_lims[1, :]
-        a2_min = a2_lims[0, :]
-        a2_max = a2_lims[1, :]
+        s_min = self._s_lims[0, :]
+        ds = self._ds
+        num_actions = self._num_nodes_a
+        num_states = self.num_states
         dims = len(self._num_nodes)
         deriv = np.zeros([self._num_actions, self._num_states, dims])
         p_trans = np.zeros([self._num_actions2, self._num_actions, 
@@ -298,6 +308,14 @@ class GridWorld(GridWorldDiscrete):
                     p_trans[act2_idx, act_idx, range(num_states), temp] += \
                         interp_weight
 
+        if self.sparse:
+            p_trans_new = np.zeros((self._num_nodes_a2,self._num_nodes_a))
+            for a2, a1 in zip(self._all_actions2_c, self._all_actions_c):
+                p_trans_new[a2][a1] = csr_matrix(p_trans[a2, a1])
+            p_trans = p_trans_new
+
+        self._p_trans = p_trans
+
 class Avoid(GridWorld):
     """MDP to compute safe set for a specified avoid set.
 
@@ -318,9 +336,10 @@ class Avoid(GridWorld):
     """
     def __init__ (self, num_nodes, s_lims, num_nodes_a=None, a_lims=None, 
                   num_nodes_a2=None, a2_lims=None, dynamics=None, 
-                  avoid_func=None, lamb=0):
+                  avoid_func=None, lamb=0, sparse=False):
         
-        super().__init__(num_nodes, s_lims, num_nodes_a, a_lims, num_nodes_a2, a2_lims, dynamics)
+        super().__init__(num_nodes, s_lims, num_nodes_a, a_lims,
+                         num_nodes_a2, a2_lims, dynamics, sparse=sparse)
         dt = self._dt
         self._gamma = np.exp(-dt * lamb)
         self._reward = avoid_func(self._all_states)

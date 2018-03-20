@@ -44,7 +44,7 @@ class Dynamics(object):
         return self._x_dot(state, con_array, dis_array)
 
 
-    def integrate(self, t, state, control, disturbance, steps=10):
+    def integrate(self, t, state, control, disturbance, steps=1):
         """Intergrate ODE using Runge-Kutta 4 scheme.
 
         Args:

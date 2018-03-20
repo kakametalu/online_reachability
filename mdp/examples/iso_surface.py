@@ -35,7 +35,7 @@ from scipy.interpolate import griddata
 if __name__ == "__main__":
 
     # Grid parameters
-    num_nodes = np.array([41, 41, 41]) 
+    num_nodes = np.array([121, 121, 121])
     s_lims = np.array([[-10,-10,0],[10,10,2*np.pi]]) #state space limits
     num_nodes_a = np.array([2])
     a_lims = np.array([[-1],[1]]) #action/control limits
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     lamb = 0.1 #lambda
     my_world = Avoid(num_nodes, s_lims, num_nodes_a, a_lims, num_nodes_d, 
     	             d_lims, dynamics=dynamics, avoid_func=avoid_func,
-    	             lamb=lamb)
+    	             lamb=lamb, sparse=True)
     grid = my_world._all_states_c
     grid_axes = my_world.axes
     value, _ =  my_world.v_pi_opt(method='vi')
