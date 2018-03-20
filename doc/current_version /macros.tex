@@ -1,3 +1,4 @@
+% !TEX root = main_min_disc_dist.tex
 \usepackage{amsmath}
 \usepackage{amsfonts}
 %\usepackage{amsthm}
@@ -30,38 +31,40 @@
 
 \usepackage{url}
 \usepackage{hyperref}
-%\usepackage[%
-%    style=verbose,
-%    sorting=nyt,
-%    backend=bibtex,
-%    sortcites=true,
-%    doi=false,
-%    firstinits=true,
-%    hyperref,
-%    isbn=false,
-%    eprint=false,
-%    maxcitenames=3,
-%    block=none]
-%    {biblatex}
-%    
-%    \renewbibmacro{in:}{}
-%    \AtEveryBibitem{
-%  	\clearlist{language}
-%	\clearfield{pages}
-%	}
-%	
-%\DeclareBibliographyCategory{needsurl}
-%\newcommand{\entryneedsurl}[1]{\addtocategory{needsurl}{#1}}
-%\renewbibmacro*{url+urldate}{%
-%  \ifcategory{needsurl}{
-%    \printfield{url}%
-%    \iffieldundef{urlyear}
-%      {}
-%      {\setunit*{\addspace}%
-%       \printurldate}}
-%    {}}
+\usepackage[%
+   style=ieee,
+   sorting=nyt,
+   backend=bibtex,
+   sortcites=true,
+   doi=false,
+   firstinits=true,
+   hyperref,
+   isbn=false,
+   eprint=false,
+   maxcitenames=3,
+   block=none]
+   {biblatex}
+   
+   \renewbibmacro{in:}{}
+   \AtEveryBibitem{
+ 	\clearlist{language}
+	\clearfield{pages}
+	\clearfield{number}
+	\clearfield{volume}
+	}
 
+\DeclareBibliographyCategory{needsurl}
+\newcommand{\entryneedsurl}[1]{\addtocategory{needsurl}{#1}}
+\renewbibmacro*{url+urldate}{%
+ \ifcategory{needsurl}{
+   \printfield{url}%
+   \iffieldundef{urlyear}
+     {}
+     {\setunit*{\addspace}%
+      \printurldate}}
+   {}}
 
+\renewcommand*{\bibfont}{\small}
 
 
 
@@ -152,3 +155,7 @@
 
 \newenvironment{for_journal}{\par\color{blue}}{\par}
 
+\newenvironment{needs_work}{\par\color{red}}{\par}
+
+% \bibliographystyle{ieeetr}
+\bibliography{library}

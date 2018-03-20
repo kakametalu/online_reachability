@@ -36,6 +36,7 @@ var/
 *.blg
 *.fdb_latexmk
 *.fls
+*.bbl
 
 
 # PyInstaller

@@ -1,37 +1,41 @@
 % !TEX root = main_min_disc_dist.tex
 
-Recently, there has been interest in leveraging data, either from real systems or simulators, to learn reachable sets. This has been applied in instances where a system model is unknown or for training function approximators to more efficiently approximate reachable sets for high dimensional systems. 
+When the system model is unknown or complex, the reachable set must be learned from data. There are two approaches for this: model-based RL and model-free RL. In this section we will focus on the model-based approach, and conclude with a brief discussion on the model-free approach and its connection to reinforcement learning (RL).
 
-In this section we briefly explore how the MDR formulation allows one to leverage algorithms from RL. A key insight to be taken from here is that much of RL has been aimed at finding the fixed point solution to a contraction mapping (known as the Bellman operator), associated with the infinite-horizon SDR problem, thus many of the techniques developed for RL can be applied to solving minimum discounted reward problems with an appropriate change in the operator.
+For ease of presentation we consider the one player case.
+ % Learning reachable sets for systems with unknown dynamics has 
+ % In this section we briefly explore how the MDR formulation allows one to leverage algorithms from RL for the purpose of learning reachable sets when the system model is unknown or when using function approximators to represent the reachable sets for high dimensional systems. A key insight to be taken from here is that much of RL has been aimed at finding the fixed point solution to the backup operator associated with the infinite-horizon SDR problem thus many of the techniques developed for RL can be applied to solving MDR problems with an appropriate change in the operator.
 
-\subsection{Model-based Learning}
+\subsection{Model-based}
 
-When the system model is unknown then the value function must be computed from data. There are two approaches for this: model-based RL and model-free RL. Here we focus on the former. 
+In the model-based approach the model is assumed to be parameterized by a parameter vector $\theta$. %The data consists of a sequence of state transitions obtained from a real system or simulator $\{(x_i, u_i,x_i^+)\}_i$, where $x^+$ is the next state after applying action $u$ at state $x$ and $\Delta t$ is the time step. 
+%
+The data is first used to fit the parameters, and then the value function is computed given the model. As more data is collected the process can be repeated. Here we are intentionally vague about the data and the fitting process, and we focus our attention on how to obtain the value function given the fitted model.
 
-In the model-based case the model is assumed to be parameterized and the parameters are fit using the data. In \cite{Akametalu2014,Gillula2012a} the authors alternate between collecting data, fitting a parametric model, and computing the value function under formulation \eqref{eq:min_dist_functional}.
-
-If we take the model parameter to be $\theta$, we can look at this process as generating a sequence of models $\{f_{\theta_k}(x,u)\}$ and vectorized value functions $\{\vec{V}_{\theta_k}\}$. Given formulation \eqref{eq:min_dist_functional}the DP algorithm must be initialized with $\vec{l}$ every time a new value function is computed. However, if the model parameters do not change much, then $\vec{V}_{\theta_k}$ is a good estimate of $\vec{V}_{\theta_{k+1}}$, and with the discounted formulation it can be used to initialize the DP algorithm for faster convergence.\footnote{Technically $\vec{U}_{\theta_{k+1}}= \vec{V}_{\theta_{k+1}}-L$ would be used.} Better yet, the contraction mapping can provide insight on whether $\vec{V}_{\theta_{k+1}}$ or $\vec{l}$ is a better initialization. Consider this classical result on contraction mappings. 
-
-\begin{proposition} If $M(\cdot): \RR^{N_G} \rightarrow \RR^{N_G}$ is a contraction mapping in the norm $|| \cdot ||$ over the space $\RR^{N_G}$ with Lipschitz constant $0\leq \beta < 1$ and fixed-point $\vec{A}^*$, then for any $\vec{A} \in \RR^{N_G}$,  $||\vec{A}^* - \vec{A}|| \leq \frac{1}{1-\beta}||M(\vec{A}) - \vec{A}||$. 
+The data collection and fitting produce a sequence of parameters $\{\theta_k\}_k$, which in turn corresponds to a sequence of models $\{f_{\theta_k}\}_k$ and vectorized value functions $\{\vec{V}_{\theta_k}\}_k$ for the MR setting and $\{\vec{U}_{\theta_k}\}_k$ for the MDR setting. With the MR formulation the value iteration algorithm must be initialized with $\vec{l}$ every time a new value function is computed. However, with the MDR formulation $\vec{U}_{\theta_k}$ can be used as the initialization when computing $\vec{U}_{\theta_{k+1}}$. Assuming regularity in the dynamics (with respect to $\theta$), if the parameters only deviate slightly between iterations then $\vec{U}_{\theta_{k}}$should be a good approximation of $\vec{U}_{\theta_{k+1}}$, resulting in faster convergence. If this is not the case then $\vec{l}$ can be used as the default initialization. Furthermore, the following classical result on contraction mappings can provide insight on selecting the initialization:  
+%
+\begin{proposition} \label{prop:init_dist}
+If $M(\cdot): \RR^{N_G} \rightarrow \RR^{N_G}$ is a contraction mapping in the norm $|| \cdot ||$ over the space $\RR^{N_G}$ with Lipschitz constant $0\leq \kappa < 1$ and fixed-point $\vec{A}^*$, then for any $\vec{A} \in \RR^{N_G}$,  $||\vec{A}^* - \vec{A}|| \leq \frac{1}{1-\kappa}||M(\vec{A}) - \vec{A}||$. 
 \end{proposition}
 
-An upper bound for the distance between a potential initialization and the fixed-point can be obtained by applying the operator once, after which one can choose the initialization with the lowest upper bound.
+Given Proposition \ref{prop:init_dist}, when computing $\vec{U}_{\theta_{k+1}}$an upper bound can be computed on its distance to $\vec{U}_{\theta_{k+1}}$ and $\vec{l}$ by applying the contraction mapping to each. The initialization can then be selected to minimize this upper bound. In the worst case only one additional backup operation is performed compared to the default case. 
 
-\subsection{Temporal Difference Learning}
+\subsection{Model-free}
 
-\emph{Note: Here parameterization refers to a function approximation, in the previous section it referred to the model.}
+Another approach to handling an unknown model, is to compute the value function directly from the data. This is the approach taken in many RL algorithms that attempt to approximate the value function for SDR problems with unknown models.
 
-Temporal difference (TD) learning is at the heart of many model-free RL techniques that try to learn some type of value function in the SDR setting including TD-lambda, Q-learning, Deep Q Networks, actor-critic methods, etc. The main idea behind TD is to parameterize the value function with a function approximator \footnote{A simple function approximator would be interpolation on a grid where the parameters are the grid node values}, define a loss function on the parameters that is minimized when the value function is the fixed-point of the Bellman operator, and to update the parameters by performing stochastic gradient descent with sample transitions from the system or simulator. For ease of presentation consider an autonomous system $f(x)$, and a sequence of state transitions obtained from the system $\{(x_i,x_i^+)\}$, where $x^+=\bx_x(\Delta t)$ and $\Delta t$ is the time step. If the value function is approximated by $V_w(x)$ with parameters $w$, then the loss function and update rule for TD are given by
+Temporal difference (TD) learning is at the heart of many of these methods, which includes TD-lambda, Q-learning, Deep Q Networks, and actor-critic methods. The key idea is to represent the value function with a parametric function approximator \footnote{A simple function approximator would be interpolation on a grid where the parameters are the grid node values.}, define a loss function on the parameters that is minimized when the value function is the fixed-point of the SDR backup operator, and to update the parameters by performing stochastic gradient descent on the loss function with samples from a real system or simulator.
 
+For ease of presentation consider an autonomous system $f(x)$ (which might be due to a fixed policy), and a sequence of state transitions obtained from the system $\{(x_i,x_i^+)\}$, where $x^+=\bx_x(\Delta t)$ and $\Delta t$ is the time step. If the value function is approximated by $V_w(x)$ with parameters $w$, then the loss function and update rule for TD are given by
+%
 \begin{equation}
 \begin{split}
 &\L(w)=\big(V_{w}(x) - (r(x)+\gamma V_{w}(x^+))\big)^2\\
 &w_{i+1} \leftarrow w_i + \alpha\frac{\partial V_{w_i}}{\partial w}(x)\big((r(x)+\gamma V_{w_i}(x^+))\big)- \big(V_{w_i}(x)\big),
 \end{split}
-\end{equation}
-
-\noindent where $\alpha \in [0,1]$ is the learning rate. We propose an analogous loss function and update rule for the MDR setting,
-
+\end{equation}%
+\noindent where $\alpha \in [0,1]$ is the learning rate. A similar idea can be used in the MDR setting. Taking the approximation $U_w(x)$ with parameter $w$, the loss function and update rule for the MDR setting would be
+%
 \begin{equation}
 \begin{split}
 &\L(w)=\big(U_{w}(x) - \min\{h(x),\gamma U_{w}(x^+)\}\big)^2\\
@@ -39,9 +43,8 @@ Temporal difference (TD) learning is at the heart of many model-free RL techniqu
 \end{split}
 \end{equation}
 
-A similar modification can be made to most of the other algorithms TD-based algorithms mentioned. 
+A similar modification can be made to the other TD-based algorithms, in particular those that take into account control actions. We leave the investigation of these ideas for future work. 
 
-In \cite{Akametalu2015} the authors present the TD algorithm for the MR setting, however the initialization of $w$ becomes critical for the overall convergence properties since the DP operator used to derive it has many fixed points.
 
 
 
