@@ -9,9 +9,9 @@ from mpl_toolkits.mplot3d import Axes3D
 if __name__ == "__main__":
     
     # Grid parameters
-    num_nodes = np.array([41, 41])
+    num_nodes = np.array([81, 81])
     s_lims = np.array([[-1,-5],[5,5]]) #state space limits
-    num_nodes_a = np.array([2])
+    num_nodes_a = np.array([500])
     a_lims = np.array([[0],[1]]) #action/control limits
 
     #Dynamical system (double integrator model)
@@ -30,12 +30,12 @@ if __name__ == "__main__":
     # Make MDP
     lamb = 0.1 #lambda
     my_world = Avoid(num_nodes, s_lims, num_nodes_a, a_lims, dynamics=dynamics,
-                     avoid_func=avoid_func, lamb=lamb)
+                     avoid_func=avoid_func, lamb=lamb, sparse=True)
 
     # Compute value function and policy
-    v_opt, pi_opt = my_world.v_pi_opt(method='pi')
+    v_opt, pi_opt = my_world.v_pi_opt(method='vi')
 
-    # Computing anaylytic safe set
+    # Computing analytic safe set
     s_min = s_lims[0]
     s_max = s_lims[1]
     x = range(my_world.num_nodes[0]) * my_world.ds[0] + s_min[0] 
