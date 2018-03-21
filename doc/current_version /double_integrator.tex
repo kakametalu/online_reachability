@@ -1,8 +1,10 @@
-We present a double integrator example, with state $(x_1, x_2)$, control $u \in [u_{min}, u_{max}]$ and disturbance $d \in [d_{min}, d_{max}]$ with dynamics,
+% !TEX root = main_min_disc_dist.tex
+
+We present a double integrator example, with state $(x_1, x_2)$, control input ${u \in [u_{min}, u_{max}]}$ and disturbance ${d \in [d_{min}, d_{max}]}$ with dynamics,
 \begin{equation}
 \begin{split}
-\dot{x_1} & = x_2 \\
-\dot{x_2} & = u \cdot(u_{max}-u_{min}) + u_{min} + d \cdot (d_{max}-d_{min}) + d_{min}
+\dot{x_1} & = x_2 \enspace,\\
+\dot{x_2} & = u \cdot(u_{max}-u_{min}) + u_{min} + d \cdot (d_{max}-d_{min}) + d_{min}\enspace.
 \end{split}
 \end{equation}
 In our experiments, we discretize the state space, to a $161 \times 161$ grid; control space and disturbance space. 
