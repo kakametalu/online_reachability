@@ -34,15 +34,3 @@ We next compare value iteration and policy iteration with increasing number of d
 \end{table}
 
 Finally, we ran value iteration from different initializations, the signed distance function $Z_0 = l(\cdot)$ and an all zeros $Z_0= 0$. The converged values functions had a norm of $0.000299$ between them, suggesting that MDR converges independent of the initialization. However, running MR with $V_0 = 0$, does not converge to the true value function.
-
-\begin{table}
-\centering
-\caption{Time taken for value iteration (VI) to converge with Multigrid}
-\label{tab:v_vs_p}
-\begin{tabular}{|c| c| c| c| }
-\hline
-\# nodes & VI fine grid & VI coarse grid & MR \\ \hline
-$41^3$ & $26.706$ & $2.255$ & $25.713$ \\ \hline
-$81^3$ & $569.257$ & $29.878$ & $539.524$ \\ \hline
-\end{tabular}
-\end{table}
