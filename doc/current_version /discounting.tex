@@ -6,20 +6,20 @@ Inspired by the SDR setting, we now present the MDR optimal control problem. Mov
 A natural proposal for the outcome of the MDR problem would be
  
 \begin{equation}
-\inf_{t\ge 0}l\big(\bx_{x}^{\bu,\bdelta}(t)\big)\exp(-\lambda  t).
+\inf_{t\ge 0}l\big(\bx_{x}^{\bu,\bdelta}(t)\big)\exp(-\lambda  t) \enspace.
 \end{equation}
 
 However, there is an issue with defining this outcome. Recall that discounting makes rewards contribute less to the outcome the further they occur in the future. Since we take an infimum, the discounted reward should become more positive the further it occurs in the future making it less likely to be selected by the infimum. This only works if the reward is nonpositive everywhere, which is not the case for $l$, since it is a clipped signed distance. This is easily fixed with the following outcome for the MDR problem
 %
 \begin{equation}
-\mathcal{Z}\big(x,\bu(\cdot),\bdelta(\cdot)\big) := L + \inf_{t\ge 0}(l\big(\bx_{x}^{\bu,\bdelta}(t)\big)-L)\exp(-\lambda  t).
+\mathcal{Z}\big(x,\bu(\cdot),\bdelta(\cdot)\big) := L + \inf_{t\ge 0}(l\big(\bx_{x}^{\bu,\bdelta}(t)\big)-L)\exp(-\lambda  t) \enspace.
 \end{equation}%
 \noindent The quantity in the infimum is always nonpositive since $L$ upperbounds $l(x)$ by construction. Note that if ${\lambda=0}$, i.e. no discounting, then we have the minimum reward outcome \eqref{eq:min_dist_functional}. 
 
 We define the MDR value function as
 %
 \begin{equation} \label{eq:mdr_val_function}
-Z(x):=\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU}\mathcal{Z}\big(x,\bu(\cdot),\beta[\bu](\cdot)\big).
+Z(x):=\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU}\mathcal{Z}\big(x,\bu(\cdot),\beta[\bu](\cdot)\big) \enspace.
 \end{equation}
 
 For convenience we define two functions ${U(x):=Z(x)-L}$ and ${h(x):=l(x)-L}$. 
@@ -27,7 +27,7 @@ For convenience we define two functions ${U(x):=Z(x)-L}$ and ${h(x):=l(x)-L}$.
 \begin{proposition}\label{prop:visc}
 The function $U(x)$ is the unique viscosity solution to the following time-independent HJ equation
 \begin{equation} \label{eq:HJ_mdr}
-    0 = \min \left\{h(x)-U(x), \max_{u\in\U} \min_{ d\in\D} \!\!\frac{\partial U}{\partial x}(x) f(x,u, d) - \lambda U(x)\right\}.
+    0 = \min \left\{h(x)-U(x), \max_{u\in\U} \min_{ d\in\D} \!\!\frac{\partial U}{\partial x}(x) f(x,u, d) - \lambda U(x)\right\} \enspace.
 \end{equation}
 \end{proposition}%
 \noindent Due to space constraints we omit the proof for Proposition \ref{prop:visc}, which follows the same structure as the viscosity proofs presented in \cite{Evans1984}. 
@@ -50,28 +50,30 @@ The function $U(x)$ is the unique viscosity solution to the following time-indep
 The discrete approximation of \eqref{eq:HJ_mdr} is given by
 %
 \begin{equation}\label{eq:U_approx}
-    U_{\Delta t} (x) = \min\left\{h(x), \max_{u\in\U} \min_{ d\in\D}  \gamma U_{\Delta t}(x+\Delta tf(x,u,d))\right\},
+    U_{\Delta t} (x) = \min\left\{h(x), \max_{u\in\U} \min_{ d\in\D}  \gamma U_{\Delta t}(x+\Delta tf(x,u,d))\right\} \enspace,
 \end{equation}%
 \noindent which can be solved on a grid $G$ via value iteration 
 %
 \begin{subequations} \label{eq:val_iter_backup}
 \begin{align}
-&\vec{U}^{0} \in \RR^N_G\\
-&\vec{U}^{k+1} = B[U^k]\\
-&\vec{U} = \lim_{k\rightarrow \infty} \vec{U}^{k}
+&\vec{U}^{0} \in \RR^N_G \enspace,\\
+&\vec{U}^{k+1} = B[U^k] \enspace,\\
+&\vec{U} = \lim_{k\rightarrow \infty} \vec{U}^{k} \enspace,
 \end{align}
 \end{subequations}%
 \noindent with the backup operator defined as
 %
 \begin{equation} \label{eq:backup_mdr}
 B[\vec{A}] := \min\left\{ \vec{h}, \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d} \vec{A} \right \}
+\enspace,
 \end{equation}%
 \noindent where $\vec{h}_i = h(x_i)$. The MDR value function $Z(x)$ is then approximated by $I[\vec{U}](x)+L$, where again $I[\vec{U}](\cdot)$ is the interpolation operator. We now prove that \eqref{eq:backup_mdr} is a contraction.
 
 %
-\begin{lemma}\label{lem:maxmin} For any two functions $q, g: A \times B \rightarrow \RR$
+\begin{lemma}\label{lem:maxmin} For any two functions $q, g: A \times B \rightarrow \RR$,
 \begin{equation}
 |\max_a \min_b q(a,b) -\max_a \min_b g(a,b)| \leq \max_a \max_b |q(a,b) - g(a,b)|
+\enspace.
 \end{equation}
 \end{lemma}
 %
@@ -94,34 +96,35 @@ with $b_{gg} :=\displaystyle{\arg\min_b g(a_q,b)}$.
 \begin{proposition} 
 The operator given by \eqref{eq:backup_mdr} is a contraction mapping in the infinity norm $|| \cdot ||_{\infty}$ on the space $\RR^{N_G}$.
 \end{proposition}
-\begin{proof} Defining $B[\cdot]$ as in \eqref{eq:backup_mdr}, take two vectors $A_1, A_2 \in \RR^{N_G}$
+\begin{proof} Defining $B[\cdot]$ as in \eqref{eq:backup_mdr}, take $A_1, A_2 \in \RR^{N_G}$:
 \begin{equation*}
 \begin{split}
 &||B[\vec{A}_1] - B[\vec{A}_2]||_{\infty}=\\
 &||\min\left\{ \vec{h}, \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d} \vec{A}_1 \right \}  - \min\left\{ \vec{h}, \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d} \vec{A}_2 \right \}||_{\infty}
+\enspace .
 \end{split}
 \end{equation*}%
 \noindent Leveraging the identity $\min\{a,b\} = \frac{1}{2}((a+b)- |a-b|)$ and using the shorthand $\Pi[\vec{A}]=\underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d} \vec{A}$ , the above is equal to 
 %
 \begin{equation*}
-\frac{1}{2} ||(\Pi[\vec{A}_1]  - \Pi[\vec{A}_2] ) -  (|\Pi[\vec{A}_1]-\vec{h}|  - |\Pi[\vec{A}_2]-\vec{h}|)||_{\infty},
+\frac{1}{2} ||(\Pi[\vec{A}_1]  - \Pi[\vec{A}_2] ) -  (|\Pi[\vec{A}_1]-\vec{h}|  - |\Pi[\vec{A}_2]-\vec{h}|)||_{\infty} \enspace,
 \end{equation*}%
 \noindent which by the triangle inequality, is upper bounded by
 %
 \begin{equation*}
-\frac{1}{2} ||(\Pi[\vec{A}_1]  - \Pi[\vec{A}_2] )||_{\infty} + \frac{1}{2}  ||(|\Pi[\vec{A}_1]-\vec{h}|  - |\Pi[\vec{A}_2]-\vec{h}|)||_{\infty}.
+\frac{1}{2} ||(\Pi[\vec{A}_1]  - \Pi[\vec{A}_2] )||_{\infty} + \frac{1}{2}  ||(|\Pi[\vec{A}_1]-\vec{h}|  - |\Pi[\vec{A}_2]-\vec{h}|)||_{\infty} \enspace.
 \end{equation*}%
 \noindent Given the inequality $|a-b| > |(|a|-|b|)|$, this has upper bound
 %
 \begin{equation*}
 \begin{split}
 &||(\Pi[\vec{A}_1]  - \Pi[\vec{A}_2] )||_{\infty}=\\ 
-&||\underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d}\vec{A}_1 - \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d} \vec{A}_2||_{\infty}.
+&||\underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d}\vec{A}_1 - \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d} \vec{A}_2||_{\infty} \enspace.
 \end{split}
 \end{equation*}%
 \noindent Finally from Lemma \ref{lem:maxmin}, the last upper bound is 
 \begin{equation*}
-\underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\max} ||\gamma P_{\pi_u, \pi_d} (\vec{A}_1 - \vec{A}_2)||_{\infty} \leq \gamma||\vec{A}_1 - \vec{A}_2||_{\infty},
+\underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\max} ||\gamma P_{\pi_u, \pi_d} (\vec{A}_1 - \vec{A}_2)||_{\infty} \leq \gamma||\vec{A}_1 - \vec{A}_2||_{\infty} \enspace,
 \end{equation*}%
 \noindent where the last inequality comes from the fact that $P_{\pi_u, \pi_d}$ is a stochastic matrix for all policies, thus $||P_{\pi_u, \pi_d}||_{\infty} = 1$.
 \end{proof}
@@ -134,29 +137,30 @@ With MDR formulation there is no particular level curve of the value function th
 We have the inequality $Z(x) \geq V(x)$ because the terms being discounted in the outcome are nonpositive. It immediately follows that
 %
 \begin{equation} \label{eq:reach_set}
-\{x \mid V_{\lambda}(x) \le 0\} \subseteq \R(\T),
+\{x \mid V_{\lambda}(x) \le 0\} \subseteq \R(\T) \enspace,
 \end{equation}  
 
 For an over-approximation we first need to characterize the error between $Z(x)$ and $V(x)$. The difference between the two functions can be bounded. Define $\tau(x)$ as the time when the minimum distance to the target is achieved for a trajectory starting at state $x$ under the optimal control and disturbance signals. Then we have the following bound
 %
 \begin{equation}
-Z(x) - V(x)  \leq (L - l(\bx_{x}^{\bu,\bdelta}(\tau(x))))( 1 -  \exp(-\lambda \tau(x))) 
+Z(x) - V(x)  \leq (L - l(\bx_{x}^{\bu,\bdelta}(\tau(x))))( 1 -  \exp(-\lambda \tau(x)))
+\enspace.
 \end{equation}%
 \noindent Noting that $V(x)=l(\bx_{x}^{\bu,\bdelta}(\tau(x)))$, we get the resulting inequality
 %
 \begin{equation} \label{eq:val_error}
-Z(x) -  V(x) \exp(-\lambda \tau(x)) \leq L( 1 -  \exp(-\lambda \tau(x))), 
+Z(x) -  V(x) \exp(-\lambda \tau(x)) \leq L( 1 -  \exp(-\lambda \tau(x))) \enspace,
 \end{equation}%
 \noindent Furthermore, outside the reachable set $V(x)>0$ leading to
 %
 \begin{equation}
-Z(x) -  V(x)  \leq L( 1 -  \exp(-\lambda \tau(x))) \quad \forall x \not\in \R(\T).
+Z(x) -  V(x)  \leq L( 1 -  \exp(-\lambda \tau(x))) \quad \forall x \not\in \R(\T) \enspace.
 \end{equation}
 
 Assuming an upper bound  ${\bar{\tau} \geq \tau(x)}$, we have the following over-approximation for the reachable set
 %
 \begin{equation} \label{eq:reach_set}
-\R(\T) \subseteq  \{x \mid Z(x) \le L( 1 -  \exp(-\lambda \bar{\tau})) \}.
+\R(\T) \subseteq  \{x \mid Z(x) \le L( 1 -  \exp(-\lambda \bar{\tau})) \} \enspace.
 \end{equation} 
 
 It is clear from \eqref{eq:val_error} that the tightness of the approximations can be tuned via the discount rate $\lambda$.
