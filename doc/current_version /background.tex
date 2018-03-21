@@ -59,10 +59,10 @@ This outcome $\V$, also referred to here as the \emph{minimum of rewards}\footno
 % \end{proposition}
 
 
-The reachable set can then be obtained by solving a game between the control and disturbance signal with the restriction that the disturbance signal can only use \emph{nonanticipative strategies}. The set of nonanticipative strategies for the disturbance is $\B = \{\bbeta:\UU\to\DD\;|\;
+The reachable set can then be obtained by solving a game between the controller and disturbance where the disturbance can use \emph{nonanticipative strategies} to respond to the controller's signal. The disturbance's set of nonanticipative strategies is $\B = \{\bbeta:\UU\to\DD\;|\;
 \forall t\ge 0,\; \forall \bu(\cdot),\hat{\bu}(\cdot)\in\UU,$
 ${\big(\bu(\tau) \!=\! \hat{\bu}(\tau)\text{ a.e.} \tau\ge0\big)\Rightarrow
-{\big(\bbeta[\bu](\tau) \!=\! \bbeta[\hat{\bu}](\tau)}{\text{ a.e.} \tau\ge0\big)}}\}$. Intuitively, the disturbance is given an advantage in the game, but its actions at any given time can only depend on what the control has done up to that time. With this in place we can define the \emph{value function} $V(x)$and ultimately the reachable set $\R(\T)$. 
+{\big(\bbeta[\bu](\tau) \!=\! \bbeta[\hat{\bu}](\tau)}{\text{ a.e.} \tau\ge0\big)}}\}$. Intuitively, the disturbance is given an instantaneous informational advantage in the game, but its actions at any given time can only depend on what the controller has done up to that time. With this in place we can define the \emph{value function} $V(x)$ and ultimately the reachable set $\R(\T)$. 
 %
 \begin{equation} \label{eq:val_function}
 V(x)=\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU}\mathcal{V}\big(x,\bu(\cdot),\beta[\bu](\cdot)\big),
