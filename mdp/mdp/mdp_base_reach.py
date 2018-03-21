@@ -232,6 +232,8 @@ class MDP(TransitionModel):
                     V_out = p_pi.dot(V)
                     V_out = np.minimum((V_out - max_reward) * self._gamma,
                                        self._reward - max_reward) + max_reward
+
+                    #V_out = np.minimum(V_out, self._reward)
                     return V_out, t_pi
                 else:
                     V_mat = np.zeros([self.num_actions2, self.num_actions,
@@ -366,7 +368,7 @@ class MDP(TransitionModel):
             print("%i:  %.6e" %(count,err))
             count += 1
         t_vi = time.time() - t_vi_start
-        return V_opt, pi_opt, t_vi
+        return V_opt, pi_opt, t_vi, count
     def _policy_iteration(self, V=None, pi=None):
         """Policy iteration initialized with initial value function V."""
         t_pi_start = time.time()
@@ -399,7 +401,7 @@ class MDP(TransitionModel):
             pi = pi_opt
             V_pi = V_opt
         t_pi = time.time() - t_pi_start - total_overhead
-        return V_opt, pi_opt, t_pi
+        return V_opt, pi_opt, t_pi, count
 
     def v_pi_opt(self, V=None, pi=None, method='vi',force_run=False):
         """Rerurn optimal value function and policy.
@@ -430,13 +432,14 @@ class MDP(TransitionModel):
               "and policy using {}... ".format(name))
         
         t_start = time.time()
-        self._v_opt, self._pi_opt, t_run = {'vi': self._value_iteration,
+        self._v_opt, self._pi_opt, t_run, iter = {'vi': self._value_iteration,
                                      'pi': self._policy_iteration}\
                                      [method](V,pi)
-        
-        print("Done. Elapsed time {}.\n".format(time.time()-t_start))
+        tot_time = time.time()-t_start
+        print("Done. Elapsed time {}.\n".format(tot_time))
         print("Time to run method", t_run)
-        return self._v_opt, self._pi_opt
+        return self._v_opt, self._pi_opt, {'tot_time':tot_time,
+                                           'run_time':t_run, 'iterations':iter}
     
     def update(self):
         """Update the value function by applying one bellman update."""
