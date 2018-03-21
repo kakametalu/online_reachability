@@ -1,6 +1,6 @@
 % !TEX root = main_min_disc_dist.tex
 
-We consider a two player optimal control problem where the first player (control) wants to keep the system away from the target set for a given time horizon and the second player (disturbance) has the opposite objective.\footnote{We can also consider the case where the objectives are switched, and the control wants to drive the system towards the target, by making minor modifications to the material presented here.} The objective is to characterize the \emph{infinite horizon backward reachable set}, which is the set of initial states for which the disturbance wins the game. Going forward all mentions of reachable set refer to the infinite horizon backwards reachable set.
+We consider a two-player optimal control problem where the first player (control) wants to keep the system away from the target set for a given time horizon and the second player (disturbance) has the opposite objective.\footnote{We can also consider the case where the objectives are switched, and the control wants to drive the system towards the target, by making minor modifications to the material presented here.} Our goal is to characterize the \emph{infinite-horizon backward reachable set}, which is the set of initial states for which the disturbance wins the game. Going forward all mentions of reachable set refer to the infinite horizon backwards reachable set.
 
 \subsection{System Model \label{subsec:dynamics}}
 
@@ -9,10 +9,10 @@ We can formalize this as a dynamical system with state $x\in\RR^n$, and two inpu
 (with $\U$ and $\D$ compact)
 which we will refer to as the \emph{controller} and the \emph{disturbance}:
 \begin{equation}\label{fxud}
-\dot{x} = f(x,u, d).
+\dot{x} = f(x,u, d) \enspace.
 \end{equation}
 
-The flow field $f: \RR^n \times \U \times \D\rightarrow\RR^n$ is assumed to be Lipschitz continuous and bounded. In the single player case we drop the disturbance input, and just have $f(x,u):\RR^n \times \U \rightarrow\RR^n$.
+The flow field $f: \RR^n \times \U \times \D\rightarrow\RR^n$ is assumed to be Lipschitz continuous and bounded. In the single-player case we drop the disturbance input, and just have ${f(x,u):\RR^n \times \U \rightarrow\RR^n}$.
 
 Letting $\UU $ and $\DD$ denote the collections of measurable%
 	\footnote{A function $f:X\to Y$ between two measurable spaces $(X,\Sigma_X)$ and $(Y,\Sigma_Y)$
@@ -22,11 +22,11 @@ functions $\bm u: [0,\infty)\to \U $ and $\bm d: [0,\infty)\to \D$ respectively,
 and allowing the controller and disturbance to choose any such signals,
 the evolution of the system
 from any initial state $x$
-is determined (see for example \cite{Coddington1955}, Ch. 2, Theorems 1.1, 2.1) by the unique continuous trajectory $\bx:[0,\infty)\to\RR^n$ solving
+is determined (see for example \cite{Coddington1955}, Ch.~2, Theorems~1.1,~2.1) by the unique continuous trajectory $\bx:[0,\infty)\to\RR^n$ solving
 \begin{equation}\label{eq:xdot}
 \begin{split}
-\dot{\bx}(s) &= f(\bx(s),\bu(s),\bdelta(s)), \text{ a.e. }s\ge 0,\\
-\bx(0) &= x.
+\dot{\bx}(s) &= f(\bx(s),\bu(s),\bdelta(s)), \text{ a.e. }s\ge 0 \enspace,\\
+\bx(0) &= x \enspace.
 \end{split}
 \end{equation}
 Note that this is a solution in Carath\'eodory's \emph{extended sense}, that is, it satisfies the differential equation \emph{almost everywhere} (i.e. except on a subset of Lebesgue measure zero).
@@ -38,14 +38,14 @@ Throughout our analysis, we will use the notation $\bx_{x}^{\bu,\bdelta}(\cdot)$
 \subsection{HJ Reachability: Minimum Distance to Target}
 The target set $\T$ can be implicitly characterized as the sub-zero level set of a Lipschitz \emph{surface function} $l:\RR^n\rightarrow\RR$: 
 \begin{equation}\label{eq:l}
-x\in\T\iff l(x)<0.
+x\in\T\iff l(x)<0 \enspace.
 \end{equation}
 This function always exists, since we can simply choose the \emph{signed distance function} to $\T$,  $s_{\T}(x)$, which is Lipschitz continuous by construction.\footnote{ For any nonempty set $\M\subset\RR^m$, the signed distance function $s_{\M}:\RR^m\to\RR$  is defined as
 $\inf_{y\in\M} |z-y|$ for points outside of $\M$ and $ -\inf_{y\in\RR^m\setminus\M} |z-y|$ for points inside $\M$, where $|\cdot|$ denotes a norm on $\RR^m$.} We use a clipped signed distance since the problem is solved over a fixed domain in practice, $l(x) = \min(\max(s_{\T}(x), -L), L)$ with $L>0$, where $L$ is usually taken to be the largest value (in magnitude) on the domain.
 
 To express whether a given trajectory \emph{ever} enters the target set, let the functional $\V:\RR^n\times\UU\times\DD\to\RR$ assign to each initial state $x$ and input signals $\bu(\cdot)$, $\bdelta(\cdot)$ the lowest value of $l(\cdot)$ achieved by trajectory $\bx_{x}^{\bu, \bdelta}(\cdot)$ over all times $t\ge0$: 
 \begin{equation}\label{eq:min_dist_functional}
-\mathcal{V}\big(x,\bu(\cdot),\bdelta(\cdot)\big) := \inf_{t\ge 0}l\big(\bx_{x}^{\bu,\bdelta}(t)\big).
+\mathcal{V}\big(x,\bu(\cdot),\bdelta(\cdot)\big) := \inf_{t\ge 0}l\big(\bx_{x}^{\bu,\bdelta}(t)\big) \enspace.
 \end{equation}
 This outcome $\V$, also referred to here as the \emph{minimum of rewards}\footnote{In this context reward refers to $l(x)$, but in general it can be any real-valued function.}, will be nonpositive if there exists any $t\in[0,\infty)$ at which the trajectory enters the target set, and will be strictly positive if the system avoids the target for all $t\ge 0$. 
 
@@ -59,25 +59,25 @@ This outcome $\V$, also referred to here as the \emph{minimum of rewards}\footno
 % \end{proposition}
 
 
-The reachable set can then be obtained by solving a game between the control and disturbance signal with the restriction that the disturbance signal can only use \emph{nonanticipative strategies}. The set of nonanticipative strategies for the disturbance is $\B = \{\bbeta:\UU\to\DD\;|\;
+The reachable set can then be obtained by solving a game between the controller and disturbance where the disturbance can use \emph{nonanticipative strategies} to respond to the controller's signal. The disturbance's set of nonanticipative strategies is $\B = \{\bbeta:\UU\to\DD\;|\;
 \forall t\ge 0,\; \forall \bu(\cdot),\hat{\bu}(\cdot)\in\UU,$
 ${\big(\bu(\tau) \!=\! \hat{\bu}(\tau)\text{ a.e.} \tau\ge0\big)\Rightarrow
-{\big(\bbeta[\bu](\tau) \!=\! \bbeta[\hat{\bu}](\tau)}{\text{ a.e.} \tau\ge0\big)}}\}$. Intuitively, the disturbance is given an advantage in the game, but its actions at any given time can only depend on what the control has done up to that time. With this in place we can define the \emph{value function} $V(x)$and ultimately the reachable set $\R(\T)$. 
+{\big(\bbeta[\bu](\tau) \!=\! \bbeta[\hat{\bu}](\tau)}{\text{ a.e.} \tau\ge0\big)}}\}$. Intuitively, the disturbance is given an instantaneous informational advantage in the game, but its actions at any given time can only depend on what the controller has done up to that time. With this in place we can define the \emph{value function} $V(x)$ and ultimately the reachable set $\R(\T)$. 
 %
 \begin{equation} \label{eq:val_function}
-V(x)=\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU}\mathcal{V}\big(x,\bu(\cdot),\beta[\bu](\cdot)\big),
+V(x)=\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU}\mathcal{V}\big(x,\bu(\cdot),\beta[\bu](\cdot)\big) \enspace,
 \end{equation}
 %
 \begin{equation} \label{eq:reach_set}
-\R(\T) = \{x \mid V(x) \le 0\}.
+\R(\T) = \{x \mid V(x) \le 0\} \enspace.
 \end{equation}  
 
 The optimization in \eqref{eq:val_function} is referred to here as the minimum reward optimal control problem. It has been shown that the value function for problems with outcome given by equation \eqref{eq:min_dist_functional} can be characterized as the unique viscosity solution to a variational inequality \cite{Barron1990}. When the problem is solved over a finite time interval $[0,T]$, the \emph{finite-horizon value function} $V(x,t)$ can be computed by solving the HJ equation: 
 %
 \begin{equation} \label{eq:HJ_mr}
 \begin{split} 
-    & 0 = \min\left\{l(x)-V(x,t), \frac{\partial V}{\partial t}(x,t)+ \max_{u\in\U} \min_{ d\in\D} \!\!\frac{\partial V}{\partial x}(x,t) f(x,u, d)\right\}\\
-    &V(x,T) = l(x).
+    & 0 = \min\left\{l(x)-V(x,t), \frac{\partial V}{\partial t}(x,t)+ \max_{u\in\U} \min_{ d\in\D} \!\!\frac{\partial V}{\partial x}(x,t) f(x,u, d)\right\} \;,\\
+    &V(x,T) = l(x) \enspace.
 \end{split}
 \end{equation}
 %
@@ -89,37 +89,37 @@ Several approximation schemes have been proposed for solving \eqref{eq:HJ_mr} an
 %
 \begin{subequations}
 \begin{align}
-&V_{\Delta t}^{k+1}(x) = \min\{l(x),  \underset{u\in\U}{\max}\text{ }\underset{ d\in\D}{\min} V^{k}_{\Delta t}(x+\Delta t f(x,u,d))\}\\
-&V_{\Delta t}^{0}(x) = l(x)\\
-&V_{\Delta t} = \lim_{k\rightarrow \infty} V^{k}_{\Delta t},
+&V_{\Delta t}^{k+1}(x) = \min\{l(x),  \underset{u\in\U}{\max}\text{ }\underset{ d\in\D}{\min} V^{k}_{\Delta t}(x+\Delta t f(x,u,d))\} \enspace,\\
+&V_{\Delta t}^{0}(x) = l(x) \enspace,\\
+&V_{\Delta t} = \lim_{k\rightarrow \infty} V^{k}_{\Delta t} \enspace,
 \end{align}
 \end{subequations}%
 \noindent where $V_{\Delta t}(x)$ converges to $V(x)$ as the discrete time step $\Delta t \rightarrow 0$. With the semi-Lagrangian approximation, the value function is solved on a discrete grid. Representing the approximation in vectorized form, $\vec{V} \in \RR^{N_G}$, the semi-Lagrangian approach yields \ 
 \begin{subequations} \label{eq:dp_min_dist}
 \begin{align}
-&\vec{V}_{i}^{0} = l(x_i)\\
-&\vec{V}_{i}^{k+1} = \min\{l(x_i),  \underset{u\in\U}{\max}\text{ }\underset{ d\in\D}{\min} I[\vec{V}^{k}](x_i+\Delta t f(x_i,u,d)) \label{eq:dp_min_dist_b}\}\\
-&\vec{V} = \lim_{k\rightarrow \infty} \vec{V}^{k},
+&\vec{V}_{i}^{0} = l(x_i) \enspace,\\
+&\vec{V}_{i}^{k+1} = \min\{l(x_i),  \underset{u\in\U}{\max}\text{ }\underset{ d\in\D}{\min} I[\vec{V}^{k}](x_i+\Delta t f(x_i,u,d)) \label{eq:dp_min_dist_b}\} \enspace,\\
+&\vec{V} = \lim_{k\rightarrow \infty} \vec{V}^{k} \enspace,
 \end{align}
 \end{subequations}%
 \noindent for  $i=1, ..., N_G$, where $\{x_i\}_{i=1}^{N_G}$ are the grid nodes, $N_G$ is the number of grid nodes, $\vec{V}_i^k$ is the approximate value for $V(x_i, k \Delta t)$ and ${I[\vec{A}]:\RR^n \rightarrow \RR}$ represents an interpolation operator defining, for every point $x$, the polynomial reconstruction based on the values $\vec{A}$. Unless stated otherwise $G$ is taken to be a regular equidistant array of points with mesh spacing $\Delta x_j$ along the $j$th axis, $j=1,...,n$.\footnote{In the most general case the control and disturbance sets are also discretized, $\U=\{u_i\}_{i=1}^{N_U}$ and $\D=\{d_i\}_{i=1}^{N_D}$, and the minimax game is approximated.} We use a multilinear interpolator is used for the interpolation scheme, thus the interpolation function $I[\vec{A}](\cdot)$ is given by a convex combination over the elements of $\vec{A}$,
 \begin{equation}
-I[\vec{A}](x)= p(x)\cdot \vec{A},
+I[\vec{A}](x)= p(x)\cdot \vec{A} \enspace,
 \end{equation}%
 \noindent where the elements of ${p(\cdot): \RR \rightarrow \RR^{N_G}}$ are greater than zero and sum to one. 
 
 For conciseness we introduce \emph{control policies} ${\pi_u(\cdot): \RR^n \rightarrow \U}$ and \emph{disturbance policies} ${\pi_d(\cdot): \RR^n \rightarrow \D}$, which map from state to control and state to disturbance, respectively. Note that the individual minimax games being played at each grid point can be collectively thought of as a game over policies. We also introduce the \emph{backup operator} ${B[\cdot]: \RR^{N_G} \rightarrow \RR^{N_G}}$, which maps vectorized value functions onto themselves. Define the backup operator as
 %
 \begin{equation} \label{eq: op_min_dist}
- B[\vec{A}] := \min\{\vec{l},  \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} P_{\pi_u, \pi_d} \vec{A}\},
+ B[\vec{A}] := \min\{\vec{l},  \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} P_{\pi_u, \pi_d} \vec{A}\} \enspace,
 \end{equation}%
 \noindent where ${\vec{l} \in \RR^{N_G}}$ with ${\vec{l}_i = l(x_i)}$ for ${i=1, ..., N_G}$, ${P_{\pi_u, \pi_d} \in \RR^{N_G \times N_G}}$ is a policy-dependent stochastic matrix\footnote{$P_{\pi_u, \pi_d}$ is effectively the probability transition matrix for a Markov Decision Process (MDP) over a finite state space given by the grid nodes ${\{x_i\}_{i=1}^{N_G}}$.}, and row $i$of $P_{\pi_u, \pi_d}$ is $p(x_i+\Delta tf(x, \pi_u(x_i), \pi_d(x_i)))$. For the one player setting this matrix becomes $P_{\pi_u}$. We can now express \eqref{eq:dp_min_dist} more concisely as
 %
 \begin{subequations}\label{eq:val_iter}
 \begin{align}
-&\vec{V}^{0} = \vec{l}\\
-&\vec{V}_{i}^{k+1} = B[V^k] \\
-&\vec{V} = \lim_{k\rightarrow \infty} \vec{V}^{k}.
+&\vec{V}^{0} = \vec{l} \enspace,\\
+&\vec{V}_{i}^{k+1} = B[V^k] \enspace,\\
+&\vec{V} = \lim_{k\rightarrow \infty} \vec{V}^{k} \enspace.
 \end{align}
 \end{subequations}
 
@@ -139,20 +139,20 @@ By the contraction mapping theorem any contraction mapping has a unique fixed po
 The SDR problem does yield a contraction mapping, and we explore it briefly for the one player case. The objective is to maximize the integral (sum) of exponentially discounted rewards. In an abuse of notation, the associated value function $V(x)$ for this problem is given by
 %
 \begin{equation}\label{eq:V_sum_rewards}
-V(x) := \sup_{\bu \in \UU} \int_{0}^{\infty}r\big(\bx_{x}^{\bu}(t)\big)\exp(-\lambda t) dt,  \quad \lambda >0,
+V(x) := \sup_{\bu \in \UU} \int_{0}^{\infty}r\big(\bx_{x}^{\bu}(t)\big)\exp(-\lambda t) dt\enspace,  \quad \lambda >0 \enspace,
 \end{equation}%
 \noindent where $r(\cdot):\RR^n \rightarrow \RR$ is a state-dependent reward function, and $\lambda$ is a \emph{discount factor}.
 
 It is known that this value function is the solution to the time-independent Hamilton-Jacobi equation \cite{Bardi2008},
 %
 \begin{equation} \label{eq:HJ_sdr}
-\lambda V(x) = \max_{u\in\U} \frac{\partial V}{\partial x}(x) f(x, u)+ g(x).
+\lambda V(x) = \max_{u\in\U} \frac{\partial V}{\partial x}(x) f(x, u)+ g(x)\enspace.
 \end{equation}
 
 Using the same semi-Lagrangian scheme as in the MR setting, equation \eqref{eq:HJ_sdr} can be approximated as
 %
 \begin{equation}
-V_{\Delta t}(x) = \max_{u\in\U} \gamma V_{\Delta t}(x + \Delta t\cdot f(x, u))  + \Delta t \cdot r(x),
+V_{\Delta t}(x) = \max_{u\in\U} \gamma V_{\Delta t}(x + \Delta t\cdot f(x, u))  + \Delta t \cdot r(x)\enspace,
 \end{equation}
  
 \noindent where $\gamma=\exp(-\lambda \Delta t)$ is the \emph{discount rate}.
@@ -160,7 +160,7 @@ V_{\Delta t}(x) = \max_{u\in\U} \gamma V_{\Delta t}(x + \Delta t\cdot f(x, u))  
 The approximation is solved for using value iteration with the following backup operator
 %
 \begin{equation} \label{eq:backup_sdr}
-B[\vec{A}] := \vec{r} +  \underset{\pi_u}{\max} \gamma P_{\pi_u} \vec{A}, 
+B[\vec{A}] := \vec{r} +  \underset{\pi_u}{\max} \gamma P_{\pi_u} \vec{A}\enspace,
 \end{equation}%
 \noindent where $\vec{r}_i =\Delta t \cdot r(x_i)$. The initialization of the value iteration procedure is arbitrary $\vec{V}^{0} \in \RR^{N_G}$ because the backup  operator in \eqref{eq:backup_sdr} is a contraction mapping in the infinity norm, $||\cdot||_\infty$ \cite{Bertsekas1995}.
 
