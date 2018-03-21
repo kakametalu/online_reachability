@@ -18,7 +18,7 @@ from skimage.draw import ellipsoid
 if __name__ == "__main__":
 
     # Grid parameters
-    num_nodes = np.array([21, 21, 21])
+    num_nodes = np.array([81, 81, 81])
     s_lims = np.array([[-6, -10, 0],[15, 10, 2*np.pi]]) #state space limits
     num_nodes_a = np.array([2])
     a_lims = np.array([[-1],[1]]) #action/control limits
@@ -52,8 +52,8 @@ if __name__ == "__main__":
                      lamb=lamb_2, sparse=True)
 
     reward = my_world.reward
-    value_v, _ =  my_world.v_pi_opt(method='vi')
-    value_z, _ =  my_world_2.v_pi_opt(method='vi')
+    value_v, _ , _=  my_world.v_pi_opt(method='vi')
+    value_z, _ , _ =  my_world_2.v_pi_opt(method='vi')
     grid = my_world._all_states_c
 
     # Generates level curves for target (reward) and value_function
@@ -80,15 +80,17 @@ if __name__ == "__main__":
 
     ax.plot([0],[0], 'b', label='Target Set')
     ax.plot([0],[0], 'r', label='V(x) Zero Level Set')
-    ax.plot([0],[0], 'g', label='Z(x) Zero Level Set ' + r'$lambda$'+'={}'.format(lamb_2))
+    ax.plot([0],[0], 'g', label='Z(x) Zero Level Set $\\lambda$'+'={}'.format(lamb_2))
 
-    ax.set_xlim(s_lims[0,0], s_lims[1,0])  
-    ax.set_ylim(s_lims[0,1], s_lims[1,1])    
-    ax.set_zlim(s_lims[0,2], s_lims[1,2]) 
+    #ax.set_xlim(s_lims[0,0], s_lims[1,0])
+    #ax.set_ylim(s_lims[0,1], s_lims[1,1])
+    #ax.set_zlim(s_lims[0,2], s_lims[1,2])
 
-    ax.set_xlabel("x_1")
-    ax.set_ylabel("x_2")
-    ax.set_zlabel("x_3")
-    ax.legend()
+    ax.set_xlabel('$x_1$')
+    ax.set_ylabel('$x_2$')
+    ax.set_zlabel('$x_3$')
+    ax.legend(fontsize='small')
+    print(ax.azim)
+    ax.view_init(azim=-16,elev=23)
     plt.tight_layout()
     plt.show()
