@@ -43,7 +43,7 @@ class GridWorld(GridWorldDiscrete):
 
     def __init__(self, num_nodes, s_lims, num_nodes_a=None, a_lims=None, 
                  num_nodes_a2=None, a2_lims=None, dynamics=None, gamma=None,
-                 sparse=False):
+                 sparse=False, angular=None):
 
         # Preparing grid
         if num_nodes_a is None or a_lims is None:
@@ -103,7 +103,7 @@ class GridWorld(GridWorldDiscrete):
             return
 
         # Construct interpolation weights (transition probabilities)
-        dyn = Dynamics(dynamics, num_nodes.size, angular=None) # dynamics model
+        dyn = Dynamics(dynamics, num_nodes.size, angular=angular) # dynamics model
 
 
         # Hypercube defining interpolation region
@@ -198,7 +198,8 @@ class GridWorld(GridWorldDiscrete):
                    Size is equal to the number of points. 
         """ 
         gi =RegularGridInterpolator(self._axes,
-                                    values.reshape(self._num_nodes),)
+                                    values.reshape(self._num_nodes),
+                                    bounds_error=False, fill_value=1000)
         new_values = gi(points)
         return new_values
 
@@ -336,11 +337,19 @@ class Avoid(GridWorld):
     """
     def __init__ (self, num_nodes, s_lims, num_nodes_a=None, a_lims=None, 
                   num_nodes_a2=None, a2_lims=None, dynamics=None, 
-                  avoid_func=None, lamb=0, sparse=False):
+                  avoid_func=None, lamb=0, sparse=False,angular=None):
         
         super().__init__(num_nodes, s_lims, num_nodes_a, a_lims,
-                         num_nodes_a2, a2_lims, dynamics, sparse=sparse)
+                         num_nodes_a2, a2_lims, dynamics, sparse=sparse,
+                         angular=angular)
         dt = self._dt
         self._gamma = np.exp(-dt * lamb)
+
+        if lamb == 0:
+            self.tol = (1 - np.exp(-dt * .00001)) * 10**(-1)
+        else:
+            self.tol = (1-self._gamma) * 10**(-1)
+        
+        self.tol = 10**-4
         self._reward = avoid_func(self._all_states)
 

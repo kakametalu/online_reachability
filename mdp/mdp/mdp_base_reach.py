@@ -187,7 +187,7 @@ class MDP(TransitionModel):
         self._abs_set = set(abs_set)
         self._pi_opt = None
         self._v_opt = None
-        self.tol = 1e-3/2
+        self.tol = 1e-2
 
     def __getitem__(self, state_actions):
         """Takes state and action and returns (support, probs, exp rewards).
