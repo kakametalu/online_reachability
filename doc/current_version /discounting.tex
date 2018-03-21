@@ -77,18 +77,17 @@ B[\vec{A}] := \min\left\{ \vec{h}, \underset{\pi_u}{\max}\text{ }\underset{ \pi_
 %
 \begin{proof}
 Define the minimax optimizers for $q$ as the pair $(a_q,b_q)$, and minimax optimizers of $g$ as the pair $(a_g, b_g)$. Without loss of generality we assume that $q(a_q,b_q) \geq g(a_g,b_g)$.
-%
-\begin{equation*}
-|\max_a \min_b q(a,b) -\max_a \min_b g(a,b)|
-\leq |f(a_q,b_q) - \min_b g(a_q,b)|
-\end{equation*}
+We then have the following inequalities:
 %
 \begin{equation*}
 \begin{split}
-&\leq |q(a_q,b_{gg}) - g(a_q,b_{gg})| \leq \max_a \max_b |q(a,b) - g(a,b)|\\
-&b_{gg} :=\arg\min_b g(a_q,b)
+&|\max_a \min_b q(a,b) -\max_a \min_b g(a,b)|
+\leq |q(a_q,b_q) - \min_b g(a_q,b)|\\
+&\leq |q(a_q,b_{gg}) - g(a_q,b_{gg})| \leq \max_a \max_b |q(a,b) - g(a,b)|
+\enspace,
 \end{split}
 \end{equation*}
+with $b_{gg} :=\displaystyle{\arg\min_b g(a_q,b)}$.
 %
 \end{proof}
 %

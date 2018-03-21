@@ -1,6 +1,6 @@
 % !TEX root = main_min_disc_dist.tex
 
-We consider a two player optimal control problem where the first player (control) wants to keep the system away from the target set for a given time horizon and the second player (disturbance) has the opposite objective.\footnote{We can also consider the case where the objectives are switched, and the control wants to drive the system towards the target, by making minor modifications to the material presented here.} The objective is to characterize the \emph{infinite horizon backward reachable set}, which is the set of initial states for which the disturbance wins the game. Going forward all mentions of reachable set refer to the infinite horizon backwards reachable set.
+We consider a two-player optimal control problem where the first player (control) wants to keep the system away from the target set for a given time horizon and the second player (disturbance) has the opposite objective.\footnote{We can also consider the case where the objectives are switched, and the control wants to drive the system towards the target, by making minor modifications to the material presented here.} Our goal is to characterize the \emph{infinite-horizon backward reachable set}, which is the set of initial states for which the disturbance wins the game. Going forward all mentions of reachable set refer to the infinite horizon backwards reachable set.
 
 \subsection{System Model \label{subsec:dynamics}}
 
@@ -12,7 +12,7 @@ which we will refer to as the \emph{controller} and the \emph{disturbance}:
 \dot{x} = f(x,u, d).
 \end{equation}
 
-The flow field $f: \RR^n \times \U \times \D\rightarrow\RR^n$ is assumed to be Lipschitz continuous and bounded. In the single player case we drop the disturbance input, and just have $f(x,u):\RR^n \times \U \rightarrow\RR^n$.
+The flow field $f: \RR^n \times \U \times \D\rightarrow\RR^n$ is assumed to be Lipschitz continuous and bounded. In the single-player case we drop the disturbance input, and just have ${f(x,u):\RR^n \times \U \rightarrow\RR^n}$.
 
 Letting $\UU $ and $\DD$ denote the collections of measurable%
 	\footnote{A function $f:X\to Y$ between two measurable spaces $(X,\Sigma_X)$ and $(Y,\Sigma_Y)$
@@ -22,7 +22,7 @@ functions $\bm u: [0,\infty)\to \U $ and $\bm d: [0,\infty)\to \D$ respectively,
 and allowing the controller and disturbance to choose any such signals,
 the evolution of the system
 from any initial state $x$
-is determined (see for example \cite{Coddington1955}, Ch. 2, Theorems 1.1, 2.1) by the unique continuous trajectory $\bx:[0,\infty)\to\RR^n$ solving
+is determined (see for example \cite{Coddington1955}, Ch.~2, Theorems~1.1,~2.1) by the unique continuous trajectory $\bx:[0,\infty)\to\RR^n$ solving
 \begin{equation}\label{eq:xdot}
 \begin{split}
 \dot{\bx}(s) &= f(\bx(s),\bu(s),\bdelta(s)), \text{ a.e. }s\ge 0,\\
