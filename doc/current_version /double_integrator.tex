@@ -1,11 +1,13 @@
-We present a double integrator example, with state $(x_1, x_2)$, control $u \in [u_{min}, u_{max}]$ and disturbance $d \in [d_{min}, d_{max}]$ with dynamics,
+% !TEX root = main_min_disc_dist.tex
+\subsection{Double Integrator}
+The doube integrator consists of two states $(x_1, x_2)$ , and  control $u \in [u_{min}, u_{max}]$ with dynamics,
 \begin{equation}
 \begin{split}
 \dot{x_1} & = x_2 \\
-\dot{x_2} & = u \cdot(u_{max}-u_{min}) + u_{min} + d \cdot (d_{max}-d_{min}) + d_{min}
+\dot{x_2} & = u 
 \end{split}
 \end{equation}
-In our experiments, we discretize the state space, to a $161 \times 161$ grid; control space and disturbance space. 
+In our experiments, we discretize the state space, to a $161 \times 161$ grid.
 
 We first show, in Fig~\ref{fig:convergence} that $Z$ over approximates~(bold line) and under approximates~(dotted lines) the true reachable set~(shown in black) for two values of $\lambda = 0.1, 0.2$. The target set $\mathcal{T}$ is shown in red. 
 \begin{figure}
@@ -14,7 +16,7 @@ We first show, in Fig~\ref{fig:convergence} that $Z$ over approximates~(bold lin
 \label{fig:convergence}
 \end{figure}
 
-We next compare value iteration and policy iteration with increasing number of discrete actions in Table~\ref{tab:v_vs_p}. In the table we see that as the number of actions increase, there is sharp increase in how long value iteration takes to converge   while the increase is much smaller for policy iteration. However, the total time taken for policy iteration is much larger since there is a significant overhead in building the matrices for value functions. 
+We next compare value iteration and policy iteration with increasing number of discrete actions in Table~\ref{tab:v_vs_p}. In the table we see that as the number of actions increase, there is sharp increase in how long value iteration takes to converge while the increase is much smaller for policy iteration. However, the total time taken for policy iteration is much larger since there is a significant overhead cost in constructing $P_{\pi_u}$ building the matrices for value functions. 
 \begin{table}
 \centering
 \caption{Value Iteration vs Policy Iteration}
@@ -22,7 +24,7 @@ We next compare value iteration and policy iteration with increasing number of d
 \begin{tabular}{|c| c| c| c|}
 \hline
 \# actions & VI & \multicolumn{2}{|c|}{Policy Iteration} \\ \cline{3-4}
- &  $T_{total} (Iters)$ & $T_{total}(Iters)$ & $T_{conv}$ \\ \hline
+ &  $T_{total} (Iters)$ & $T_{total}(Iters)$ & $T_{total} - T_{P_{\pi_u}}$ \\ \hline
 2 & 1.255 (204) & 68.793 (4) & 0.105 \\ \hline
 50 &  7.562 (204)&  69.717 (4)& 0.365 \\ \hline
 250 & 32.841 (204)&  251.39 (14)& 3.504 \\ \hline
