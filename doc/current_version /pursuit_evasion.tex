@@ -20,11 +20,11 @@ Player I is considered captured when the relative distance (in position) between
 \end{equation}
 
 
-We first compute the value functions for the MR and MDR setting the model parameters to $v_u=v_d=5$, $u_{max}=d_{max}=1$, and $R=5$. This will be referred to as model 1. A visualization of the zero sub-level set for both $V(x)$ and $Z(x)$ for $\lambda=0.01$ is shown in Fig~\ref{fig:air3D}.
+We first compute the value functions for the MR and MDR on a $41 \times 41 \times 41$ grid, and setting the model parameters to $v_u=v_d=5$, $u_{max}=d_{max}=1$, and $R=5$. This will be referred to as model 1. A visualization of the zero sub-level set for both $V(x)$ and $Z(x)$ for $\lambda=0.001$ is shown in Fig~\ref{fig:air3D}.
 
 
 \begin{figure}
-\includegraphics[scale=0.5]{air_3D.png}
+\includegraphics[trim= 2.5cm 0cm 0cm 0.5cm, clip=true,scale=0.65]{air_3D.png}
 \caption{The target set $\mathcal{T}$ is the blue cylinder. The zero sub-level sets of $V$ and $Z$ are in red and blue, respectively. The discount rate is $\lambda=0.01$.}
 \label{fig:air3D}
 \end{figure}
@@ -47,12 +47,12 @@ We now construct two other models by tweaking model 1: setting $u_{max}=1.5$ pro
 
 \begin{table}
 \centering
-\caption{Pursuit-Evasion for various models ($M$) with and without warm start ($WS$)}
+\caption{Pursuit-Evasion for various models ($M$) with and without warm start ($W$)}
 \label{tab:pursuit_evasion}
 \begin{tabular}{|c| c| c| c| c|c|}
 \hline
-\# nodes & $M_1$ & $M_2$ & $M_2$ with $WS$ & $M_3$ & $M_3$ with $WS$\\ \hline
-$41^3$ & $27.81$ & $50.982$ & $20.34$ & $28.191$ & $8.60$ \\ \hline
-$81^3$ & $563.975$ & $973.898$ & $590.165$ & $576.184$ & $176.982$ \\ \hline
+\# nodes & $M_1$ & $M_2$ & $M_2$  $W$ & $M_3$ & $M_3$  $W$\\ \hline
+$41^3$ & $20.84$ & $18.32$ & $12.66$ & $14.32$ & $8.89$ \\ \hline
+$81^3$ & $339.66$ & $339.66$ & $224.29$ & $267.81$ & $166.95$ \\ \hline
 \end{tabular}
 \end{table}
