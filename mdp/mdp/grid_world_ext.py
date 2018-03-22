@@ -350,6 +350,6 @@ class Avoid(GridWorld):
         else:
             self.tol = (1-self._gamma) * 10**(-1)
         
-        self.tol = 10**-4
+        self.tol = 10**-2
         self._reward = avoid_func(self._all_states)
 

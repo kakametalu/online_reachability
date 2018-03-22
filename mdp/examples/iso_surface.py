@@ -18,8 +18,10 @@ from skimage.draw import ellipsoid
 if __name__ == "__main__":
 
     # Grid parameters
-    num_nodes = np.array([81, 81, 81])
-    s_lims = np.array([[-6, -10, 0],[15, 10, 2*np.pi]]) #state space limits
+    num_nodes = np.array([21, 21, 21])
+
+    ang_u = 2*np.pi * (1 - 1/(num_nodes[2]))
+    s_lims = np.array([[-6, -10, 0],[20, 10, ang_u]]) #state space limits
     num_nodes_a = np.array([2])
     a_lims = np.array([[-1],[1]]) #action/control limits
     num_nodes_d = np.array([2])
@@ -44,7 +46,7 @@ if __name__ == "__main__":
     lamb = 0 #lambda
     my_world = Avoid(num_nodes, s_lims, num_nodes_a, a_lims, num_nodes_d, 
     	             d_lims, dynamics=dynamics, avoid_func=avoid_func,
-    	             lamb=lamb, sparse=True)
+    	             lamb=lamb, sparse=True, angular=[2])
 
     lamb_2 = 0.01 #lambda
     my_world_2 = Avoid(num_nodes, s_lims, num_nodes_a, a_lims, num_nodes_d, 
@@ -80,7 +82,7 @@ if __name__ == "__main__":
 
     ax.plot([0],[0], 'b', label='Target Set')
     ax.plot([0],[0], 'r', label='V(x) Zero Level Set')
-    ax.plot([0],[0], 'g', label='Z(x) Zero Level Set $\\lambda$'+'={}'.format(lamb_2))
+    # ax.plot([0],[0], 'g', label='Z(x) Zero Level Set $\\lambda$'+'={}'.format(lamb_2))
 
     #ax.set_xlim(s_lims[0,0], s_lims[1,0])
     #ax.set_ylim(s_lims[0,1], s_lims[1,1])

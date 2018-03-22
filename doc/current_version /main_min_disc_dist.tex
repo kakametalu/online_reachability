@@ -15,17 +15,22 @@ Anayo K. Akametalu \and Shromona Ghosh \and Jaime F. Fisac \and Claire J. Tomlin
 \thanks{
  Department of Electrical Engineering and Computer Sciences, 
         University of California, Berkeley , United States.\newline
-        {\tt\small \{kakametalu, shromona.ghosh, jfisac, tomlin, sseshia, sastry\}~@eecs.berkeley.edu }}%  
+        {\tt\small \{kakametalu, shromona.ghosh, jfisac, tomlin, sseshia, sastry\}~@eecs.berkeley.edu }}% 
+\thanks{
+This work is supported by NSF under the CPS FORCES and VehiCal projects, by the UC-Philippine-California Advanced Research Institute, and by the ONR MURI Embedded Humans. The research of A.K. Akametalu has received funding from the National GEM Consortium Fellowship.} 
 }
+
 %
 \begin{document}
 \maketitle
 \thispagestyle{empty}
 \pagestyle{empty}
 
-%\begin{abstract}
-%Reachability analysis has proven to be a useful tool when designing controllers for constraint satisfaction in systems that can be modeled. This is typically done by finding an invariant set of constraint-satisfying states and policy, such that it is guaranteed the system never exits this invariant set. Models in control often contain parameters that capture physical properties of the system (e.g. mass, moment of intertia) being studied or some intentionality of an agent (e.g. parameterized policy), thus the results obtained from reachability analysis depend on the values of the parameters. Unfortunately, the solutions are often not analytic and must be computed numerically for any given parameter values. In this paper we leverage computations for previously given parameter values to speed-up the analysis for new values of the parameters. This work is relevant if one wants to construct a library of reachable sets indexed by parameter values, if the parameters in our model are slowly time-varying, or if the parameters are unknown and thus are constantly estimated.
-%\end{abstract}
+\begin{abstract}
+We propose a novel formulation for approximating reachable sets via solving a minimum discounted reward optimal control problem. The formulation yields a continuous solution that can be obtained by solving a Hamilton-Jacobi equation. Furthermore, the numerical approximation to this solution can be obtained as the unique fixed-point to a contraction mapping. This allows for more efficient solution methods that could not be applied under traditional formulations. In addition, this formulation provides a link between reinforcement learning and learning reachable sets for systems with unknown dynamics, allowing algorithms from the former to be applied to the latter. We use two benchmarks, double integrator, and pursuit-evasion games, to show the correctness of the formulation as well as its strengths in comparison to previous work.
+
+% Reachability analysis has proven to be a useful tool when designing controllers for constraint satisfaction in systems that can be modeled. This is typically done by finding an invariant set of constraint-satisfying states and policy, such that it is guaranteed the system never exits this invariant set. Models in control often contain parameters that capture physical properties of the system (e.g. mass, moment of intertia) being studied or some intentionality of an agent (e.g. parameterized policy), thus the results obtained from reachability analysis depend on the values of the parameters. Unfortunately, the solutions are often not analytic and must be computed numerically for any given parameter values. In this paper we leverage computations for previously given parameter values to speed-up the analysis for new values of the parameters. This work is relevant if one wants to construct a library of reachable sets indexed by parameter values, if the parameters in our model are slowly time-varying, or if the parameters are unknown and thus are constantly estimated.
+\end{abstract}
 
 
 \section{Introduction \label{sec:intro}}
@@ -46,8 +51,8 @@ Anayo K. Akametalu \and Shromona Ghosh \and Jaime F. Fisac \and Claire J. Tomlin
 \section{Simulations \label{sec:sim}}
 \input{simulations.tex}
 
-\section{Conclusion \label{sec:end}}
-
+\section{Conclusions and Future Work \label{sec:end}}
+\input{conclusions}
 
 
 

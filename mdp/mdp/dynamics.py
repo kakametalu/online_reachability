@@ -171,7 +171,7 @@ def pursuit_evasion(x, u, d, **sys_params):
     output = np.zeros(x.shape)
     output[:, 0] = -v_u + v_d * np.cos(x[:,2]) + u[:,0] * x[:,1]
     output[:, 1] = v_d * np.sin(x[:,2]) - u[:,0] * x[:,0]
-    output[:, 2] = u[:,0]-d[:,0]
+    output[:, 2] = d[:,0]-u[:,0]
 
     return output
 

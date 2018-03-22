@@ -438,8 +438,9 @@ class MDP(TransitionModel):
         tot_time = time.time()-t_start
         print("Done. Elapsed time {}.\n".format(tot_time))
         print("Time to run method", t_run)
-        return self._v_opt, self._pi_opt, {'tot_time':tot_time,
-                                           'run_time':t_run, 'iterations':iter}
+        return self._v_opt, self._pi_opt
+        # return self._v_opt, self._pi_opt, {'tot_time':tot_time,
+        #                                    'run_time':t_run, 'iterations':iter}
     
     def update(self):
         """Update the value function by applying one bellman update."""
