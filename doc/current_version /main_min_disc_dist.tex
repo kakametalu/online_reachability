@@ -1,8 +1,25 @@
-\pdfoutput=1
-\documentclass[letterpaper, 10 pt, journal]{ieeeconf}
+\newif\ifonecolumn % Boolean to keep track of column mode (can use to format formulas etc)
+%\documentclass{IEEEtran}\onecolumnfalse
+%\documentclass[12pm,draftcls,onecolumn]{IEEEtran}\onecolumntrue
 
-%\IEEEoverridecommandlockouts
-%\overrideIEEEmargins
+% ------------------------------------------------------------------------------
+%   New IEEE Transactions Color Template
+\documentclass[journal,twoside,web]{ieeecolor}\onecolumnfalse
+% \documentclass[journal,twoside,web,onecolumn]{ieeecolor}\onecolumntrue
+\usepackage{generic}
+% \usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+% \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+%     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+% \markboth{\journalname, VOL. XX, NO. XX, XXXX 2018}
+% {Author \MakeLowercase{\textit{et al.}}: Preparation of Papers for IEEE TRANSACTIONS and JOURNALS (February 2017)}
+% ------------------------------------------------------------------------------
+
+\pdfoutput=1
+\pdfminorversion = 4
 
       
 \input{macros.tex}
