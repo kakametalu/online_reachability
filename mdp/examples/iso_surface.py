@@ -1,3 +1,6 @@
+# Plot isosurface (zero level set) of pursuit-evasion value function
+
+
 import numpy as np
 from skimage import measure
 import matplotlib.pyplot as plt

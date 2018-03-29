@@ -20,7 +20,7 @@ B^{\pi_u}[\vec{A}] = \min\left\{ \vec{h}, \gamma P_{\pi_u} \vec{A} \right \} \en
 
 Note that ${\vec{U}^{\pi_u^k}}$, the fixed point of \eqref{eq:pi_a}, is obtained through value iteration with the policy backup. Finding the fixed point of the policy backup is computationally less intensive than the other backup operators presented thus far, since no optimization is performed over policies. The policy iteration algorithm only optimizes over policies when switching policies.  
 
-In practice policy iteration is typically recommended over value iteration because policies can converge faster than values resulting in faster convergence of the algorithm \cite{Russell2003}. A more detailed analysis of policy iteration (as it pertains to SDR) can be found in \cite{Howard1964, Puterman1979}. 
+In practice policy iteration is typically recommended over value iteration because policies can converge faster than values resulting in faster convergence of the algorithm \cite{Russell2003}. A more detailed analysis of policy iteration (as it pertains to SDR) can be found in \cite{Bokanowski2009,Howard1964, Puterman1979}. 
 
 We now prove that policy iteration converges for the MDR problem.
 %

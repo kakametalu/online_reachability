@@ -32,11 +32,11 @@ Anayo K. Akametalu \and Shromona Ghosh \and Jaime F. Fisac \and Claire J. Tomlin
 \thanks{
  Department of Electrical Engineering and Computer Sciences, 
         University of California, Berkeley , United States.\newline
-        {\tt\small \{kakametalu, shromona.ghosh, jfisac, tomlin, sseshia, sastry\}~@eecs.berkeley.edu }}% 
+        {\tt\small \{kakametalu, shromona.ghosh, jfisac, tomlin\}~@eecs.berkeley.edu }}% 
 \thanks{
 This work is supported by NSF under the CPS FORCES and VehiCal projects, by the UC-Philippine-California Advanced Research Institute, and by the ONR MURI Embedded Humans. The research of A.K. Akametalu has received funding from the National GEM Consortium Fellowship.} 
 }
-
+%TODO: Do we want to reincorporate the 
 %
 \begin{document}
 \maketitle
@@ -45,8 +45,6 @@ This work is supported by NSF under the CPS FORCES and VehiCal projects, by the 
 
 \begin{abstract}
 We propose a novel formulation for approximating reachable sets via solving a minimum discounted reward optimal control problem. The formulation yields a continuous solution that can be obtained by solving a Hamilton-Jacobi equation. Furthermore, the numerical approximation to this solution can be obtained as the unique fixed-point to a contraction mapping. This allows for more efficient solution methods that could not be applied under traditional formulations. In addition, this formulation provides a link between reinforcement learning and learning reachable sets for systems with unknown dynamics, allowing algorithms from the former to be applied to the latter. We use two benchmarks, double integrator, and pursuit-evasion games, to show the correctness of the formulation as well as its strengths in comparison to previous work.
-
-% Reachability analysis has proven to be a useful tool when designing controllers for constraint satisfaction in systems that can be modeled. This is typically done by finding an invariant set of constraint-satisfying states and policy, such that it is guaranteed the system never exits this invariant set. Models in control often contain parameters that capture physical properties of the system (e.g. mass, moment of intertia) being studied or some intentionality of an agent (e.g. parameterized policy), thus the results obtained from reachability analysis depend on the values of the parameters. Unfortunately, the solutions are often not analytic and must be computed numerically for any given parameter values. In this paper we leverage computations for previously given parameter values to speed-up the analysis for new values of the parameters. This work is relevant if one wants to construct a library of reachable sets indexed by parameter values, if the parameters in our model are slowly time-varying, or if the parameters are unknown and thus are constantly estimated.
 \end{abstract}
 
 
@@ -56,7 +54,7 @@ We propose a novel formulation for approximating reachable sets via solving a mi
 \section{Background \label{sec:back}} 
 \input{background}
 
-\section {Minimum of Discounted Rewards \label{sec:mdr}}
+\section{Minimum of Discounted Rewards \label{sec:mdr}}
 \input{discounting}
 
 \section{Improving Convergence \label{sec:conv}}
@@ -74,153 +72,6 @@ We propose a novel formulation for approximating reachable sets via solving a mi
 
 
 
-
-%\section{Problem Formulation}
-%As mentioned earlier value functions are typically computed offline due to the computational overhead. However, in some cases we may want to compute new value functions online due to changes in the model being used to approximate the system. One approach is to generate a library of value functions for different models, which can then be used as a look up table. Generating this library is still costly, and there are no guarantees that the library will include the value function for a particular model of interest.
-%
-%In general, for each new model encountered  a value function must be computed via dynamic programming. However, in the case where the system model belongs to a parameterized class, our objective is to develop a method for computing the value functions online, that is more efficient than employing dynamic programming with a fixed initialization. The metric we are concerned with when we speak of efficiency, is the amount of time it takes to produce a new safe set/value function after the model has converged. We assume that the model parameters ultimately converge because it would not be practical to utilize a safe set based on a model that we have little confidence in.
-%
-%\subsection{Parameterized Models}
-%Let's consider a dynamics model from a  parameterized class, $\dot{x}=f_{\theta}(x,u,d)$ for $\theta \in \Theta$. The parameters can represent a number of things like physical attributes (mass, moment of inertia, etc.), the intentionality of an underlying agent (parameterized policy), or even stochasticity (parameterized process noise). This also implies that the Bellman operator and value function are parameterized, so we have $B_\theta$ and $V_\theta$ respectively. Note that for now we are talking about the Bellman operator and value function generally and not tied to a particular payoff. Though the parameter value is changing we only require the safe set for the converged parameter.
-
-%\section{Methodology}
-%Computing the safe set online, after the model has converged, could cause a significant delay between when the model parameter converges, and when the associated safe set is produced. 
-%
-%We propose a method that draws inspiration from reinforcement learning (RL). In RL local updates are made to the value function based on the current observations being made. As new observations are made, more updates are made. In our method the safe set gets updated globally at every time step using the Bellman operator of the current parameter estimate. Rather than the observation influencing the value function directly, it influences the model estimate, which in turn influences the value function through one Bellman update. One Bellman update is far cheaper than computing the safe set, which requires applying the operator until convergence. In addition as the parameter estimate converges, this procedure ultimately converges to the appropriate safe set.   
-%
-%\subsection{Dynamic Bellman Operator}
-%
-%%Before going into the algorithm let's take some time to understand the rationale behind it. If we assume that the mapping from parameter $\theta$ to value function $\vec{V}_{\theta}$ is continuous, then informally we expect if two parameter values $\theta_1$ and $\theta_2$ are close together then their safe sets will also be close. It can be shown that the value iteration algorithm in the previous section has linear convergence.
-%%
-%%\begin{equation}
-%%||\vec{U}-\vec{U}^k|| \leq \gamma^k ||\vec{U}-\vec{U}^0||,
-%%\end{equation}
-%%
-%%\noindent where $\gamma= e^{-\lambda \Delta t}$, and the metric is with respect to the infinity norm. Clearly, the closer $\vec{U}^0$ is to $\vec{U}$ the lower the maximum number of iterations it takes to converge. Thus in performing value iteration with $B_{\theta_2}$ a good initialization would be $\vec{U}^0=\vec{U}_{\theta_1}$. Furthermore, any value function close to $\vec{U}_{\theta_1}$ would also be a good initialization, thus even if we applied value iteration under $B_{\theta_1}$ and terminated before convergence the result would be useful in finding $\vec{U}_{\theta_2}$.
-%
-%Given an estimation process that returns a convergent sequence of parameter estimates $\{\theta^k\}$  with $\lim_{k \rightarrow \infty} \theta_k = \theta^*$ we propose a dynamic online Bellman update scheme 
-%
-%\begin{equation} \label{eq:dyn_bell}
-%\vec{V}^{k+1}=B_{\theta_k}[\vec{V}^k],
-%\end{equation}
-%
-%\noindent where $\vec{V}^{0}$ is set arbitrarily and $B_\theta[\cdot]$ is a contraction mapping in the infinity norm with Lipschitz constant $\beta$ for all $\theta$. The hope behind this update rule is that  once the parameter $\theta$ converges it should not require many more Bellman updates to produce the desired value function. 
-%
-%\begin{proposition} 
-%Assuming that the vectorized value function $\vec{V}_\theta$ is continuous in $\theta$ and that $\exists C<\infty$ such that $C>||\vec{V}^k||_{\infty}$ for all $k$ and $C>||\vec{V}_{\theta^*}||$, then the sequence $\{V^k\}$ converges to $\vec{V}_{\theta^*}$.
-%\end{proposition}
-%
-%\begin{proof}
-%To prove convergence it must be shown $\forall \epsilon>0$ $\exists K$ such that for all $k>K$ $||\vec{V}_{\theta^*}-\vec{V}^{k}||_{\infty}< \epsilon$. Note that the sequence $\{\theta^k\}$ produces a sequence of value functions $\{\vec{V}_{\theta^k}\}$, which converges to $\vec{V}_{\theta^*}$ due to the continuity of the vectorized value function in $\theta$.
-%
-%\begin{equation*}
-%||\vec{V}_{\theta^*}-\vec{V}^{k}||_{\infty} \leq ||\vec{V}_{\theta^*}-\vec{V}_{\theta^{k-1}}||_{\infty} + ||\vec{V}_{\theta^{k-1}}-\vec{V}^{k}||_{\infty}
-%\end{equation*}
-%
-%\noindent Since $\{\vec{V}_{\theta^k}\}$ converges to $\vec{V}_{\theta^*}$ we can find $K_1$ such that for $m>K_1$ $||\vec{V}_{\theta^*}-\vec{V}_{\theta^{m}}||_{\infty} < \epsilon'$, so
-%
-%\begin{equation*}
-%\leq \epsilon' + ||\vec{V}_{\theta^{k-1}}-\vec{V}^{k}||_{\infty} = \leq \epsilon' + ||B_{\theta^{k-1}}[\vec{V}_{\theta^{k-1}}]-B_{\theta^{k-1}}[\vec{V}^{k-1}]||_{\infty}.
-%\end{equation*}
-%
-%\begin{equation*}
-%\leq \epsilon' + \beta ||\vec{V}_{\theta^{k-1}}-\vec{V}^{k-1}||_{\infty},
-%\end{equation*}
-%
-%\noindent which comes from $B_{\theta}$ being a contraction mapping. Using triangle inequality,
-%
-%\begin{equation*}
-%\leq \epsilon' + \beta ||\vec{V}_{\theta^{k-1}}-\vec{V}_{\theta^{*}}||_{\infty} + \beta ||\vec{V}_{\theta^{*}}-\vec{V}^{k-1}||_{\infty} \leq (1+\beta)\epsilon' + \beta ||\vec{V}_{\theta^{*}}-\vec{V}^{k-1}||_{\infty},
-%\end{equation*}
-%
-%\noindent Bringing it all together we have the recursively defined inequality
-%
-%\begin{equation*}
-%||\vec{V}_{\theta^*}-\vec{V}^{k}||_{\infty}\leq (1+\beta)\epsilon' + \beta ||\vec{V}_{\theta^{*}}-\vec{V}^{k-1}||_{\infty}.
-%\end{equation*}
-%
-%\noindent Recursing back to iteration $K_1$ we get 
-%
-%\begin{equation*}
-%||\vec{V}_{\theta^*}-\vec{V}^{k}||_{\infty}\leq \epsilon'(1+\beta) \sum_{j=0}^{k-K_1-1} \beta^j + \beta^{k-K_1} ||\vec{V}_{\theta^{*}}-\vec{V}^{K_1}||_{\infty}\leq \frac{\epsilon' }{(1-\beta^2)} + 2\beta^{k-K_1} C .
-%\end{equation*}
-%
-%\noindent  Choose $K_1$ such that  $\epsilon' =\frac{\epsilon(1-\beta^2)}{2}$ and choose $K= \frac{\log(\frac{\epsilon}{4C})}{\log(\beta)} +K_1$ and then the desired result is acheived
-%
-%\begin{equation*}
-%||\vec{V}_{\theta^*}-\vec{V}^{k}||_{\infty}\leq \epsilon.
-%\end{equation*}
-%\end{proof}
-%
-%
-%\subsection{Discounted Minimum Distance Bellman Operator}
-%In the previous subsection we proved the convergence of a dynamic Bellman update scheme under certain assumptions. In this section we will prove that the Bellman operator given by equation (\ref{eq:dp_bellman_lambda}) satisfies the assumptions. In this section the Bellman operator $B_{\theta}[\cdot]$ is defined as
-%
-%\begin{equation}
-%B_{\theta}[\vec{V}] := \min\left\{ \vec{h}, \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P^{\theta}_{\pi_u, \pi_d} \vec{V} \right \},
-%\end{equation}
-%
-%\noindent where $P^{\theta}_{\pi_u, \pi_d}$ is a stochastic matrix that is continuous in $\theta$ and every Bellman operator has a fixed point $B_{\theta}[\vec{V}_{\theta}]=\vec{V}_{\theta}$.\footnote{The matrix $P^{\theta}_{\pi_u, \pi_d}$ will be continuous in $\theta$ for all $\pi_u(\cdot)$ and $\pi_d(\cdot)$ as long as $f_{\theta}(x,u,d)$ is continuous in $\theta$. The elements in $P^{\theta}_{\pi_u, \pi_d}$ are simply the weights of our interpolation scheme over the space, so if we move over the space continuously, then the weights also change continuously.}
-%
-%First, we state a few simple lemmas.
-%\begin{lemma}
-%The function $g_1(\theta,\pi_u,\pi_d,\vec{V})=  P^{\theta}_{\pi_u, \pi_d} \vec{V}$ is continuous in $\theta$ for all $\vec{V}\in \RR^{N_G}$.
-%\end{lemma}
-%
-%\begin{proof}
-%This comes from the continuity of $P^{\theta}_{\pi_u, \pi_d}$ in $\theta$. The elements of the output from function $g_1(\theta,\pi_u,\pi_d,\vec{V})$ are just linear combinations of continuous elements of $P^{\theta}_{\pi_u, \pi_d}$ (continuous in $\theta$ that is).
-%\end{proof}
-%
-%\begin{lemma}
-%The function $g_2(\theta,\vec{V})= \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} P^{\theta}_{\pi_u, \pi_d} \vec{V}$ is continuous in $\theta$ for all $\vec{V}\in \RR^{N_G}$.
-%\end{lemma}
-%
-%\begin{proof}
-%Note $g_2(\theta,\vec{V})=\underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min}g_1(\theta,\pi_u,\pi_d,\vec{V})$. The minimax of continuous functions is continuous. 
-%\end{proof}
-%
-%
-%\begin{lemma}
-%The function $g_3(\theta,\vec{V})= \min\{\vec{h}, \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} P^{\theta}_{\pi_u, \pi_d} \vec{V}\}$ is continuous in $\theta$ for all $\vec{V}\in \RR^{N_G}$.
-%\end{lemma}
-%
-%\begin{proof}
-%Note $g_3(\theta,\vec{V})= \min\{\vec{h}, g_2(\theta,\vec{V})\}$. The minimum of continuous functions is also continuous. 
-%\end{proof}
-%
-%\begin{proposition}
-%The fixed point of the Bellman operator $B_{\theta}[\cdot]$, which we denote as $\vec{V}_{\theta}$ such that $\vec{V}_{\theta}=B_{\theta}[\vec{V}_{\theta}]$, is continuous in $\theta$.
-%\end{proposition}
-%
-%\begin{proof}
-%We need to show that for any $\theta$ $\forall \epsilon>0$ $\exists \delta>0$ such that if $||\theta'-\theta|| < \delta$ then $||\vec{V}_{\theta'} - \vec{V}_{\theta}||_{\infty} < \epsilon$. Take the sequence generated by $\vec{V}^0=\vec{V}_{\theta}$,  $\vec{V}^{k+1}=B_{\theta'}[\vec{V}^{k}]$, which converges to $\vec{V}_{\theta'}$. By triangle inequality we have
-%
-%\begin{equation*}
-%||\vec{V}_{\theta'} - \vec{V}_{\theta}||_{\infty} \leq \sum_{k=0}^{\infty}||\vec{V}^{k+1}-\vec{V}^{k}||_{\infty}.
-%\end{equation*}
-%
-%\noindent We can recursively apply the fact that $B_{\theta'}$ is a contraction mapping, 
-%
-%\begin{equation*}
-%\leq \sum_{k=0}^{\infty}\gamma^k||\vec{V}^{1}-\vec{V}^{0}||_{\infty} = \frac{1}{1-\gamma}||\vec{V}^{1}-\vec{V}^{0}||_{\infty}
-%\end{equation*} 
-%
-%\begin{equation*}
-%=\frac{1}{1-\gamma}||B_{\theta'}[\vec{V}_{\theta}]-\vec{V}_{\theta}||_{\infty}=\frac{1}{1-\gamma}||B_{\theta'}[\vec{V}_{\theta}]-B_{\theta}[\vec{V}_{\theta}]||_{\infty}
-%\end{equation*}
-%
-%\noindent Note that $B_{\theta}[\vec{V}]=g_3(\theta,\vec{V})$, so it is continuous in $\theta$, and thus for a given $\epsilon'>0$ we can choose $\delta>0$ such that 
-%
-%\begin{equation}
-%\leq \frac{\epsilon'}{1-\gamma},
-%\end{equation}
-%
-%\noindent so choose $\epsilon' = \epsilon (1-\gamma)$.
-%
-%\end{proof}
-
-% \bibliographystyle{ieeetr}
-% \bibliography{library}
 
 \printbibliography
 \end{document}

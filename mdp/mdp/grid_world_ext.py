@@ -348,7 +348,7 @@ class Avoid(GridWorld):
         if lamb == 0:
             self.tol = (1 - np.exp(-dt * .00001)) * 10**(-1)
         else:
-            self.tol = (1-self._gamma) * 10**(-1)
+            self.tol = (1 - self._gamma) * 10**(-1)
         
         self.tol = 10**-3
         self._reward = avoid_func(self._all_states)

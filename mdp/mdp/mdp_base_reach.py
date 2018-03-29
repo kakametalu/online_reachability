@@ -347,13 +347,26 @@ class MDP(TransitionModel):
                                     axis=0)
         return V_out, pi_greedy
 
-    def _value_iteration(self, V=None, pi=None, one_step=False):
+    def _value_iteration(self, V=None, pi=None, one_step=False, hard_ws=False):
         """Value iteration initialized with initial value function V.
         """
         t_vi_start = time.time()
+        
         if V is None:
-            V = self._reward
-        V_opt = deepcopy(V)
+            V_opt = deepcopy(self._reward)
+        else:
+            if hard_ws:
+                V_opt=deepcopy(V)
+            else:
+                V_next, _ = self._bellman_backup(V)
+                err_1 = np.linalg.norm(V - V_next, ord= float('inf'))
+                V_def = self._reward # default value of V
+                V_def_next, _ = self._bellman_backup(V_def)
+                err_2 = np.linalg.norm(V_def - V_def_next, ord= float('inf'))
+
+                V_opt = V_def_next if err_2 <= err_1 else V_next
+        
+        
         tol = self.tol
         err = tol * 2
 
@@ -432,7 +445,7 @@ class MDP(TransitionModel):
               "and policy using {}... ".format(name))
         
         t_start = time.time()
-        self._v_opt, self._pi_opt, t_run, iter = {'vi': self._value_iteration,
+        self._v_opt, self._pi_opt, t_run, iters = {'vi': self._value_iteration,
                                      'pi': self._policy_iteration}\
                                      [method](V,pi)
         tot_time = time.time()-t_start
@@ -440,7 +453,7 @@ class MDP(TransitionModel):
         print("Time to run method", t_run)
         return self._v_opt, self._pi_opt
         # return self._v_opt, self._pi_opt, {'tot_time':tot_time,
-        #                                    'run_time':t_run, 'iterations':iter}
+        #                                    'run_time':t_run, 'iterations':iters}
     
     def update(self):
         """Update the value function by applying one bellman update."""

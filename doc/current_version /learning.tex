@@ -24,22 +24,22 @@ Given Proposition \ref{prop:init_dist}, when computing $\vec{U}_{\theta_{k+1}}$a
 
 Another approach to handling an unknown model, is to compute the value function directly from the data. This is the approach taken in many RL algorithms that attempt to approximate the value function for SDR problems with unknown models.
 
-Temporal difference (TD) learning is at the heart of many of these methods, which includes TD-lambda, Q-learning, Deep Q Networks, and actor-critic methods. The key idea is to represent the value function with a parametric function approximator \footnote{A simple function approximator would be interpolation on a grid where the parameters are the grid node values.}, define a loss function on the parameters that is minimized when the value function is the fixed-point of the SDR backup operator, and to update the parameters by performing stochastic gradient descent on the loss function with samples from a real system or simulator.
+Temporal difference (TD) learning is at the heart of many of these methods, which includes TD-lambda\cite{Sutton1988}, Q-learning\cite{Watkins1992}, Deep Q Networks\cite{Mnih2016}, and actor-critic methods\cite{Konda2000}. The key idea is to represent the value function with a parametric function approximator \footnote{A simple function approximator would be interpolation on a grid where the parameters are the grid node values.}, define a loss function on the parameters that is minimized when the value function is the fixed-point of the SDR backup operator, and to update the parameters by performing stochastic gradient descent on the loss function with samples from a real system or simulator.
 
 For ease of presentation consider an autonomous system $f(x)$ (which might be due to a fixed policy), and a sequence of state transitions obtained from the system $\{(x_i,x_i^+)\}$, where $x^+=\bx_x(\Delta t)$ and $\Delta t$ is the time step. If the value function is approximated by $V_w(x)$ with parameters $w$, then the loss function and update rule for TD are given by
 %
 \begin{equation}
 \begin{split}
 &\L(w)=\big(V_{w}(x) - (r(x)+\gamma V_{w}(x^+))\big)^2 \enspace,\\
-&w_{i+1} \leftarrow w_i + \alpha\frac{\partial V_{w_i}}{\partial w}(x)\big((r(x)+\gamma V_{w_i}(x^+))\big)- \big(V_{w_i}(x)\big)\enspace,
+&w^{i+1} \leftarrow w^i + \alpha\frac{\partial V_{w^i}}{\partial w}(x_i)\big((r(x_i)+\gamma V_{w^i}(x^+_i))\big)- \big(V_{w^i}(x_i)\big)\enspace,
 \end{split}
 \end{equation}%
-\noindent where $\alpha \in [0,1]$ is the learning rate. A similar idea can be used in the MDR setting. Taking the approximation $U_w(x)$ with parameter $w$, the loss function and update rule for the MDR setting would be
+\noindent where $\alpha \in [0,1]$ is the learning rate and $w^i$ is the parameters at iteration $i$. A similar idea can be used in the MDR setting. Taking the approximation $U_w(x)$ with parameter $w$, the loss function and update rule for the MDR setting would be
 %
 \begin{equation}
 \begin{split}
 &\L(w)=\big(U_{w}(x) - \min\{h(x),\gamma U_{w}(x^+)\}\big)^2\enspace,\\
-&w_{i+1} \leftarrow w_i + \alpha\frac{\partial U_{w_i}}{\partial w}(x)\big(\min\{h(x),\gamma U_{w_i}(x^+)\}- \big(U_{w_i}(x)\big)\enspace.
+&w^{i+1} \leftarrow w^i + \alpha\frac{\partial U_{w^i}}{\partial w}(x_i)\big(\min\{h(x_i),\gamma U_{w^i}(x^+_i)\}- \big(U_{w^i}(x_i)\big)\enspace.
 \end{split}
 \end{equation}
 

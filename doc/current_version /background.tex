@@ -72,7 +72,7 @@ V(x)=\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU}\mathcal{V}\big(x,\bu(\cd
 \R(\T) = \{x \mid V(x) \le 0\} \enspace.
 \end{equation}  
 
-The optimization in \eqref{eq:val_function} is referred to here as the minimum reward optimal control problem. It has been shown that the value function for problems with outcome given by equation \eqref{eq:min_dist_functional} can be characterized as the unique viscosity solution to a variational inequality \cite{Barron1990}. When the problem is solved over a finite time interval $[0,T]$, the \emph{finite-horizon value function} $V(x,t)$ can be computed by solving the HJ equation: 
+The optimization in \eqref{eq:val_function} is referred to here as the minimum reward optimal control problem. It has been shown that the value function for problems with outcome given by equation \eqref{eq:min_dist_functional} can be characterized as the unique viscosity solution to a variational inequality \cite{Barron1989,Barron1990}. When the problem is solved over a finite time interval $[0,T]$, the \emph{finite-horizon value function} $V(x,t)$ can be computed by solving the HJ equation: 
 %
 \begin{equation} \label{eq:HJ_mr}
 \begin{split} 
@@ -85,7 +85,7 @@ The optimization in \eqref{eq:val_function} is referred to here as the minimum r
 
 
 \subsection{Computing the Value Function}
-Several approximation schemes have been proposed for solving \eqref{eq:HJ_mr} and similar HJ equations on a fixed grid $G$ \cite{Bardi1999, Falcone1994, Mitchell2005}. Here we will use a semi-Lagrangian approximation based on a discrete time dynamic programming (DP) principle:
+Several approximation schemes have been proposed for solving \eqref{eq:HJ_mr} and similar HJ equations on a fixed grid $G$ \cite{Bardi1999, Falcone1994, Mitchell2005,Osher2003,Sethian1996}. Here we will use a semi-Lagrangian approximation based on a discrete time dynamic programming (DP) principle:
 %
 \begin{subequations}
 \begin{align}

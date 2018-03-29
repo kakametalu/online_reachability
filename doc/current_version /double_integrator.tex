@@ -7,7 +7,7 @@ The doube integrator consists of two states $(x_1, x_2)$ , and  control $u \in [
 \dot{x_2} & = u 
 \end{split}
 \end{equation}
-\noindent The state space is discretized into a $161 \times 161$ grid on the domain $[-1,5] \times [-4,4]$, and $u_{max}=-u_{min}=2$.
+\noindent The state space is discretized into a $161 \times 161$ grid on the domain $[-1,5] \times [-5,5]$, and $u_{max}=-u_{min}=2$.
 
 The task is to keep the state trajectory inside the box $\K = [0,4] \times [-3,3]$, thus the target is taken to be its compliment $\T=\K^C$. For ease of exposition we define the \emph{safe set} $\Omega(\T) := \R(\T)^C$.
 
@@ -15,7 +15,7 @@ We first show, in Fig~\ref{fig:convergence} that different level curves of $Z$ o
 
 \begin{figure}
 \includegraphics[scale=0.5]{convergence_difflambda.png}
-\caption{The analytic safe set and target set $\mathcal{T}$ are shown in black (interior) and red (exterior), respectively. The over and under approximated $Z_{\lambda}$ are shown in bold green and dotted green for $\lambda=0.1$; and bold blue and dotted blue line for $\lambda  = 0.2$ (all interior).}
+\caption{The analytic safe set and target set $\mathcal{T}$ are shown in black (interior) and red (exterior), respectively. The over and under approximated $Z$ are shown in bold green and dotted green for $\lambda=0.1$; and bold blue and dotted blue line for $\lambda  = 0.2$ (all interior).}
 \label{fig:convergence}
 \end{figure}
 
