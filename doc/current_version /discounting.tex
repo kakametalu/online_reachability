@@ -62,7 +62,7 @@ The discrete approximation of \eqref{eq:HJ_mdr} is given by
 \noindent with the backup operator defined as
 %
 \begin{equation} \label{eq:backup_mdr}
-B[\vec{A}] := \min\left\{ \vec{h}, \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d} \vec{A} \right \}
+B[\vec{A}] := \min\left\{ \vec{h}, \underset{\pi}{\max}\text{ }\underset{ \rho}{\min} \gamma \Phi_{\pi, \rho} \vec{A} \right \}
 \enspace,
 \end{equation}%
 \noindent where $\vec{h}_i = h(x_i)$. The MDR value function $Z(x)$ is then approximated by $I[\vec{U}](x)+L$, where again $I[\vec{U}](\cdot)$ is the interpolation operator. We now prove that \eqref{eq:backup_mdr} is a contraction.
@@ -91,18 +91,18 @@ with $b_{gg} :=\displaystyle{\arg\min_b g(a_q,b)}$.
 %
 \end{proof}
 %
-\begin{proposition} 
+\begin{theorem} 
 The operator given by \eqref{eq:backup_mdr} is a contraction mapping in the infinity norm $|| \cdot ||_{\infty}$ on the space $\RR^{N_G}$.
-\end{proposition}
+\end{theorem}
 \begin{proof} Defining $B[\cdot]$ as in \eqref{eq:backup_mdr}, take $A_1, A_2 \in \RR^{N_G}$:
 \begin{equation*}
 \begin{split}
 &||B[\vec{A}_1] - B[\vec{A}_2]||_{\infty}=\\
-&||\min\left\{ \vec{h}, \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d} \vec{A}_1 \right \}  - \min\left\{ \vec{h}, \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d} \vec{A}_2 \right \}||_{\infty}
+&||\min\left\{ \vec{h}, \underset{\pi}{\max}\text{ }\underset{ \rho}{\min} \gamma \Phi_{\pi, \rho} \vec{A}_1 \right \}  - \min\left\{ \vec{h}, \underset{\pi}{\max}\text{ }\underset{ \rho}{\min} \gamma \Phi_{\pi, \rho} \vec{A}_2 \right \}||_{\infty}
 \enspace .
 \end{split}
 \end{equation*}%
-\noindent Leveraging the identity $\min\{a,b\} = \frac{1}{2}((a+b)- |a-b|)$ and using the shorthand $\Pi[\vec{A}]=\underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d} \vec{A}$ , the above is equal to 
+\noindent Leveraging the identity $\min\{a,b\} = \frac{1}{2}((a+b)- |a-b|)$ and using the shorthand $\Pi[\vec{A}]=\underset{\pi}{\max}\text{ }\underset{ \rho}{\min} \gamma \Phi_{\pi, \rho} \vec{A}$ , the above is equal to 
 %
 \begin{equation*}
 \frac{1}{2} ||(\Pi[\vec{A}_1]  - \Pi[\vec{A}_2] ) -  (|\Pi[\vec{A}_1]-\vec{h}|  - |\Pi[\vec{A}_2]-\vec{h}|)||_{\infty} \enspace,
@@ -117,14 +117,14 @@ The operator given by \eqref{eq:backup_mdr} is a contraction mapping in the infi
 \begin{equation*}
 \begin{split}
 &||(\Pi[\vec{A}_1]  - \Pi[\vec{A}_2] )||_{\infty}=\\ 
-&||\underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d}\vec{A}_1 - \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} \gamma P_{\pi_u, \pi_d} \vec{A}_2||_{\infty} \enspace.
+&||\underset{\pi}{\max}\text{ }\underset{ \rho}{\min} \gamma \Phi_{\pi, \rho}\vec{A}_1 - \underset{\pi}{\max}\text{ }\underset{ \rho}{\min} \gamma \Phi_{\pi, \rho} \vec{A}_2||_{\infty} \enspace.
 \end{split}
 \end{equation*}%
 \noindent Finally from Lemma \ref{lem:maxmin}, the last upper bound is 
 \begin{equation*}
-\underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\max} ||\gamma P_{\pi_u, \pi_d} (\vec{A}_1 - \vec{A}_2)||_{\infty} \leq \gamma||\vec{A}_1 - \vec{A}_2||_{\infty} \enspace,
+\underset{\pi}{\max}\text{ }\underset{ \rho}{\max} ||\gamma \Phi_{\pi, \rho} (\vec{A}_1 - \vec{A}_2)||_{\infty} \leq \gamma||\vec{A}_1 - \vec{A}_2||_{\infty} \enspace,
 \end{equation*}%
-\noindent where the last inequality comes from the fact that $P_{\pi_u, \pi_d}$ is a stochastic matrix for all policies, thus $||P_{\pi_u, \pi_d}||_{\infty} = 1$.
+\noindent where the last inequality comes from the fact that $\Phi_{\pi, \rho}$ is a stochastic matrix for all policies, thus $||\Phi_{\pi, \rho}||_{\infty} = 1$.
 \end{proof}
 
 

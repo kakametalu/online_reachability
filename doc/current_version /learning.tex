@@ -31,7 +31,7 @@ For ease of presentation consider an autonomous system $f(x)$ (which might be du
 \begin{equation}
 \begin{split}
 &\L(w)=\big(V_{w}(x) - (r(x)+\gamma V_{w}(x^+))\big)^2 \enspace,\\
-&w^{i+1} \leftarrow w^i + \alpha\frac{\partial V_{w^i}}{\partial w}(x_i)\big((r(x_i)+\gamma V_{w^i}(x^+_i))\big)- \big(V_{w^i}(x_i)\big)\enspace,
+&w^{i+1} \leftarrow w^i + \alpha\frac{\partial V_{w^i}}{\partial w}(x_i)\big(r(x_i)+\gamma V_{w^i}(x^+_i) - V_{w^i}(x_i)\big)\enspace,
 \end{split}
 \end{equation}%
 \noindent where $\alpha \in [0,1]$ is the learning rate and $w^i$ is the parameters at iteration $i$. A similar idea can be used in the MDR setting. Taking the approximation $U_w(x)$ with parameter $w$, the loss function and update rule for the MDR setting would be
@@ -39,7 +39,7 @@ For ease of presentation consider an autonomous system $f(x)$ (which might be du
 \begin{equation}
 \begin{split}
 &\L(w)=\big(U_{w}(x) - \min\{h(x),\gamma U_{w}(x^+)\}\big)^2\enspace,\\
-&w^{i+1} \leftarrow w^i + \alpha\frac{\partial U_{w^i}}{\partial w}(x_i)\big(\min\{h(x_i),\gamma U_{w^i}(x^+_i)\}- \big(U_{w^i}(x_i)\big)\enspace.
+&w^{i+1} \leftarrow w^i + \alpha\frac{\partial U_{w^i}}{\partial w}(x_i)\big(\min\{h(x_i),\gamma U_{w^i}(x^+_i)\} - U_{w^i}(x_i)\big)\enspace.
 \end{split}
 \end{equation}
 

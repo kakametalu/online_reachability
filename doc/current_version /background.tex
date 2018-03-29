@@ -104,16 +104,16 @@ Several approximation schemes have been proposed for solving \eqref{eq:HJ_mr} an
 \end{subequations}%
 \noindent for  $i=1, ..., N_G$, where $\{x_i\}_{i=1}^{N_G}$ are the grid nodes, $N_G$ is the number of grid nodes, $\vec{V}_i^k$ is the approximate value for $V(x_i, k \Delta t)$ and ${I[\vec{A}]:\RR^n \rightarrow \RR}$ represents an interpolation operator defining, for every point $x$, the polynomial reconstruction based on the values $\vec{A}$. Unless stated otherwise $G$ is taken to be a regular equidistant array of points with mesh spacing $\Delta x_j$ along the $j$th axis, $j=1,...,n$.\footnote{In the most general case the control and disturbance sets are also discretized, $\U=\{u_i\}_{i=1}^{N_U}$ and $\D=\{d_i\}_{i=1}^{N_D}$, and the minimax game is approximated.} We use a multilinear interpolator is used for the interpolation scheme, thus the interpolation function $I[\vec{A}](\cdot)$ is given by a convex combination over the elements of $\vec{A}$,
 \begin{equation}
-I[\vec{A}](x)= p(x)\cdot \vec{A} \enspace,
+I[\vec{A}](x)= \phi(x)\cdot \vec{A} \enspace,
 \end{equation}%
-\noindent where the elements of ${p(\cdot): \RR \rightarrow \RR^{N_G}}$ are greater than zero and sum to one. 
+\noindent where the elements of ${\phi(\cdot): \RR \rightarrow \RR^{N_G}}$ are greater than zero and sum to one. 
 
-For conciseness we introduce \emph{control policies} ${\pi_u(\cdot): \RR^n \rightarrow \U}$ and \emph{disturbance policies} ${\pi_d(\cdot): \RR^n \rightarrow \D}$, which map from state to control and state to disturbance, respectively. Note that the individual minimax games being played at each grid point can be collectively thought of as a game over policies. We also introduce the \emph{backup operator} ${B[\cdot]: \RR^{N_G} \rightarrow \RR^{N_G}}$, which maps vectorized value functions onto themselves. Define the backup operator as
+For conciseness we introduce \emph{control policies} ${\pi(\cdot): \RR^n \rightarrow \U}$ and \emph{disturbance policies} ${\rho(\cdot): \RR^n \rightarrow \D}$, which map from state to control and state to disturbance, respectively. Note that the individual minimax games being played at each grid point can be collectively thought of as a game over policies. We also introduce the \emph{backup operator} ${B[\cdot]: \RR^{N_G} \rightarrow \RR^{N_G}}$, which maps vectorized value functions onto themselves. Define the backup operator as
 %
 \begin{equation} \label{eq: op_min_dist}
- B[\vec{A}] := \min\{\vec{l},  \underset{\pi_u}{\max}\text{ }\underset{ \pi_d}{\min} P_{\pi_u, \pi_d} \vec{A}\} \enspace,
+ B[\vec{A}] := \min\{\vec{l},  \underset{\pi}{\max}\text{ }\underset{ \rho}{\min} \Phi_{\pi, \rho} \vec{A}\} \enspace,
 \end{equation}%
-\noindent where ${\vec{l} \in \RR^{N_G}}$ with ${\vec{l}_i = l(x_i)}$ for ${i=1, ..., N_G}$, ${P_{\pi_u, \pi_d} \in \RR^{N_G \times N_G}}$ is a policy-dependent stochastic matrix\footnote{$P_{\pi_u, \pi_d}$ is effectively the probability transition matrix for a Markov Decision Process (MDP) over a finite state space given by the grid nodes ${\{x_i\}_{i=1}^{N_G}}$.}, and row $i$of $P_{\pi_u, \pi_d}$ is $p(x_i+\Delta tf(x, \pi_u(x_i), \pi_d(x_i)))$. For the one player setting this matrix becomes $P_{\pi_u}$. We can now express \eqref{eq:dp_min_dist} more concisely as
+\noindent where ${\vec{l} \in \RR^{N_G}}$ with ${\vec{l}_i = l(x_i)}$ for ${i=1, ..., N_G}$, ${\Phi_{\pi, \rho} \in \RR^{N_G \times N_G}}$ is a policy-dependent stochastic matrix\footnote{$\Phi_{\pi, \rho}$ is effectively the probability transition matrix for a Markov Decision Process (MDP) over a finite state space given by the grid nodes ${\{x_i\}_{i=1}^{N_G}}$.}, and row $i$ of $\Phi_{\pi, \rho}$ is $\phi(x_i+\Delta tf(x, \pi(x_i), \rho(x_i)))$. For the one player setting this matrix becomes $\Phi_{\pi}$. We can now express \eqref{eq:dp_min_dist} more concisely as
 %
 \begin{subequations}\label{eq:val_iter}
 \begin{align}
@@ -160,7 +160,7 @@ V_{\Delta t}(x) = \max_{u\in\U} \gamma V_{\Delta t}(x + \Delta t\cdot f(x, u))  
 The approximation is solved for using value iteration with the following backup operator
 %
 \begin{equation} \label{eq:backup_sdr}
-B[\vec{A}] := \vec{r} +  \underset{\pi_u}{\max} \gamma P_{\pi_u} \vec{A}\enspace,
+B[\vec{A}] := \vec{r} +  \underset{\pi}{\max} \gamma \Phi_{\pi} \vec{A}\enspace,
 \end{equation}%
 \noindent where $\vec{r}_i =\Delta t \cdot r(x_i)$. The initialization of the value iteration procedure is arbitrary $\vec{V}^{0} \in \RR^{N_G}$ because the backup  operator in \eqref{eq:backup_sdr} is a contraction mapping in the infinity norm, $||\cdot||_\infty$ \cite{Bertsekas1995}.
 

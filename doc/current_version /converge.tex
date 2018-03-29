@@ -3,22 +3,22 @@ In this section we present methods that may yield much faster convergence than v
 
 \subsection{Policy Iteration}
 
-In the one player setting (control only), if the backup operator is a contraction mapping the solution can also be obtained via \emph{policy iteration}. First define the \emph{policy backup operator} $B^{\pi_u}[\cdot]: \RR^{N_G} \rightarrow \RR^{N_G}$, 
+In the one player setting (control only), if the backup operator is a contraction mapping the solution can also be obtained via \emph{policy iteration}. First define the \emph{policy backup operator} $B^{\pi}[\cdot]: \RR^{N_G} \rightarrow \RR^{N_G}$, 
 %
 \begin{equation} \label{eq:backup_policy}
-B^{\pi_u}[\vec{A}] = \min\left\{ \vec{h}, \gamma P_{\pi_u} \vec{A} \right \} \enspace.
+B^{\pi}[\vec{A}] = \min\left\{ \vec{h}, \gamma \Phi_{\pi} \vec{A} \right \} \enspace.
 \end{equation}%
 \noindent This operator is a contraction mapping. The policy iteration algorithm is then given by
 %
 \begin{subequations}\label{eq:pi}
 \begin{align}
-&\vec{U}^{\pi_u^k} = B^{\pi_u^k}[\vec{U}^{\pi_u^k}] \label{eq:pi_a} \enspace,\\
-&\pi_u^{k+1} = \arg\underset{\pi_u}{\max}B^{\pi_u}[\vec{U}^{\pi_u^k}] \enspace,\\ 
-&\vec{U} = \lim_{k\rightarrow \infty} \vec{U}^{\pi_u^k}\enspace.
+&\vec{U}^{\pi^k} = B^{\pi^k}[\vec{U}^{\pi^k}] \label{eq:pi_a} \enspace,\\
+&\pi^{k+1} = \arg\underset{\pi}{\max}B^{\pi}[\vec{U}^{\pi^k}] \enspace,\\ 
+&\vec{U} = \lim_{k\rightarrow \infty} \vec{U}^{\pi^k}\enspace.
 \end{align}
 \end{subequations}
 
-Note that ${\vec{U}^{\pi_u^k}}$, the fixed point of \eqref{eq:pi_a}, is obtained through value iteration with the policy backup. Finding the fixed point of the policy backup is computationally less intensive than the other backup operators presented thus far, since no optimization is performed over policies. The policy iteration algorithm only optimizes over policies when switching policies.  
+Note that ${\vec{U}^{\pi^k}}$, the fixed point of \eqref{eq:pi_a}, is obtained through value iteration with the policy backup. Finding the fixed point of the policy backup is computationally less intensive than the other backup operators presented thus far, since no optimization is performed over policies. The policy iteration algorithm only optimizes over policies when switching policies.  
 
 In practice policy iteration is typically recommended over value iteration because policies can converge faster than values resulting in faster convergence of the algorithm \cite{Russell2003}. A more detailed analysis of policy iteration (as it pertains to SDR) can be found in \cite{Bokanowski2009,Howard1964, Puterman1979}. 
 
@@ -28,14 +28,14 @@ We now prove that policy iteration converges for the MDR problem.
 Assuming a finite control set ${\U=\{u_i\}_{i=1}^{N_U}}$, the policy iteration algorithm converges to the vectorized value function obtained from \eqref{eq:val_iter_backup} without the disturbance.
 \end{proposition}%
 \noindent \begin{proof}
-It's sufficient to show that sequence ${\{ \vec{U}^{\pi_u^{k}}\}}_k$ is nondecreasing, i.e. $\vec{U}^{\pi_u^{k+1}} \geq \vec{U}^{\pi_u^k}$ $\forall k$. Since the number of policies is finite the nondecreasing criterion implies that the sequence of vectors will converge. Also note that $\underset{\pi_u}{\max}\text{ }B^{\pi_u}[\cdot] = B[\cdot]$ as defined in \eqref{eq:val_iter_backup} without the disturbance, so the sequence converges to the vectorized value function.
+It's sufficient to show that sequence ${\{ \vec{U}^{\pi^{k}}\}}_k$ is nondecreasing, i.e. $\vec{U}^{\pi^{k+1}} \geq \vec{U}^{\pi^k}$ $\forall k$. Since the number of policies is finite the nondecreasing criterion implies that the sequence of vectors will converge. Also note that $\underset{\pi}{\max}\text{ }B^{\pi}[\cdot] = B[\cdot]$ as defined in \eqref{eq:val_iter_backup} without the disturbance, so the sequence converges to the vectorized value function.
 
-Consider two sequences ${\vec{X}^{i+1}=\min\big\{\vec{U}^{\pi_u^k}, \gamma P_{\pi_u^{k+1}}\vec{X}^i \big\}}$ and ${\vec{Y}^{i+1}=\min\big\{\vec{h}, \gamma P_{\pi_u^{k+1}} \vec{Y}^i \big\}}$, with ${\vec{X}^0=\vec{Y}^0=\vec{U}^{\pi_u^k}}$.
-Since ${\vec{h}\geq \vec{U}^{\pi_u^k}}$, by \eqref{eq:pi_a}, we have ${\vec{Y}^i \geq \vec{X}^i,\forall i \geq 0}$.
-Next, we note that ${\vec{X}^{1}=\min\big\{\vec{U}^{\pi_u^k},\gamma P_{\pi_u^{k+1}}\vec{U}^{\pi_u^k}\big\}}$ ${=\min\big\{\vec{h}, \gamma P_{\pi_u^{k}}\vec{U}^{\pi_u^k},\gamma P_{\pi_u^{k+1}}\vec{U}^{\pi_u^k}\big\}}$.
-Furthermore, the third term in the $\min\{\,\}$ is greater than the second, so $\vec{X}^{1}=\min\big\{\vec{h}, \gamma P_{\pi_u^{k}}\vec{U}^{\pi_u^k} \big\} =  \vec{U}^{\pi_u^k}$, thus ${\vec{X}^{i} =  \vec{U}^{\pi_u^k},\forall i \geq 0}$.
-Lastly, $\lim_{i\rightarrow \infty}\vec{Y}^i= \vec{U}^{\pi_u^{k+1}}$, which is the fixed-point of the contraction mapping that generates the sequence.
-Bringing everything together we have $\vec{U}^{\pi_u^{k+1}} = \lim_{i\rightarrow \infty}\vec{Y}^i \geq   \lim_{i\rightarrow \infty}\vec{X}^i = \vec{U}^{\pi_u^{k}}.$
+Consider two sequences ${\vec{X}^{i+1}=\min\big\{\vec{U}^{\pi^k}, \gamma \Phi_{\pi^{k+1}}\vec{X}^i \big\}}$ and ${\vec{Y}^{i+1}=\min\big\{\vec{h}, \gamma \Phi_{\pi^{k+1}} \vec{Y}^i \big\}}$, with ${\vec{X}^0=\vec{Y}^0=\vec{U}^{\pi^k}}$.
+Since ${\vec{h}\geq \vec{U}^{\pi^k}}$, by \eqref{eq:pi_a}, we have ${\vec{Y}^i \geq \vec{X}^i,\forall i \geq 0}$.
+Next, we note that ${\vec{X}^{1}=\min\big\{\vec{U}^{\pi^k},\gamma \Phi_{\pi^{k+1}}\vec{U}^{\pi^k}\big\}}$ ${=\min\big\{\vec{h}, \gamma \Phi_{\pi^{k}}\vec{U}^{\pi^k},\gamma \Phi_{\pi^{k+1}}\vec{U}^{\pi^k}\big\}}$.
+Furthermore, the third term in the $\min\{\,\}$ is greater than the second, so $\vec{X}^{1}=\min\big\{\vec{h}, \gamma \Phi_{\pi^{k}}\vec{U}^{\pi^k} \big\} =  \vec{U}^{\pi^k}$, thus ${\vec{X}^{i} =  \vec{U}^{\pi^k},\forall i \geq 0}$.
+Lastly, $\lim_{i\rightarrow \infty}\vec{Y}^i= \vec{U}^{\pi^{k+1}}$, which is the fixed-point of the contraction mapping that generates the sequence.
+Bringing everything together we have $\vec{U}^{\pi^{k+1}} = \lim_{i\rightarrow \infty}\vec{Y}^i \geq   \lim_{i\rightarrow \infty}\vec{X}^i = \vec{U}^{\pi^{k}}.$
 \end{proof}
 
 
