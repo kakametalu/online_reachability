@@ -1,23 +1,62 @@
 \begin{table}
 \centering
-\caption{Time taken for value iteration (VI) to converge with Multigrid}
-\label{tab:vi_coarse_grid}
-\begin{tabular}{|c| c| c| c| }
+\caption{Double Integrator: Value iteration (VI) with Multigrid}
+\begin{tabular}{|c| c| c| c| c| }
 \hline
-\# nodes & VI fine grid & VI coarse grid & MR \\ \hline
-$41^3$ & $26.706$ & $2.255$ & $25.713$ \\ \hline
-$81^3$ & $569.257$ & $29.878$ & $539.524$ \\ \hline
+\# nodes & Coarse grid & Fine grid &  Fine grid with WS & Multigrid \\ \hline
+$40^2$ & $0.012$ & $0.025$ & $0.019$ & $0.031$ \\ \hline
+$80^2$ & $0.019$ & $0.116$ & $0.041$ & $0.060$\\ \hline
+$160^2$ & $0.153$ & $1.110$ & $0.084$ & $0.237$\\ \hline
 \end{tabular}
 \end{table}
 
 \begin{table}
 \centering
-\caption{Pursuer-Evader with warm start}
-\label{tab:pursuer_evader}
-\begin{tabular}{|c| c| c| c| c|c|}
+\caption{Pursuit Evasion: Value iteration (VI) with Multigrid}
+\begin{tabular}{|c| c| c| c| c| }
 \hline
-\# nodes & $M_1$ & $M_2$ & $M_2$ with WS & $M_3$ & $M_3$ with WS \\ \hline
-$41^3$ & $27.81$ & $50.982$ & $20.34$ & $28.191$ & $8.60$ \\ \hline
-$81^3$ & $563.975$ & $973.898$ & $590.165$ & $576.184$ & $176.982$ \\ \hline
+\# nodes & Coarse grid & Fine grid &  Fine grid with WS & Multigrid \\ \hline
+$40^3$ & $2.068$ & $29.684$ & $24.320$ & $26.388$ \\ \hline
+$80^3$ & $33.166$ & $352.099$ & $317.444$ & $350.610$\\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+\centering
+\caption{Double Integrator: Value Iteration (VI) with changing model parameters}
+\begin{tabular}{|c| c| c| c| c| c|}
+\hline
+\# nodes & $M_n$ & $M_l$ &  $M_l$ with WS & $M_h$ & $M_h$ with WS \\ \hline
+$40^2$ & $0.029$ & $0.044$ & $0.041$ & $0.022$ & $0.014$\\ \hline
+$80^2$ & $0.205$ & $.364$ & $0.273$ & $0.097$ & $0.095$\\ \hline
+$160^2$ & $1.444$ & $2.727$ & $2.304$ & $1.257$ & $1.116$\\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+\centering
+\caption{Pursuit Evasion: Value iteration (VI) with changing models}
+\begin{tabular}{|c| c| c| c| c| c|}
+\hline
+\# nodes & $M_n$ & $M_e$ &  $M_e$ with WS & $M_p$ & $M_p$ with WS \\ \hline
+$40^3$ & $35.043$ & $32.242$ & $21.483$ & $26.319$ & $23.366$ \\ \hline
+$80^3$ & $439.751$ & $416.965$ & $308.821$ & $300.847$ & $296.568$\\ \hline
+\end{tabular}
+\end{table}
+
+
+\begin{table}
+\centering
+\caption{Value Iteration vs Policy Iteration}
+\label{tab:v_vs_p}
+\begin{tabular}{|c| c| c| c|}
+\hline
+\# actions & VI & \multicolumn{2}{|c|}{Policy Iteration} \\ \cline{3-4}
+ &  $T_{total} $ & $T_{total}$ & $T_{total} - T_{P_{\pi_u}}$ \\ \hline
+2 & 1.255  & 68.793  & 0.105 \\ \hline
+50 &  7.562 &  69.717 & 0.365 \\ \hline
+250 & 32.841 &  251.39 & 3.504 \\ \hline
+500 & 63.815 &  253.855 & 6.741 \\
+\hline
 \end{tabular}
 \end{table}

@@ -31,28 +31,5 @@ We first compute the value functions for the MR and MDR on a $41 \times 41 \time
 
 In the first experiment we compare a multigrid approach{} to value iteration. For the multigrid approach we also need to run value iteration on a coarse grid, which we construct to have half the resolution per dimension of the nominal grid, e.g. if the nominal grid has $41^3$ nodes then the coarse grid has $21^3$ nodes. The results are shown in Table~\ref{tab:multigrid}. The multigrid approach outperforms value iteration, especially as the number of nodes increases.
 
-\begin{table}
-\centering
-\caption{Value Iteration (VI) vs. Multigrid (M)}
-\label{tab:multigrid}
-\begin{tabular}{|c| c| c| c| }
-\hline
-\# nodes &  VI coarse & VI & M \\ \hline
-$41^3$ &$1.299$ &$15.789$  & $12.190$ \\ \hline
-$81^3$ &$16.906$&$256.232$  & $174.385$ \\ \hline
-\end{tabular}
-\end{table}
-
 We now construct two other models by tweaking model 1: setting $u_{max}=1.5$ produces model 2 and setting $d_{max}=1.5$ produces model 3. In the final experiment we look at the impact of initializing value iteration with a solution from a similar model. As alluded to in Section \ref{sec:learn} this can be beneficial when the model is being iteratively learned. In this context we have just ``learned" that the evader/pursuer is more maneuverable (model 2/model 3). We compute both value functions with and without initializing with the solution for model 1. We refer to this initialization as a \emph{warm start}. The results are shown in Table~\ref{tab:pursuit_evasion}.
 
-\begin{table}
-\centering
-\caption{Pursuit-Evasion for various models ($M$) with and without warm start ($W$)}
-\label{tab:pursuit_evasion}
-\begin{tabular}{|c| c| c| c| c|c|}
-\hline
-\# nodes & $M_1$ & $M_2$ & $M_2$  $W$ & $M_3$ & $M_3$  $W$\\ \hline
-$41^3$ & $20.84$ & $18.32$ & $12.66$ & $14.32$ & $8.89$ \\ \hline
-$81^3$ & $339.66$ & $339.66$ & $224.29$ & $267.81$ & $166.95$ \\ \hline
-\end{tabular}
-\end{table}
