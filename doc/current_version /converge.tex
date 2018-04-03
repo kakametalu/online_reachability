@@ -3,7 +3,7 @@ In this section we present methods that may yield much faster convergence than v
 
 \subsection{Policy Iteration}
 
-In the one player setting (control only), if the backup operator is a contraction mapping the solution can also be obtained via \emph{policy iteration}. First define the \emph{policy backup operator} $B^{\pi}[\cdot]: \RR^{N_G} \rightarrow \RR^{N_G}$, 
+In the one player setting (control only), if the backup operator is a contraction mapping the solution can also be obtained via \emph{policy iteration}. First define the \emph{policy backup operator} $B^{\pi}[\cdot]: \RR^{n_G} \rightarrow \RR^{n_G}$, 
 %
 \begin{equation} \label{eq:backup_policy}
 B^{\pi}[\vec{A}] = \min\left\{ \vec{h}, \gamma \Phi_{\pi} \vec{A} \right \} \enspace.
@@ -25,7 +25,7 @@ In practice policy iteration is typically recommended over value iteration becau
 We now prove that policy iteration converges for the MDR problem.
 %
 \begin{proposition}
-Assuming a finite control set ${\U=\{u_i\}_{i=1}^{N_U}}$, the policy iteration algorithm converges to the vectorized value function obtained from \eqref{eq:val_iter_backup} without the disturbance.
+Assuming a finite control set ${\U=\{u_i\}_{i=1}^{n_\U}}$, the policy iteration algorithm converges to the vectorized value function obtained from \eqref{eq:val_iter_backup} without the disturbance.
 \end{proposition}%
 \noindent \begin{proof}
 It's sufficient to show that sequence ${\{ \vec{U}^{\pi^{k}}\}}_k$ is nondecreasing, i.e. $\vec{U}^{\pi^{k+1}} \geq \vec{U}^{\pi^k}$ $\forall k$. Since the number of policies is finite the nondecreasing criterion implies that the sequence of vectors will converge. Also note that $\underset{\pi}{\max}\text{ }B^{\pi}[\cdot] = B[\cdot]$ as defined in \eqref{eq:val_iter_backup} without the disturbance, so the sequence converges to the vectorized value function.

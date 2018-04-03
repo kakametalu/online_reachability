@@ -1,9 +1,8 @@
 % !TEX root = main_min_disc_dist.tex
-This section uses two benchmark models, double integrator and pursuit-evasion game, to exemplify the numerical properties of the MDR formulation. The double integrator model will be used to display the over-/under-approximation of the reachable set, as well as to compare policy iteration with value iteration. The pursuit-evasion game is used to demonstrate the advantages of multigridding. 
+This section uses two benchmark models, double integrator and pursuit-evasion game, to exemplify the numerical properties of the MDR formulation. The double integrator model will be used to display the over-/under-approximation of the reachable set, as well as to compare policy iteration with value iteration. Both of the benchmarks will be used to demonstrate the advantages of multigridding, and initializing value iteration with pre-computed solutions to similar problems. 
 
-Unless stated otherwise all algorithms are initialized with $\vec{h}=\vec{l}-L$, and are considered converged when the distance (in the infinity norm) between consecutive iterates falls below $\epsilon =.0005$.
+Unless stated otherwise all algorithms are initialized with $\vec{h}=\vec{l}-L$, and are considered converged when the distance (in the infinity norm) between consecutive iterates falls below $\epsilon =.001$. All experiments were run on a 2016 MacBook Pro with Core i7 processor and 16GB RAM \textcolor{red}{(Shromona feel free to modify these specs, if they are inaccurate or incomplete)}.
 
 \input{double_integrator.tex}
 
 \input{pursuit_evasion.tex}
-\input{tables.tex}

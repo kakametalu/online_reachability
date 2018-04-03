@@ -1,84 +1,84 @@
-\begin{table}
-\centering
-\caption{Double Integrator: Value iteration (VI) with Multigrid}
-\begin{tabular}{|c| c| c| c| c| }
-\hline
-\# nodes & Coarse grid & Fine grid &  Fine grid with WS & Multigrid \\ \hline
-$40^2$ & $0.012$ & $0.025$ & $0.019$ & $0.031$ \\ \hline
-$80^2$ & $0.019$ & $0.116$ & $0.041$ & $0.060$\\ \hline
-$160^2$ & $0.153$ & $1.110$ & $0.084$ & $0.237$\\ \hline
-\end{tabular}
-\end{table}
+% \begin{table}
+% \centering
+% \caption{Double Integrator: Value iteration (VI) with Multigrid}
+% \begin{tabular}{|c| c| c| c| c| }
+% \hline
+% \# nodes & Coarse grid & Fine grid &  Fine grid with WS & Multigrid \\ \hline
+% $40^2$ & $0.012$ & $0.025$ & $0.019$ & $0.031$ \\ \hline
+% $80^2$ & $0.019$ & $0.116$ & $0.041$ & $0.060$\\ \hline
+% $160^2$ & $0.153$ & $1.110$ & $0.084$ & $0.237$\\ \hline
+% \end{tabular}
+% \end{table}
 
-\begin{table}
-\centering
-\caption{Pursuit Evasion: Value iteration (VI) with Multigrid}
-\begin{tabular}{|c| c| c| c| c| }
-\hline
-\# nodes & Coarse grid & Fine grid &  Fine grid with WS & Multigrid \\ \hline
-$40^3$ & $2.068$ & $29.684$ & $24.320$ & $26.388$ \\ \hline
-$80^3$ & $33.166$ & $352.099$ & $317.444$ & $350.610$\\ \hline
-\end{tabular}
-\end{table}
+% \begin{table}
+% \centering
+% \caption{Pursuit Evasion: Value iteration (VI) with Multigrid}
+% \begin{tabular}{|c| c| c| c| c| }
+% \hline
+% \# nodes & Coarse grid & Fine grid &  Fine grid with WS & Multigrid \\ \hline
+% $40^3$ & $2.068$ & $29.684$ & $24.320$ & $26.388$ \\ \hline
+% $80^3$ & $33.166$ & $352.099$ & $317.444$ & $350.610$\\ \hline
+% \end{tabular}
+% \end{table}
 
-\begin{table}
-\centering
-\caption{Double Integrator: Value Iteration (VI) with changing model parameters}
-\begin{tabular}{|c| c| c| c| c| c|}
-\hline
-\# nodes & $M_n$ & $M_l$ &  $M_l$ with WS & $M_h$ & $M_h$ with WS \\ \hline
-$40^2$ & $0.029$ & $0.044$ & $0.041$ & $0.022$ & $0.014$\\ \hline
-$80^2$ & $0.205$ & $.364$ & $0.273$ & $0.097$ & $0.095$\\ \hline
-$160^2$ & $1.444$ & $2.727$ & $2.304$ & $1.257$ & $1.116$\\ \hline
-\end{tabular}
-\end{table}
+% \begin{table}
+% \centering
+% \caption{Double Integrator: Value Iteration (VI) with changing model parameters}
+% \begin{tabular}{|c| c| c| c| c| c|}
+% \hline
+% \# nodes & $M_n$ & $M_l$ &  $M_l$ with WS & $M_h$ & $M_h$ with WS \\ \hline
+% $40^2$ & $0.029$ & $0.044$ & $0.041$ & $0.022$ & $0.014$\\ \hline
+% $80^2$ & $0.205$ & $.364$ & $0.273$ & $0.097$ & $0.095$\\ \hline
+% $160^2$ & $1.444$ & $2.727$ & $2.304$ & $1.257$ & $1.116$\\ \hline
+% \end{tabular}
+% \end{table}
 
-\begin{table}
-\centering
-\caption{Pursuit Evasion: Value iteration (VI) with changing models}
-\begin{tabular}{|c| c| c| c| c| c|}
-\hline
-\# nodes & $M_n$ & $M_e$ &  $M_e$ with WS & $M_p$ & $M_p$ with WS \\ \hline
-$40^3$ & $35.043$ & $32.242$ & $21.483$ & $26.319$ & $23.366$ \\ \hline
-$80^3$ & $439.751$ & $416.965$ & $308.821$ & $300.847$ & $296.568$\\ \hline
-\end{tabular}
-\end{table}
+% \begin{table}
+% \centering
+% \caption{Pursuit Evasion: Value iteration (VI) with changing models}
+% \begin{tabular}{|c| c| c| c| c| c|}
+% \hline
+% \# nodes & $M_n$ & $M_e$ &  $M_e$ with WS & $M_p$ & $M_p$ with WS \\ \hline
+% $40^3$ & $35.043$ & $32.242$ & $21.483$ & $26.319$ & $23.366$ \\ \hline
+% $80^3$ & $439.751$ & $416.965$ & $308.821$ & $300.847$ & $296.568$\\ \hline
+% \end{tabular}
+% \end{table}
 
 
-\begin{table}
-\centering
-\caption{Value Iteration vs Policy Iteration}
-\label{tab:v_vs_p}
-\begin{tabular}{|c| c| c| c|}
-\hline
-\# actions & VI & \multicolumn{2}{|c|}{Policy Iteration} \\ \cline{3-4}
- &  $T_{total} $ & $T_{total}$ & $T_{total} - T_{P_{\pi_u}}$ \\ \hline
-2 & 1.468  & 78.197  & 0.102 \\ \hline
-50 &  8.753 &  302.456 & 1.007 \\ \hline
-250 & 36.973 &  308.565 & 4.318 \\ \hline
-500 & 65.305 &  326.280 & 9.760\\
-\hline
-\end{tabular}
-\end{table}
+% \begin{table}
+% \centering
+% \caption{Value Iteration vs Policy Iteration}
+% \label{tab:v_vs_p}
+% \begin{tabular}{|c| c| c| c|}
+% \hline
+% \# actions & VI & \multicolumn{2}{|c|}{Policy Iteration} \\ \cline{3-4}
+%  &  $T_{total} $ & $T_{total}$ & $T_{total} - T_{P_{\pi_u}}$ \\ \hline
+% 2 & 1.468  & 78.197  & 0.102 \\ \hline
+% 50 &  8.753 &  302.456 & 1.007 \\ \hline
+% 250 & 36.973 &  308.565 & 4.318 \\ \hline
+% 500 & 65.305 &  326.280 & 9.760\\
+% \hline
+% \end{tabular}
+% \end{table}
 
-\begin{figure*}[t!]
-    \centering
-    \begin{subfigure}[t]{0.3\textwidth}
-        \centering
-        \includegraphics[scale=0.4]{air_3d_v1}
-        \caption{}
-    \end{subfigure}%
-    ~ 
-    \begin{subfigure}[t]{0.3\textwidth}
-        \centering
-        \includegraphics[scale=0.4]{air_3d_v2}
-        \caption{}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[t]{0.3\textwidth}
-        \centering
-        \includegraphics[scale=0.4]{air_3d_v3}
-        \caption{}
-    \end{subfigure}%
-    \caption{Caption place holder}
-\end{figure*}
+% \begin{figure*}[t!]
+%     \centering
+%     \begin{subfigure}[t]{0.3\textwidth}
+%         \centering
+%         \includegraphics[scale=0.4]{air_3d_v1}
+%         \caption{}
+%     \end{subfigure}%
+%     ~ 
+%     \begin{subfigure}[t]{0.3\textwidth}
+%         \centering
+%         \includegraphics[scale=0.4]{air_3d_v2}
+%         \caption{}
+%     \end{subfigure}
+%     ~
+%     \begin{subfigure}[t]{0.3\textwidth}
+%         \centering
+%         \includegraphics[scale=0.4]{air_3d_v3}
+%         \caption{}
+%     \end{subfigure}%
+%     \caption{Caption place holder}
+% \end{figure*}

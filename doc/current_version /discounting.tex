@@ -54,7 +54,7 @@ The discrete approximation of \eqref{eq:HJ_mdr} is given by
 %
 \begin{subequations} \label{eq:val_iter_backup}
 \begin{align}
-&\vec{U}^{0} \in \RR^N_G \enspace,\\
+&\vec{U}^{0} \in \RR^{n_G} \enspace,\\
 &\vec{U}^{k+1} = B[U^k] \enspace,\\
 &\vec{U} = \lim_{k\rightarrow \infty} \vec{U}^{k} \enspace,
 \end{align}
@@ -92,9 +92,9 @@ with $b_{gg} :=\displaystyle{\arg\min_b g(a_q,b)}$.
 \end{proof}
 %
 \begin{theorem} 
-The operator given by \eqref{eq:backup_mdr} is a contraction mapping in the infinity norm $|| \cdot ||_{\infty}$ on the space $\RR^{N_G}$.
+The operator given by \eqref{eq:backup_mdr} is a contraction mapping in the infinity norm $|| \cdot ||_{\infty}$ on the space $\RR^{n_G}$.
 \end{theorem}
-\begin{proof} Defining $B[\cdot]$ as in \eqref{eq:backup_mdr}, take $A_1, A_2 \in \RR^{N_G}$:
+\begin{proof} Defining $B[\cdot]$ as in \eqref{eq:backup_mdr}, take $A_1, A_2 \in \RR^{n_G}$:
 \begin{equation*}
 \begin{split}
 &||B[\vec{A}_1] - B[\vec{A}_2]||_{\infty}=\\
