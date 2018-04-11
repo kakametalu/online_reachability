@@ -16,11 +16,11 @@ The state space is over the domain $[-6,20] \times [-10,10] \times [0,2\pi[$ wit
 Player I is considered captured when the relative distance (in position) between both players is less than $R>0$, thus the target set is given by
 
 \begin{equation}
-\T= \{x| x_1^{2}+x_2^2 < R\}
+\T= \{x| x_1^{2}+x_2^2 < R^2\}
 \end{equation}
 
 
-We first compute the value functions for the MR and MDR on a $41 \times 41 \times 41$ grid, and setting the model parameters to $v_u=v_d=5$, $u_{max}=d_{max}=1$, and $R=5$. This will be referred to as the nominal model $M_n$. A visualization of the zero sub-level set for both $V(x)$ and $Z(x)$ for $\lambda=0.001$ is shown in Fig~\ref{fig:air3D}.
+We first compute the value functions for the MR and MDR on a $41 \times 41 \times 41$ grid, and setting the model parameters to $v_u=v_d=5$, $u_{max}=d_{max}=1$, and $R=5$. This will be referred to as the nominal model $M_n$. A visualization of the zero sub-level set for both $V(x)$ and $Z(x)$ for $\lambda=0.001$ is shown in Fig.~\ref{fig:air3D}.
 
 
 % \begin{figure}
@@ -65,7 +65,7 @@ $80^3$ & $33.166$ & $352.099$ & $317.444$ & $350.610$\\ \hline
 \label{tab:multigrid_pe}
 \end{table}
 
-We now construct two other models by tweaking $M_n$: setting $u_{max}=1.5$, which gives the evader an advantage, we get model $M_e$, and setting $d_{max}=1.5$, which gives the pursuer an advantage,  we get model $M_p$. In the final experiment we look at the impact of initializing value iteration with a solution from a similar model. As alluded to in Section \ref{sec:learn} this can be beneficial when the model is being iteratively learned. In this context we have just ``learned" that the evader/pursuer is more maneuverable ($M_e$/$M_p$). We compute both value functions with and without initializing with the solution for $M_n$. Again, we refer to this initialization as a warm start. The results are shown in Table~\ref{tab:ws_pe}.
+We now construct two other models by tweaking $M_n$: setting $u_{max}=1.5$, which gives the evader an advantage, we get model $M_e$, and setting $d_{max}=1.5$, which gives the pursuer an advantage,  we get model $M_p$. In the final experiment we look at the impact of initializing value iteration with a solution from a similar model. Just like in the previous benchmark example, this experiment is motivated by Section \ref{sec:model_based}, where now $M_e$ and $M_p$ represent two possible models inferred from the system observations. In this context we have just ``learned" that the evader/pursuer is more maneuverable ($M_e$/$M_p$). We compute both value functions with and without setting the initialization to the solution for $M_n$. Again, we refer to this initialization as a warm start. The results are shown in Table~\ref{tab:ws_pe}.
 
 \begin{table}
 \centering

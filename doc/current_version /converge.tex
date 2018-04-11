@@ -6,15 +6,15 @@ In this section we present methods that may yield much faster convergence than v
 In the one player setting (control only), if the backup operator is a contraction mapping the solution can also be obtained via \emph{policy iteration}. First define the \emph{policy backup operator} $B^{\pi}[\cdot]: \RR^{n_G} \rightarrow \RR^{n_G}$, 
 %
 \begin{equation} \label{eq:backup_policy}
-B^{\pi}[\vec{A}] = \min\left\{ \vec{h}, \gamma \Phi_{\pi} \vec{A} \right \} \enspace.
+B^{\pi}[\vec{A}] = \min\left\{ \vec{h}, \gamma \Phi_{\pi} \vec{A} \right \} .
 \end{equation}%
 \noindent This operator is a contraction mapping. The policy iteration algorithm is then given by
 %
 \begin{subequations}\label{eq:pi}
 \begin{align}
-&\vec{U}^{\pi^k} = B^{\pi^k}[\vec{U}^{\pi^k}] \label{eq:pi_a} \enspace,\\
-&\pi^{k+1} = \arg\underset{\pi}{\max}B^{\pi}[\vec{U}^{\pi^k}] \enspace,\\ 
-&\vec{U} = \lim_{k\rightarrow \infty} \vec{U}^{\pi^k}\enspace.
+&\vec{U}^{\pi^k} = B^{\pi^k}[\vec{U}^{\pi^k}] \label{eq:pi_a} ,\\
+&\pi^{k+1} = \arg\underset{\pi}{\max}B^{\pi}[\vec{U}^{\pi^k}] ,\\ 
+&\vec{U} = \lim_{k\rightarrow \infty} \vec{U}^{\pi^k}.
 \end{align}
 \end{subequations}
 

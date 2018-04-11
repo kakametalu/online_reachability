@@ -2,7 +2,13 @@
 \begin{for_journal}
 
 For convenience we define two functions ${U(x):=Z(x)-L}$ and ${h(x):=l(x)-L}$. 
-We will show that $U(x)$ is the viscosity solution to a particular time-independent HJ equation. We begin by presenting some Lemmas to facilitate the proof.
+We will show that $U(x)$ is the viscosity solution to a particular time-independent HJ equation
+%
+\begin{equation}\label{eq:HJ_mdr}
+    0 = \min\left\{h(x)-U(x), \max_{u\in\U} \min_{ d\in\D} \!\!\frac{\partial U}{\partial x}(x) f(x,u, d) - \lambda U(x)\right\}.
+\end{equation}
+
+We begin by presenting some Lemmas to facilitate the proof.
 %
 \begin{lemma}
 The function $U(x)$ is well defined. 
@@ -63,39 +69,48 @@ U(x) =
 The game over the second interval can be optimized independently of the first interval once $y=\bx_{x}^{\bu,\bdelta}(\delta)$ is specified thus it can be replaced with $\exp(-\lambda \delta)U(\bx_{x}^{\bu,\beta[\bu]}(\delta))$. Furthermore $\UU$ is replaced with $\UU_\delta$ since the game is only played explicitly on $[0,\delta]$.
 \end{proof}
 
-Now we present the major theoretical result for this section
-
-\begin{theorem}
-The function $U(x)$ is the unique viscosity solution to the time-independent HJ equation
+Before presenting the proof of the viscosity solution, it will be necessary to introduce the concepts of \emph{viscosity subsolution} and \emph{viscosity supersolution}. To simplify notation, we first define the \emph{Hamiltonian} $H:\RR^n \times \RR^n \rightarrow \RR$,
 %
-\begin{equation}\label{eq:HJ_mdr}
-    0 = \min\left\{h(x)-U(x), \max_{u\in\U} \min_{ d\in\D} \!\!\frac{\partial U}{\partial x}(x) f(x,u, d) - \lambda U(x)\right\}.
-\end{equation}
-%
-\end{theorem}
-
-\begin{proof}
-The structure of the proof follows the classical approach in \cite{Evans1984} and draws from viscosity solution theory. We start by assuming that $U$ is not a viscosity solution and then derive a contradiction to Lemma \ref{dpp}. To simplify notation we introduce the \emph{Hamiltonian}:
 \begin{equation}\label{eq:hamiltonian}
-H(x,p) = \max_{u\in\U} \min_{ d\in\D} \!\! f(x,u,d)\cdot p
+H(x,p) = \max_{u\in\U} \min_{ d\in\D} \!\! f(x,u,d)\cdot p.
 \end{equation}
-A continuous function is a viscosity solution if it is both a \emph{subsolution} and \emph{supersolution}. Note that $U$ is uniformly continuous due to the continuity assumptions on $f$ and $l$. We now show $U$ is a subsolution of the VI.
 
-% Subsolution proof
-\begin{definition} A function $\phi$ (in this case $U$) on $\RR^n$  is a subsolution, if for all $\psi \in C^1(\RR^n)$ and $x_0$ such that $\phi(x_0) = \psi(x_0)$ and $x_0$ attains a local maximum on $\phi- \psi$, then
+\begin{definition} A function $\phi$ (in this case $U$) on $\RR^n$  is a viscosity subsolution of \eqref{eq:HJ_mdr}, if for all $\psi \in C^1(\RR^n)$ and $x_0$ such that $\phi(x_0) = \psi(x_0)$ and $x_0$ attains a local maximum on $\phi- \psi$, then
 %
 \begin{equation}\label{eq:sub_sol}
-    \min\left\{h(x_0)-\psi(x_0), H(x_0,\frac{\partial \psi}{\partial x}) - \lambda \psi(x_0)\right\} \geq 0
+    \min\left\{h(x_0)-\psi(x_0), H(x_0,\frac{\partial \psi}{\partial x}) - \lambda \psi(x_0)\right\} \geq 0.
 \end{equation}
 \end{definition}
 %
-From the local maximum condition and continuity, we have
+
+\begin{definition} A function $\phi$ (in this case $U$) on $\RR^n$  is a supersolution of \eqref{eq:HJ_mdr}, if for all $\psi \in C^1(\RR^n)$ and $x_0$ such that $\phi(x_0) = \psi(x_0)$ and $x_0$ attains a local minimum on $\phi- \psi$, then 
 %
+\begin{equation}\label{eq:sup_sol}
+    \min\left\{h(x_0)-\psi(x_0), H(x_0,\frac{\partial \psi}{\partial x}) - \lambda \psi(x_0)\right\} \leq 0.
+\end{equation}
+%
+\end{definition}
+
+
+Now we present the major theoretical result for this section.
+
+\begin{theorem}
+The function $U(x)$ is the unique viscosity solution to the time-independent HJ equation given by \eqref{eq:HJ_mdr}.
+
+\end{theorem}
+
+\begin{proof}
+The structure of the proof follows the classical approach in \cite{Evans1984} and draws from viscosity solution theory. We start by assuming that $U$ is not a viscosity solution and then derive a contradiction to Lemma \ref{dpp}. 
+
+A continuous function is a viscosity solution if it is both a \emph{subsolution} and \emph{supersolution}. Note that $U$ is uniformly continuous due to the continuity assumptions on $f$ and $l$. We now show $U$ is a subsolution of \eqref{eq:HJ_mdr}.
+
+% Subsolution proof
+From the local minimum condition and continuity of system trajectories, there exists a sufficiently small $\delta>0$, such that for $\tau \in [0, \delta]$%
 \begin{equation*}
-U(\bx_{x_0}^{\bu, \bdelta}(\delta)) \leq \psi(\bx_{x_0}^{\bu, \bdelta}(\delta))
+U(\bx_{x_0}^{\bu, \bdelta}(\tau)) \leq \psi(\bx_{x_0}^{\bu, \bdelta}(\tau))
 \end{equation*}
 %
-for sufficiently small $\delta>0$ and all $u(\cdot) \in \UU$ and $d(\cdot) \in \DD$.
+for all $u(\cdot) \in \UU$ and $d(\cdot) \in \DD$.
 
 For sake of contradiction, assume \eqref{eq:sub_sol} is false, then one of the following must be true
 %
@@ -156,24 +171,15 @@ U(x_0) \leq \exp(-\lambda \delta)U(\bx_{x_0}^{\bu,\beta[\bu]}(\delta)) \leq \fra
 which is a contradiction, thus we conclude that $U$ is a subsolution.
 
 % Supersolution proof
-
 Now to show that $U$ is a supersolution. 
 
-\begin{definition} A function $\phi$ (in this case $U$) on $\RR^n$  is a supersolution, if for all $\psi \in C^1(\RR^n)$ and $x_0$ such that $\phi(x_0) = \psi(x_0)$ and $x_0$attains a local minimum on $\phi- \psi$, then by continuity of $l$ and system trajectories, there exists a sufficiently small $\delta>0$, such that for $\tau \in [0, \delta]$
-%
-\begin{equation}\label{eq:sup_sol}
-    \min\left\{h(x_0)-\psi(x_0), H(x_0,\frac{\partial \psi}{\partial x}) - \lambda \psi(x_0)\right\} \leq 0
-\end{equation}
-%
-\end{definition}
-
-From the local minimum condition and continuity, we have
+From the local minimum condition and continuity of system trajectories, there exists a sufficiently small $\delta>0$, such that for $\tau \in [0, \delta]$
 %
 \begin{equation*}
-U(\bx_{x_0}^{\bu, \bdelta}(\delta)) \geq \psi(\bx_{x_0}^{\bu, \bdelta}(\delta))
+U(\bx_{x_0}^{\bu, \bdelta}(\tau)) \geq \psi(\bx_{x_0}^{\bu, \bdelta}(\tau))
 \end{equation*}
 %
-for sufficiently small $\delta>0$ and all $u(\cdot) \in \UU$ and $d(\cdot) \in \DD$.
+for all $u(\cdot) \in \UU$ and $d(\cdot) \in \DD$.
 
 If we suppose \eqref{eq:sup_sol} is false, then both of the following must hold 
 %
@@ -230,13 +236,12 @@ U(x) =
 \inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU_\delta} 
 \big [\min\{ &\inf_{t \in [0, \delta]} h\big(\bx_{x}^{\bu,\beta[\bu]}(t)\big))\exp(-\lambda  t), \\&\exp(-\lambda \delta)U(\bx_{x}^{\bu,\beta[\bu]}(\delta))\}
 \big ]\geq
-U(x) + \min\{\frac{\epsilon_1}{2}, \frac{\epsilon_2}{2} \delta \}
-\end{split},
+U(x) + \min\{\frac{\epsilon_1}{2}, \frac{\epsilon_2}{2} \delta \},
+\end{split}
 \end{equation}
 %
-
 which is a contradiction, thus $U$ is also a supersolution.
 
-Since we have shown that $U$ is both a viscosity subsolution and viscosity supersolution of the variational inequality, this completes the proof that $U$ is a viscosity solution of \eqref{eq:HJ_mdr}. Uniqueness follows from the classical comparison and uniqueness theorems for viscosity solutions (see Theorem 4.2 in \cite{Barron1989}).
+Since we have shown that $U$ is both a viscosity subsolution and viscosity supersolution of the HJ equation, this completes the proof that $U$ is a viscosity solution of \eqref{eq:HJ_mdr}. Uniqueness follows from the classical comparison and uniqueness theorems for viscosity solutions (see Theorem 4.2 in \cite{Barron1989}).
 \end{proof}
 \end{for_journal}

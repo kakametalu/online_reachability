@@ -28,10 +28,10 @@
 A Minimum Discounted Reward Hamilton-Jacobi Formulation for Computing Reachable Sets 
 }
 \author{
-Anayo K. Akametalu \and Shromona Ghosh \and Jaime F. Fisac \and Claire J. Tomlin
+Anayo K. Akametalu\textsuperscript{1}, \and Shromona Ghosh\textsuperscript{1}, \and Jaime F. Fisac\textsuperscript{1}, and \and Claire J. Tomlin\textsuperscript{1}
 \thanks{
- Department of Electrical Engineering and Computer Sciences, 
-        University of California, Berkeley , United States.\newline
+\textsuperscript{1}Department of Electrical Engineering and Computer Sciences, 
+        University of California, Berkeley. Cory Hall, Berkeley, CA 94720, United States.\newline
         {\tt\small \{kakametalu, shromona.ghosh, jfisac, tomlin\}~@eecs.berkeley.edu }}% 
 \thanks{
 This work is supported by NSF under the CPS FORCES and VehiCal projects, by the UC-Philippine-California Advanced Research Institute, and by the ONR MURI Embedded Humans. The research of A.K. Akametalu has received funding from the National GEM Consortium Fellowship.} 
@@ -44,7 +44,7 @@ This work is supported by NSF under the CPS FORCES and VehiCal projects, by the 
 \pagestyle{empty}
 
 \begin{abstract}
-We propose a novel formulation for approximating reachable sets via solving a minimum discounted reward optimal control problem. The formulation yields a continuous solution that can be obtained by solving a Hamilton-Jacobi equation. Furthermore, the numerical approximation to this solution can be obtained as the unique fixed-point to a contraction mapping. This allows for more efficient solution methods that could not be applied under traditional formulations. In addition, this formulation provides a link between reinforcement learning and learning reachable sets for systems with unknown dynamics, allowing algorithms from the former to be applied to the latter. We use two benchmarks, double integrator, and pursuit-evasion games, to show the correctness of the formulation as well as its strengths in comparison to previous work.
+We propose a novel formulation for approximating reachable sets via solving a minimum discounted reward optimal control problem. The formulation yields a continuous solution that can be obtained by solving a Hamilton-Jacobi equation. Furthermore, the numerical approximation to this solution can be obtained as the unique fixed-point to a contraction mapping. This allows for more efficient solution methods that could not be applied under traditional formulations for solving reachable sets. In addition, this formulation provides a link between reinforcement learning and learning reachable sets for systems with unknown dynamics, allowing algorithms from the former to be applied to the latter. We use two benchmark examples, double integrator, and pursuit-evasion games, to show the correctness of the formulation as well as its strengths in comparison to previous work.
 \end{abstract}
 
 

@@ -1,12 +1,12 @@
 % !TEX root = main_min_disc_dist.tex
 
-When the system model is unknown or complex, the reachable set must be learned from data. There are two approaches for this: model-based RL and model-free RL. In this section we will focus on the model-based approach, and conclude with a brief discussion on the model-free approach and its connection to reinforcement learning (RL).
+When the system model is unknown or complex, the reachable set must be learned from data. There are two approaches for this: model-based RL and model-free RL. In this section we will focus on the model-based approach, and conclude with a brief discussion on the model-free approach and its connection to RL.
 
 For ease of presentation we consider the one player case.
  % Learning reachable sets for systems with unknown dynamics has 
  % In this section we briefly explore how the MDR formulation allows one to leverage algorithms from RL for the purpose of learning reachable sets when the system model is unknown or when using function approximators to represent the reachable sets for high dimensional systems. A key insight to be taken from here is that much of RL has been aimed at finding the fixed point solution to the backup operator associated with the infinite-horizon SDR problem thus many of the techniques developed for RL can be applied to solving MDR problems with an appropriate change in the operator.
 
-\subsection{Model-based}
+\subsection{Model-based} \label{sec:model_based}
 
 In the model-based approach the model is assumed to be parameterized by a parameter vector $\mu$. %The data consists of a sequence of state transitions obtained from a real system or simulator $\{(x_i, u_i,x_i^+)\}_i$, where $x^+$ is the next state after applying action $u$ at state $x$ and $\Delta t$ is the time step. 
 %
@@ -30,16 +30,16 @@ For ease of presentation consider an autonomous system $f(x)$ (which might be du
 %
 \begin{equation}
 \begin{split}
-&\L(\theta)=\frac{1}{2}\big(V_{\theta}(x) - (r(x)+\gamma V_{\theta}(x^+))\big)^2 \enspace,\\
-&\theta^{i+1} \leftarrow \theta^i + \alpha \nabla_{\theta}V_{\theta^i}(x_i)\big(r(x_i)+\gamma V_{\theta^i}(x^+_i) - V_{\theta^i}(x_i)\big)\enspace,
+&\L(\theta)=\frac{1}{2}\big(V_{\theta}(x) - (r(x)+\gamma V_{\theta}(x^+))\big)^2 ,\\
+&\theta^{i+1} \leftarrow \theta^i + \alpha \nabla_{\theta}V_{\theta^i}(x_i)\big(r(x_i)+\gamma V_{\theta^i}(x^+_i) - V_{\theta^i}(x_i)\big),
 \end{split}
 \end{equation}%
 \noindent where $\alpha \in [0,1]$ is the learning rate and $\theta^i$ is the parameters at iteration $i$. A similar idea can be used in the MDR setting. Taking the approximation $U_\theta(x)$ with parameter $\theta$, the loss function and update rule for the MDR setting would be
 %
 \begin{equation}
 \begin{split}
-&\L(\theta)=\frac{1}{2}\big(U_{\theta}(x) - \min\{h(x),\gamma U_{\theta}(x^+)\}\big)^2\enspace,\\
-&\theta^{i+1} \leftarrow \theta^i + \alpha\nabla_{\theta}U_{\theta^i}(x_i)\big(\min\{h(x_i),\gamma U_{\theta^i}(x^+_i)\} - U_{\theta^i}(x_i)\big)\enspace.
+&\L(\theta)=\frac{1}{2}\big(U_{\theta}(x) - \min\{h(x),\gamma U_{\theta}(x^+)\}\big)^2,\\
+&\theta^{i+1} \leftarrow \theta^i + \alpha\nabla_{\theta}U_{\theta^i}(x_i)\big(\min\{h(x_i),\gamma U_{\theta^i}(x^+_i)\} - U_{\theta^i}(x_i)\big).
 \end{split}
 \end{equation}
 

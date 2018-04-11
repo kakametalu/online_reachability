@@ -11,9 +11,9 @@ The doube integrator consists of two states $(x_1, x_2)$ , and  control $u \in [
 
 The task is to keep the state trajectory inside the box $\K = [0,4] \times [-3,3]$, thus the target is taken to be its compliment $\T=\K^C$. For ease of exposition we define the \emph{safe set} $\Omega(\T) := \R(\T)^C$.
 
-We first show, in Fig~\ref{fig:convergence} that different level curves of $Z$ over approximates~(bold line) and under approximates~(dotted lines) the analytic safe set~(shown in black) for two values of $\lambda = 0.1, 0.2$, with $\bar{\tau}=2$. As expected smaller values of $\lambda$, yield tighter approximations. 
+We first show, in Fig.~\ref{fig:convergence} that different level curves of $Z$ over approximates~(bold line) and under approximates~(dotted lines) the analytic safe set~(shown in black) for two values of $\lambda = 0.1, 0.2$, with $\bar{\tau}=2$. As expected smaller values of $\lambda$, yield tighter approximations. 
 
-To verify the convergence properties of the MDR formulation we initialize value iteration with the zero vector $\vec{0}\in \RR^{N_G}$ with $\lambda=0.1$. The error (in the infinity norm) between the converged solution and the one visualized in Fig~\ref{fig:convergence} is $0.000299$, suggesting convergence to the same fixed point. Under the MR setting value iteration fails to converge with this particular initialization.
+To verify the convergence properties of the MDR formulation we initialize value iteration with the zero vector $\vec{0}\in \RR^{N_G}$ with $\lambda=0.1$. The error (in the infinity norm) between the converged solution and the one visualized in Fig.~\ref{fig:convergence} is $0.000299$, suggesting convergence to the same fixed point. Under the MR setting value iteration fails to converge with this particular initialization.
 
 \begin{figure}
 \includegraphics[scale=0.5]{convergence_difflambda.png}
@@ -21,7 +21,7 @@ To verify the convergence properties of the MDR formulation we initialize value 
 \label{fig:convergence}
 \end{figure}
 
-We now compare value iteration and policy iteration with increasing number of discrete actions in Table~\ref{tab:v_vs_p}. In the table we see that the runtime of value iteration increases linearly with the increase in the number of actions, and policy iteration scales much better. The overall runtime favors value iteration, but it is important to note that the majority of the time in policy iteration is spent constructing $\Phi_{\pi_u}$, which is denoted by $T_{\Phi_{\pi_u}}$.\footnote{The data structure used to represent the interpolation is very efficient for sparse matrix multiplication, but is not ideal for indexing, which is necessary to create $\Phi_{\pi_u}$.} Excluding this cost, policy iteration becomes more attractive.
+We now compare value iteration and policy iteration with increasing number of discrete actions in Table~\ref{tab:v_vs_p}. In the table we see that the runtime of value iteration increases linearly with the increase in the number of actions, and policy iteration scales much better. The overall runtime favors value iteration, but it is important to note that the majority of the time in policy iteration is spent constructing $\Phi_{\pi_u}$, which is denoted by $T_{\Phi_{\pi_u}}$.\footnote{The data structure used to represent the interpolation is very efficient for sparse matrix multiplication, but is not ideal for indexing, which is necessary to create $\Phi_{\pi_u}$, and results in a relatively large $T_{\Phi_{\pi_u}}$.} Excluding this cost, policy iteration becomes more attractive.
 
 \begin{table}
 \centering
@@ -54,7 +54,7 @@ $160^2$ & $0.153$ & $1.110$ & $0.084$ & $0.237$\\ \hline
 \end{tabular}
 \end{table}
 
-Lastly, denoting the current model as nominal model $M_n$, we construct two different models: a heavy model $M_h$ with $u_{max}=1.0$, and a light model $M_l$ with $u_{max}=4.0$. This can be interpreted as two systems that have different control authorities due to their different masses. The $M_n$ MDR value function will be less than that of model $M_l$, but greater than that of $M_h$. We compute the value functions for $M_l$ and $M_h$ both initialized with the default initialization, and with the solution for model $M_n$, which we refer to as a \emph{warm start} (WS). The results are shown in Table~\ref{tab:ws_di}.
+Lastly, denoting the current model as the nominal model $M_n$, we construct two different models: a heavy model $M_h$ with $u_{max}=1.0$, and a light model $M_l$ with $u_{max}=4.0$. This can be interpreted as two systems that have different control authorities due to their different masses. The $M_n$ MDR value function will be less than that of model $M_l$, but greater than that of $M_h$. We compute the value functions for $M_l$ and $M_h$ both initialized with the default initialization, and with the solution for model $M_n$, which we refer to as a \emph{warm start} (WS). This experiment is motivated by Section \ref{sec:model_based}, where we discussed the computation of reachable sets as the system model changes due to new observations from the system. Here we are not concerned with how the model estimates are obtained, but rather how to produce the reachable set for the latest model estimate as quickly as possible. Within this context $M_n$ can be viewed as an old model, and $M_l$ and $M_h$ can be thought of as two possible new models that were inferred from observations. The results for the experiment are shown in Table~\ref{tab:ws_di}. In both cases ($M_l$ and $M_h$) we see that leveraging the solution for $M_n$ improves the convergence time.
 
 \begin{table}
 \centering
