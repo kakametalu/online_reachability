@@ -1,6 +1,5 @@
 % !TEX root = main_min_disc_dist.tex
 \begin{for_journal}
-
 For convenience we define two functions ${U(x):=Z(x)-L}$ and ${h(x):=l(x)-L}$. 
 We will show that $U(x)$ is the viscosity solution to a particular time-independent HJ equation
 %
@@ -75,7 +74,8 @@ Before presenting the proof of the viscosity solution, it will be necessary to i
 H(x,p) = \max_{u\in\U} \min_{ d\in\D} \!\! f(x,u,d)\cdot p.
 \end{equation}
 
-\begin{definition} A function $\phi$ (in this case $U$) on $\RR^n$  is a viscosity subsolution of \eqref{eq:HJ_mdr}, if for all $\psi \in C^1(\RR^n)$ and $x_0$ such that $\phi(x_0) = \psi(x_0)$ and $x_0$ attains a local maximum on $\phi- \psi$, then
+\begin{definition} \label{def:sub_sol}
+A function $\phi$ (in this case $U$) on $\RR^n$  is a viscosity subsolution of \eqref{eq:HJ_mdr}, if for all $\psi \in C^1(\RR^n)$ and $x_0$ such that $\phi(x_0) = \psi(x_0)$ and $x_0$ attains a local maximum on $\phi- \psi$, then
 %
 \begin{equation}\label{eq:sub_sol}
     \min\left\{h(x_0)-\psi(x_0), H(x_0,\frac{\partial \psi}{\partial x}) - \lambda \psi(x_0)\right\} \geq 0.
@@ -83,7 +83,8 @@ H(x,p) = \max_{u\in\U} \min_{ d\in\D} \!\! f(x,u,d)\cdot p.
 \end{definition}
 %
 
-\begin{definition} A function $\phi$ (in this case $U$) on $\RR^n$  is a supersolution of \eqref{eq:HJ_mdr}, if for all $\psi \in C^1(\RR^n)$ and $x_0$ such that $\phi(x_0) = \psi(x_0)$ and $x_0$ attains a local minimum on $\phi- \psi$, then 
+\begin{definition} \label{def:sup_sol} 
+A function $\phi$ (in this case $U$) on $\RR^n$  is a supersolution of \eqref{eq:HJ_mdr}, if for all $\psi \in C^1(\RR^n)$ and $x_0$ such that $\phi(x_0) = \psi(x_0)$ and $x_0$ attains a local minimum on $\phi- \psi$, then 
 %
 \begin{equation}\label{eq:sup_sol}
     \min\left\{h(x_0)-\psi(x_0), H(x_0,\frac{\partial \psi}{\partial x}) - \lambda \psi(x_0)\right\} \leq 0.
@@ -100,12 +101,12 @@ The function $U(x)$ is the unique viscosity solution to the time-independent HJ 
 \end{theorem}
 
 \begin{proof}
-The structure of the proof follows the classical approach in \cite{Evans1984} and draws from viscosity solution theory. We start by assuming that $U$ is not a viscosity solution and then derive a contradiction to Lemma \ref{dpp}. 
+The structure of the proof follows the classical approach in \cite{Evans1984}, analogously to \cite{Fisac2015}, and draws from viscosity solution theory. We start by assuming that $U$ is not a viscosity solution and then derive a contradiction to Lemma \ref{dpp}. 
 
-A continuous function is a viscosity solution if it is both a \emph{subsolution} and \emph{supersolution}. Note that $U$ is uniformly continuous due to the continuity assumptions on $f$ and $l$. We now show $U$ is a subsolution of \eqref{eq:HJ_mdr}.
+A continuous function is a viscosity solution if it is both a \emph{subsolution} and \emph{supersolution}. Note that $U$ is uniformly continuous due to the continuity assumptions on $f$ and $l$. We first show $U$ is a subsolution of \eqref{eq:HJ_mdr}.
 
 % Subsolution proof
-From the local minimum condition and continuity of system trajectories, there exists a sufficiently small $\delta>0$, such that for $\tau \in [0, \delta]$%
+From the local maximum condition in Definition \ref{def:sub_sol} and continuity of system trajectories, there exists a sufficiently small $\delta>0$, such that for $\tau \in [0, \delta]$%
 \begin{equation*}
 U(\bx_{x_0}^{\bu, \bdelta}(\tau)) \leq \psi(\bx_{x_0}^{\bu, \bdelta}(\tau))
 \end{equation*}
@@ -171,9 +172,7 @@ U(x_0) \leq \exp(-\lambda \delta)U(\bx_{x_0}^{\bu,\beta[\bu]}(\delta)) \leq \fra
 which is a contradiction, thus we conclude that $U$ is a subsolution.
 
 % Supersolution proof
-Now to show that $U$ is a supersolution. 
-
-From the local minimum condition and continuity of system trajectories, there exists a sufficiently small $\delta>0$, such that for $\tau \in [0, \delta]$
+Next we show that $U$ is a supersolution. From the local minimum condition in Definition \ref{def:sup_sol} and continuity of system trajectories, there exists a sufficiently small $\delta>0$, such that for $\tau \in [0, \delta]$
 %
 \begin{equation*}
 U(\bx_{x_0}^{\bu, \bdelta}(\tau)) \geq \psi(\bx_{x_0}^{\bu, \bdelta}(\tau))

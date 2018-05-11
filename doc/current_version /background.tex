@@ -72,7 +72,7 @@ V(x)=\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU}\mathcal{V}\big(x,\bu(\cd
 \R(\T) = \{x \mid V(x) \le 0\}.
 \end{equation}  
 
-The optimization in \eqref{eq:val_function} is referred to here as the minimum reward optimal control problem. It has been shown that the value function for problems with outcome given by equation \eqref{eq:min_dist_functional} can be characterized as the unique viscosity solution to a variational inequality \cite{Barron1989,Barron1990}. When the problem is solved over a finite time interval $[0,T]$, the \emph{finite-horizon value function} $V(x,t)$ can be computed by solving the HJ equation: 
+The optimization in \eqref{eq:val_function} is referred to here as the minimum reward optimal control problem. It has been shown that the value function for problems with outcome given by \eqref{eq:min_dist_functional} can be characterized as the unique viscosity solution to a particular variational inequality \cite{Barron1989,Barron1990} as shown in \cite{Fisac2015}. When the problem is solved over a finite time interval $[0,T]$, the \emph{finite-horizon value function} $V(x,t)$ can be computed by solving the HJ equation: 
 %
 \begin{equation} \label{eq:HJ_mr}
 \begin{split} 
@@ -106,7 +106,7 @@ Several approximation schemes have been proposed for solving \eqref{eq:HJ_mr} an
 \begin{equation}
 I[\vec{A}](x)= \phi(x)\cdot \vec{A},
 \end{equation}%
-\noindent where the elements of ${\phi(\cdot): \RR \rightarrow \RR^{n_G}}$ are nonnegative and sum to one. 
+\noindent where ${\phi(\cdot): \RR^n \rightarrow \RR^{n_G}}$, and $\forall x \in \R^n$ the elements of $\phi(x)$ are nonnegative and sum to 1. 
 
 For conciseness we introduce \emph{control policies} ${\pi(\cdot): \RR^n \rightarrow \U}$ and \emph{disturbance policies} ${\rho(\cdot): \RR^n \rightarrow \D}$, which map from state to control and state to disturbance, respectively. Note that the individual minimax games being played at each grid point can be collectively thought of as a game over policies. We also introduce the \emph{backup operator} ${B[\cdot]: \RR^{n_G} \rightarrow \RR^{n_G}}$, which maps vectorized value functions onto themselves. Define the backup operator as
 %
@@ -141,7 +141,7 @@ The SDR problem does yield a contraction mapping, and we explore it briefly for 
 \begin{equation}\label{eq:V_sum_rewards}
 V(x) := \sup_{\bu \in \UU} \int_{0}^{\infty}r\big(\bx_{x}^{\bu}(t)\big)\exp(-\lambda t) dt,  \quad \lambda >0,
 \end{equation}%
-\noindent where $r(\cdot):\RR^n \rightarrow \RR$ is a state-dependent reward function, and $\lambda$ is a \emph{discount factor}.
+\noindent where $r(\cdot):\RR^n \rightarrow \RR$ is a state-dependent reward function, and $\lambda$ is a \emph{discount rate}.
 
 It is known that this value function is the solution to the time-independent Hamilton-Jacobi equation \cite{Bardi2008},
 %
@@ -149,20 +149,20 @@ It is known that this value function is the solution to the time-independent Ham
 \lambda V(x) = \max_{u\in\U} \frac{\partial V}{\partial x}(x) f(x, u)+ g(x).
 \end{equation}
 
-Using the same semi-Lagrangian scheme as in the MR setting, equation \eqref{eq:HJ_sdr} can be approximated as
+Using the same semi-Lagrangian scheme as in the MR setting, \eqref{eq:HJ_sdr} can be approximated as
 %
 \begin{equation}
 V_{\Delta t}(x) = \max_{u\in\U} \gamma V_{\Delta t}(x + \Delta t\cdot f(x, u))  + \Delta t \cdot r(x),
 \end{equation}
  
-\noindent where $\gamma=\exp(-\lambda \Delta t)$ is the \emph{discount rate}.
+\noindent where $\gamma=\exp(-\lambda \Delta t)$ is the \emph{discount factor}.
 
 The approximation is solved for using value iteration with the following backup operator:
 %
 \begin{equation} \label{eq:backup_sdr}
 B[\vec{A}] := \vec{r} +  \underset{\pi}{\max} \gamma \Phi_{\pi} \vec{A},
 \end{equation}%
-\noindent where $\vec{r}_i =\Delta t \cdot r(x_i)$. The initialization of the value iteration procedure is arbitrary $\vec{V}^{0} \in \RR^{n_G}$ because the backup  operator in \eqref{eq:backup_sdr} is a contraction mapping in the infinity norm, $||\cdot||_\infty$ \cite{Bertsekas1995}.
+\noindent where $\vec{r}_i =\Delta t \cdot r(x_i)$. The initialization of the value iteration procedure is arbitrary $\vec{V}^{0} \in \RR^{n_G}$ because the backup  operator in \eqref{eq:backup_sdr} is a contraction mapping in the infinity norm, $||\cdot||_\infty$~\cite{Bertsekas1995}.
 
 Discounting reduces the impact of future rewards on the outcome of the trajectory, and ultimately yields a contraction mapping. In fact, the discount factor $\gamma$ is the Lipschitz constant of the contraction mapping.
 

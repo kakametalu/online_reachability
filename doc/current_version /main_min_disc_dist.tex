@@ -6,6 +6,9 @@
 %   New IEEE Transactions Color Template
 \documentclass[journal,twoside,web]{ieeecolor}\onecolumnfalse
 % \documentclass[journal,twoside,web,onecolumn]{ieeecolor}\onecolumntrue
+%\documentclass[journal,twoside,web,onecolumn]{ieeecolor}\onecolumntrue
+%\documentclass[journal,12pt,onecolumn,draftclsnofoot,]{ieeecolor}
+
 \usepackage{generic}
 % \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
@@ -34,7 +37,7 @@ Anayo K. Akametalu\textsuperscript{1}, \and Shromona Ghosh\textsuperscript{1}, \
         University of California, Berkeley. Cory Hall, Berkeley, CA 94720, United States.\newline
         {\tt\small \{kakametalu, shromona.ghosh, jfisac, tomlin\}~@eecs.berkeley.edu }}% 
 \thanks{
-This work is supported by NSF under the CPS FORCES and VehiCal projects, by the UC-Philippine-California Advanced Research Institute, and by the ONR MURI Embedded Humans. The research of A.K. Akametalu has received funding from the National GEM Consortium Fellowship.} 
+This work is supported by NSF under the CPS FORCES and VehiCal projects, by the UC-Philippine-California Advanced Research Institute, and the ONR MURI Embedded Humans. It is also supported through the Army Research Laboratory and was accomplished under Cooperative Agreement Number W911NF-17-2-0196; and in part by Toyota under the iCyPhy center. The research of A.K. Akametalu has received funding from the National GEM Consortium Fellowship.} 
 }
 %TODO: Do we want to reincorporate the 
 %
@@ -44,7 +47,7 @@ This work is supported by NSF under the CPS FORCES and VehiCal projects, by the 
 \pagestyle{empty}
 
 \begin{abstract}
-We propose a novel formulation for approximating reachable sets via solving a minimum discounted reward optimal control problem. The formulation yields a continuous solution that can be obtained by solving a Hamilton-Jacobi equation. Furthermore, the numerical approximation to this solution can be obtained as the unique fixed-point to a contraction mapping. This allows for more efficient solution methods that could not be applied under traditional formulations for solving reachable sets. In addition, this formulation provides a link between reinforcement learning and learning reachable sets for systems with unknown dynamics, allowing algorithms from the former to be applied to the latter. We use two benchmark examples, double integrator, and pursuit-evasion games, to show the correctness of the formulation as well as its strengths in comparison to previous work.
+We propose a novel formulation for approximating reachable sets through a minimum discounted reward optimal control problem. The formulation yields a continuous solution that can be obtained by solving a Hamilton-Jacobi equation. Furthermore, the numerical approximation to this solution can be obtained as the unique fixed-point to a contraction mapping. This allows for more efficient solution methods that could not be applied under traditional formulations for solving reachable sets. In addition, this formulation provides a link between reinforcement learning and learning reachable sets for systems with unknown dynamics, allowing algorithms from the former to be applied to the latter. We use two benchmark examples, double integrator, and pursuit-evasion games, to show the correctness of the formulation as well as its strengths in comparison to previous work.
 \end{abstract}
 
 
@@ -63,15 +66,16 @@ We propose a novel formulation for approximating reachable sets via solving a mi
 \section{Learning Reachable Sets \label{sec:learn}}
 \input{learning}
 
-\section{Simulations \label{sec:sim}}
+\section{Experiments \label{sec:sim}}
 \input{simulations.tex}
 
 \section{Conclusions and Future Work \label{sec:end}}
 \input{conclusions}
 
-
-
-
-
 \printbibliography
+
+\newpage
+\input{biographies.tex}
+
+
 \end{document}

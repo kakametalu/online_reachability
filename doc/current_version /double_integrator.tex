@@ -9,7 +9,7 @@ The doube integrator consists of two states $(x_1, x_2)$ , and  control $u \in [
 \end{equation}
 \noindent The state space is discretized into a $161 \times 161$ grid on the domain $[-1,5] \times [-5,5]$, and $u_{max}=2$.
 
-The task is to keep the state trajectory inside the box $\K = [0,4] \times [-3,3]$, thus the target is taken to be its compliment $\T=\K^C$. For ease of exposition we define the \emph{safe set} $\Omega(\T) := \R(\T)^C$.
+The task is to keep the state trajectory inside the box $\K = [0,4] \times [-3,3]$, thus the target is taken to be its complement $\T=\K^C$. For ease of exposition we define the \emph{safe set} $\Omega(\T) := \R(\T)^C$.
 
 We first show, in Fig.~\ref{fig:convergence} that different level curves of $Z$ over approximates~(bold line) and under approximates~(dotted lines) the analytic safe set~(shown in black) for two values of $\lambda = 0.1, 0.2$, with $\bar{\tau}=2$. As expected smaller values of $\lambda$, yield tighter approximations. 
 
@@ -21,11 +21,11 @@ To verify the convergence properties of the MDR formulation we initialize value 
 \label{fig:convergence}
 \end{figure}
 
-We now compare value iteration and policy iteration with increasing number of discrete actions in Table~\ref{tab:v_vs_p}. In the table we see that the runtime of value iteration increases linearly with the increase in the number of actions, and policy iteration scales much better. The overall runtime favors value iteration, but it is important to note that the majority of the time in policy iteration is spent constructing $\Phi_{\pi_u}$, which is denoted by $T_{\Phi_{\pi_u}}$.\footnote{The data structure used to represent the interpolation is very efficient for sparse matrix multiplication, but is not ideal for indexing, which is necessary to create $\Phi_{\pi_u}$, and results in a relatively large $T_{\Phi_{\pi_u}}$.} Excluding this cost, policy iteration becomes more attractive.
+We now compare value iteration and policy iteration with increasing number of discrete actions in Table~\ref{tab:v_vs_p}. In the table we see that the runtime of value iteration increases linearly with the increase in the number of actions, and policy iteration scales much better. In our particular implementation, the overall runtime favors value iteration, but it is important to note that the majority of the time in policy iteration is spent constructing $\Phi_{\pi_u}$, which is denoted by $T_{\Phi_{\pi_u}}$.\footnote{The data structure used to represent the interpolation is very efficient for sparse matrix multiplication, but is not ideal for indexing, which is necessary to create $\Phi_{\pi_u}$, and results in a relatively large $T_{\Phi_{\pi_u}}$.} Excluding this cost, policy iteration becomes more attractive.
 
 \begin{table}
 \centering
-\caption{Value Iteration vs Policy Iteration}
+\caption{Value Iteration vs Policy Iteration} CPU time in seconds \\
 \label{tab:v_vs_p}
 \begin{tabular}{|c| c| c| c|}
 \hline
@@ -43,11 +43,11 @@ Next, we look at a multigrid approach versus value iteration. For the multigrid 
 
 \begin{table}
 \centering
-\caption{Double Integrator: Value iteration (VI) with Multigrid}
+\caption{Double Integrator: Value iteration (VI) with Multigrid} CPU time in seconds
 \label{tab:multigrid_di}
 \begin{tabular}{|c| c| c| c| c| }
 \hline
-\# nodes & Coarse grid & Fine grid &  Fine grid with CS & Multigrid \\ \hline
+\# nodes & Coarse grid & Fine grid &  Fine grid-CS & Multigrid \\ \hline
 $40^2$ & $0.012$ & $0.025$ & $0.019$ & $0.031$ \\ \hline
 $80^2$ & $0.019$ & $0.116$ & $0.041$ & $0.060$\\ \hline
 $160^2$ & $0.153$ & $1.110$ & $0.084$ & $0.237$\\ \hline
@@ -58,11 +58,11 @@ Lastly, denoting the current model as the nominal model $M_n$, we construct two 
 
 \begin{table}
 \centering
-\caption{Double Integrator: Value Iteration (VI) with Warm Start (WS)}
+\caption{Double Integrator: Value Iteration (VI) with Warm Start (WS)} CPU time in seconds
 \label{tab:ws_di}
 \begin{tabular}{|c| c| c| c| c| c|}
 \hline
-\# nodes & $M_n$ & $M_l$ &  $M_l$ with WS & $M_h$ & $M_h$ with WS \\ \hline
+\# nodes & $M_n$ & $M_l$ &  $M_l$-WS & $M_h$ & $M_h$-WS \\ \hline
 $40^2$ & $0.029$ & $0.044$ & $0.041$ & $0.022$ & $0.014$\\ \hline
 $80^2$ & $0.205$ & $.364$ & $0.273$ & $0.097$ & $0.095$\\ \hline
 $160^2$ & $1.444$ & $2.727$ & $2.304$ & $1.257$ & $1.116$\\ \hline

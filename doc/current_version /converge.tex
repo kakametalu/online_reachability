@@ -8,7 +8,8 @@ In the one player setting (control only), if the backup operator is a contractio
 \begin{equation} \label{eq:backup_policy}
 B^{\pi}[\vec{A}] = \min\left\{ \vec{h}, \gamma \Phi_{\pi} \vec{A} \right \} .
 \end{equation}%
-\noindent This operator is a contraction mapping. The policy iteration algorithm is then given by
+\noindent This operator is a contraction mapping. The policy iteration algorithm generates the sequence $\{\vec{U}^{\pi^k}\}_{k}$ according to
+%
 %
 \begin{subequations}\label{eq:pi}
 \begin{align}
@@ -46,4 +47,4 @@ The accuracy of the approximation scheme depends on the fineness of the discreti
 
 One possible way to manage this trade-off between computation and accuracy is a multigrid approach. The idea is to first solve for the approximation on a coarse grid (e.g. grid spacing $2\Delta x_j$) and then use the final solution to initialize either value iteration or policy iteration on a finer grid. The procedure can also be stacked, i.e. given $m$ grids of increasing fineness we can produce approximations of increasing accuracy by using each as an initialization for the subsequent grid. This is only possible because contraction mappings allow great flexibility in the initialization, and yield faster convergence for good initializations. Due to the curse of dimensionality obtaining a good approximation is exponentially cheaper on the coarse grid. 
 
-Multigrid approaches have been applied extensively for SDR problems, where empirical and theoretical improvements have been shown \cite{Alla2015, Chow1991}. We compare multigrid approaches to value iteration and policy iteration in Section \ref{sec:sim}.
+Multigrid approaches have been applied extensively for SDR problems, where empirical and theoretical improvements have been shown \cite{Alla2015, Chow1991}. We compare multigrid approaches to value iteration in Section \ref{sec:sim}.

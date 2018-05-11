@@ -55,10 +55,10 @@ In the first experiment we compare a multigrid approach to value iteration.  The
 
 \begin{table}
 \centering
-\caption{Pursuit Evasion: Value iteration (VI) with Multigrid}
+\caption{Pursuit Evasion: Value iteration (VI) with Multigrid} CPU time in seconds
 \begin{tabular}{|c| c| c| c| c| }
 \hline
-\# nodes & Coarse grid & Fine grid &  Fine grid with WS & Multigrid \\ \hline
+\# nodes & Coarse grid & Fine grid &  Fine grid-CS & Multigrid \\ \hline
 $40^3$ & $2.068$ & $29.684$ & $24.320$ & $26.388$ \\ \hline
 $80^3$ & $33.166$ & $352.099$ & $317.444$ & $350.610$\\ \hline
 \end{tabular}
@@ -69,10 +69,10 @@ We now construct two other models by tweaking $M_n$: setting $u_{max}=1.5$, whic
 
 \begin{table}
 \centering
-\caption{Pursuit Evasion: Value iteration (VI) with Warm Start (WS)}
+\caption{Pursuit Evasion: Value iteration (VI) with Warm Start (WS)} CPU time in seconds
 \begin{tabular}{|c| c| c| c| c| c|}
 \hline
-\# nodes & $M_n$ & $M_e$ &  $M_e$ with WS & $M_p$ & $M_p$ with WS \\ \hline
+\# nodes & $M_n$ & $M_e$ &  $M_e$-WS & $M_p$ & $M_p$-WS \\ \hline
 $40^3$ & $35.043$ & $32.242$ & $21.483$ & $26.319$ & $23.366$ \\ \hline
 $80^3$ & $439.751$ & $416.965$ & $308.821$ & $300.847$ & $296.568$\\ \hline
 \end{tabular}
