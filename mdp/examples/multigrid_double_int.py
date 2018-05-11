@@ -16,8 +16,8 @@ import pickle
 if __name__ == "__main__":
 
     # Grid parameters
-    node = 160
-    num_nodes_c = np.array([node/2, node/2]).astype(int) + 1 
+    node = 40
+    num_nodes_c = np.array([node/4, node/4]).astype(int) + 1 
     num_nodes_f = np.array([node, node]).astype(int) + 1 
     
     s_lims_f = np.array([[-1,-4],[5,4]]) #state space limit
@@ -60,16 +60,19 @@ if __name__ == "__main__":
     value_c, _ =  my_world_c.v_pi_opt(method='vi')
     t_coarse = time.time() - t_start
 
-    # Compute value function on fine with warm start value_c 
-    t_start = time.time()
-    warm_start = my_world_c.interp_grid(value_c, grid_f)
-    value_f_warm, _ =  my_world_f.v_pi_opt(method='vi', V=warm_start)
-    t_fine_warm = time.time() - t_start
-
-    # Warm start from value_c 
+    # Compute value function on fine
     t_start = time.time()
     value_f, _ =  my_world_f.v_pi_opt(method='vi',force_run=True)
     t_fine = time.time() - t_start
+
+    # Compute value function on fine with warm start value_c 
+    warm_start = my_world_c.interp_grid(value_c, grid_f)
+    t_start = time.time()
+    value_f_warm, _ =  my_world_f.v_pi_opt(method='vi', V=warm_start,
+                                           force_run=True)
+    t_fine_warm = time.time() - t_start
+
+
 
 
     print("Time for coarse: {}".format(t_coarse))

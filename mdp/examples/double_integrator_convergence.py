@@ -9,7 +9,7 @@ from mpl_toolkits.mplot3d import Axes3D
 if __name__ == "__main__":
 
     # Grid parameters
-    num_nodes = np.array([81, 81])
+    num_nodes = np.array([161, 161])
     s_lims = np.array([[-1, -5], [5, 5]])  # state space limits
     num_nodes_a = np.array([80])
     a_lims = np.array([[0], [1]])  # action/control limits

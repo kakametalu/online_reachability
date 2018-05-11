@@ -9,7 +9,7 @@ from mpl_toolkits.mplot3d import Axes3D
 if __name__ == "__main__":
     
     # Grid parameters
-    num_nodes = np.array([41, 41])
+    num_nodes = np.array([81, 81])
     s_lims = np.array([[-1,-5],[5,5]]) #state space limits
     num_nodes_a = np.array([2])
     a_lims = np.array([[0],[1]]) #action/control limits
@@ -40,7 +40,7 @@ if __name__ == "__main__":
                      lamb=lamb)
 
     # Compute value function and policy
-    v_opt, pi_opt = my_world.v_pi_opt(method='pi')
+    v_opt, pi_opt = my_world.v_pi_opt(method='vi')
 
 
     # Computing anaylytic safe set
