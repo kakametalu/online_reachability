@@ -74,6 +74,15 @@ if __name__ == "__main__":
 
 
 
+    # Compute value function on fine with warm start value_c 
+    warm_start = my_world_c.interp_grid(value_c, grid_f)
+    t_start = time.time()
+    value_f_warm, _ =  my_world_f.v_pi_opt(method='vi', V=warm_start,
+                                           force_run=True)
+    t_fine_warm = time.time() - t_start
+
+
+
 
     print("Time for coarse: {}".format(t_coarse))
     print("Time for fine w/ warm start: {}".format(t_fine_warm))
