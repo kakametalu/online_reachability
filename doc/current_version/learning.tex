@@ -1,0 +1,48 @@
+% !TEX root = main_min_disc_dist.tex
+
+When the system model is unknown or complex, the reachable set must be learned from data. There are two approaches for this: model-based RL and model-free RL. In this section we will focus on the model-based approach, and conclude with a brief discussion on the model-free approach and its connection to RL. For ease of presentation we consider the one player case.
+ % Learning reachable sets for systems with unknown dynamics has 
+ % In this section we briefly explore how the MDR formulation allows one to leverage algorithms from RL for the purpose of learning reachable sets when the system model is unknown or when using function approximators to represent the reachable sets for high dimensional systems. A key insight to be taken from here is that much of RL has been aimed at finding the fixed point solution to the backup operator associated with the infinite-horizon SDR problem thus many of the techniques developed for RL can be applied to solving MDR problems with an appropriate change in the operator.
+
+\subsection{Model-based} \label{sec:model_based}
+
+In the model-based approach the model is assumed to be parameterized by a parameter vector $\mu$. %The data consists of a sequence of state transitions obtained from a real system or simulator $\{(x_i, u_i,x_i^+)\}_i$, where $x^+$ is the next state after applying action $u$ at state $x$ and $\Delta t$ is the time step. 
+%
+The data is first used to fit the parameters, and then the value function is computed given the model. As more data is collected the process can be repeated. Here we are intentionally vague about the data and the fitting process, and we focus our attention on how to obtain the value function given the fitted model.
+
+The data collection and fitting produce a sequence of parameters $\{\mu_k\}_k$, which in turn corresponds to a sequence of models $\{f_{\mu_k}\}_k$ and vectorized value functions $\{\vec{V}_{\mu_k}\}_k$ for the MR setting and $\{\vec{U}_{\mu_k}\}_k$ for the MDR setting. With the MR formulation the value iteration algorithm must be initialized with $\vec{l}$ every time a new value function is computed. However, with the MDR formulation $\vec{U}_{\mu_k}$ can be used as the initialization when computing $\vec{U}_{\mu_{k+1}}$. Assuming regularity in the dynamics (with respect to $\mu$), if the parameters only deviate slightly between iterations then $\vec{U}_{\mu_{k}}$should be a good approximation of $\vec{U}_{\mu_{k+1}}$, resulting in faster convergence. If this is not the case then $\vec{l}$ can be used as the default initialization. Furthermore, the following classical result on contraction mappings can provide insight on selecting the initialization:  
+%
+\begin{proposition} \label{prop:init_dist}
+If $M(\cdot): \RR^{n_G} \rightarrow \RR^{n_G}$ is a contraction mapping in the norm $|| \cdot ||$ over the space $\RR^{n_G}$ with Lipschitz constant $0\leq \kappa < 1$ and fixed-point $\vec{A}^*$, then for any ${\vec{A} \in \RR^{n_G}}$,  ${||\vec{A}^* - \vec{A}|| \leq \frac{1}{1-\kappa}||M(\vec{A}) - \vec{A}||}$. 
+\end{proposition}
+
+Given Proposition \ref{prop:init_dist}, when computing $\vec{U}_{\mu_{k+1}}$an upper bound can be computed on its distance to $\vec{U}_{\mu_{k+1}}$ and $\vec{l}$ by applying the contraction mapping to each. The initialization can then be selected to minimize this upper bound. In the worst case only one additional backup operation is performed compared to the default case. 
+
+\subsection{Model-free}
+
+Another approach to handling an unknown model, is to compute the value function directly from the data. This is the approach taken in many RL algorithms that attempt to approximate the value function for SDR problems with unknown models.
+
+Temporal difference (TD) learning is at the heart of many of these methods, which includes TD-lambda\cite{Sutton1988}, Q-learning\cite{Watkins1992}, Deep Q Networks\cite{Mnih2016}, and actor-critic methods\cite{Konda2000}. The key idea is to represent the value function with a parametric function approximator\footnote{A simple function approximator would be interpolation on a grid where the parameters are the grid node values.}, define a loss function on the parameters that is minimized when the value function is the fixed-point of the SDR backup operator, and to update the parameters by performing stochastic gradient descent on the loss function with samples from a real system or simulator.
+
+For ease of presentation consider an autonomous system $f(x)$ (which might be due to a fixed policy), and a sequence of state transitions obtained from the system $\{(x_i,x_i^+)\}$, where $x^+=\bx_x(\Delta t)$ and $\Delta t$ is the time step. If the value function is approximated by $V_\theta(x)$ with parameters $\theta$, then the loss function and update rule for TD are given by
+%
+\begin{equation}
+\begin{split}
+&\L(\theta)=\frac{1}{2}\big(V_{\theta}(x) - (r(x)+\gamma V_{\theta}(x^+))\big)^2 ,\\
+&\theta^{i+1} \leftarrow \theta^i + \alpha \nabla_{\theta}V_{\theta^i}(x_i)\big(r(x_i)+\gamma V_{\theta^i}(x^+_i) - V_{\theta^i}(x_i)\big),
+\end{split}
+\end{equation}%
+\noindent where $\alpha \in [0,1]$ is the learning rate and $\theta^i$ is the parameters at iteration $i$. A similar idea can be used in the MDR setting. Taking the approximation $U_\theta(x)$ with parameter $\theta$, the loss function and update rule for the MDR setting would be
+%
+\begin{equation}
+\begin{split}
+&\L(\theta)=\frac{1}{2}\big(U_{\theta}(x) - \min\{h(x),\gamma U_{\theta}(x^+)\}\big)^2,\\
+&\theta^{i+1} \leftarrow \theta^i + \alpha\nabla_{\theta}U_{\theta^i}(x_i)\big(\min\{h(x_i),\gamma U_{\theta^i}(x^+_i)\} - U_{\theta^i}(x_i)\big).
+\end{split}
+\end{equation}
+
+A similar modification can be made to the other TD-based algorithms, in particular those that take into account control actions. We leave the investigation of these ideas for future work. 
+
+
+
+

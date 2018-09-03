@@ -1,0 +1,246 @@
+% !TEX root = main_min_disc_dist.tex
+\begin{for_journal}
+For convenience we define two functions ${U(x):=Z(x)-L}$ and ${h(x):=l(x)-L}$. 
+We will show that $U(x)$ is the viscosity solution to a particular time-independent HJ equation
+%
+\begin{equation}\label{eq:HJ_mdr}
+    0 = \min\left\{h(x)-U(x), \max_{u\in\U} \min_{ d\in\D} \!\!\frac{\partial U}{\partial x}(x) f(x,u, d) - \lambda U(x)\right\}.
+\end{equation}
+
+We begin by presenting some Lemmas to facilitate the proof.
+%
+\begin{lemma}
+The function $U(x)$ is well defined. 
+\end{lemma} 
+%
+\begin{proof}
+Define the sequence $\{U(x,k)\}_k$, where
+%
+\begin{equation}
+U(x,k) = \inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU} \inf_{t \in [0,k\Delta t]}(h\big(\bx_{x}^{\bu,\beta[\bu]}(t)\big))\exp(-\lambda  t),
+\end{equation}
+%
+and $\Delta t>0$. The sequence is nonincreasing, since $U(x,k+1) \leq U(x,k)$, and is lower bounded by $-2L$, so it converges. Clearly in the limit this sequence also equals $U(x)$.
+\end{proof}
+
+
+
+\begin{lemma} \label{dpp}
+\emph{Dynamic programming principle.} For $\delta>0$,
+%
+\begin{equation}
+\begin{split} 
+U(x)= \inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU_\delta} 
+\big [
+\min\{&\inf_{t \in [0, \delta]} h\big(\bx_{x}^{\bu,\beta[\bu]}(t)\big))\exp(-\lambda  t), 
+\\&\exp(-\lambda \delta)U(\bx_{x}^{\bu,\beta[\bu]}(\delta))\}
+\big ]
+\end{split},
+\end{equation}
+%
+where $\UU_{\delta}$ consists of measurable functions on the interval
+$[0,\delta]$.
+\end{lemma}
+
+\begin{proof}
+Splitting the time interval of the infimum in \eqref{eq:mdr_functional} into $[0,\delta]$ and $t>\delta$, $U(x)$ can be expressed as
+%
+\begin{equation}
+\begin{split}{}{}{}
+U(x) =
+\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU} 
+\big [\min\{&\inf_{t \in [0, \delta]} h\big(\bx_{x}^{\bu,\beta[\bu]}(t)\big))\exp(-\lambda  t),\\ &\inf_{t > \delta} h\big(\bx_{x}^{\bu,\beta[\bu]}(t)\big))\exp(-\lambda  t)\}
+\big ]
+\end{split}.
+\end{equation}
+%
+Due to time-invariance of the dynamics, if we define $s=t-\delta$, $u_\delta(s)=u(t+\delta)$ and $y=\bx_{x}^{\bu,\beta[\bu]}(\delta)$,
+%
+\begin{equation}
+\begin{split}
+U(x) = 
+\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU} 
+\big [\min\{&\inf_{t \in [0, \delta]} h\big(\bx_{x}^{\bu,\beta[\bu]}(t)\big))\exp(-\lambda  t), \\ &\exp(-\lambda \delta) \inf_{s > 0} h\big(\bx_{y}^{\bu_\delta,\beta[\bu_\delta]}(s)\big))\exp(-\lambda s)\}
+\big ]
+\end{split}.
+\end{equation}
+%
+The game over the second interval can be optimized independently of the first interval once $y=\bx_{x}^{\bu,\bdelta}(\delta)$ is specified thus it can be replaced with $\exp(-\lambda \delta)U(\bx_{x}^{\bu,\beta[\bu]}(\delta))$. Furthermore $\UU$ is replaced with $\UU_\delta$ since the game is only played explicitly on $[0,\delta]$.
+\end{proof}
+
+Before presenting the proof of the viscosity solution, it will be necessary to introduce the concepts of \emph{viscosity subsolution} and \emph{viscosity supersolution}. To simplify notation, we first define the \emph{Hamiltonian} $H:\RR^n \times \RR^n \rightarrow \RR$,
+%
+\begin{equation}\label{eq:hamiltonian}
+H(x,p) = \max_{u\in\U} \min_{ d\in\D} \!\! f(x,u,d)\cdot p.
+\end{equation}
+
+\begin{definition} \label{def:sub_sol}
+A function $\phi$ (in this case $U$) on $\RR^n$  is a viscosity subsolution of \eqref{eq:HJ_mdr}, if for all $\psi \in C^1(\RR^n)$ and $x_0$ such that $\phi(x_0) = \psi(x_0)$ and $x_0$ attains a local maximum on $\phi- \psi$, then
+%
+\begin{equation}\label{eq:sub_sol}
+    \min\left\{h(x_0)-\psi(x_0), H(x_0,\frac{\partial \psi}{\partial x}) - \lambda \psi(x_0)\right\} \geq 0.
+\end{equation}
+\end{definition}
+%
+
+\begin{definition} \label{def:sup_sol} 
+A function $\phi$ (in this case $U$) on $\RR^n$  is a supersolution of \eqref{eq:HJ_mdr}, if for all $\psi \in C^1(\RR^n)$ and $x_0$ such that $\phi(x_0) = \psi(x_0)$ and $x_0$ attains a local minimum on $\phi- \psi$, then 
+%
+\begin{equation}\label{eq:sup_sol}
+    \min\left\{h(x_0)-\psi(x_0), H(x_0,\frac{\partial \psi}{\partial x}) - \lambda \psi(x_0)\right\} \leq 0.
+\end{equation}
+%
+\end{definition}
+
+
+Now we present the major theoretical result for this section.
+
+\begin{theorem}
+The function $U(x)$ is the unique viscosity solution to the time-independent HJ equation given by \eqref{eq:HJ_mdr}.
+
+\end{theorem}
+
+\begin{proof}
+The structure of the proof follows the classical approach in \cite{Evans1984}, analogously to \cite{Fisac2015}, and draws from viscosity solution theory. We start by assuming that $U$ is not a viscosity solution and then derive a contradiction to Lemma \ref{dpp}. 
+
+A continuous function is a viscosity solution if it is both a \emph{subsolution} and \emph{supersolution}. Note that $U$ is uniformly continuous due to the continuity assumptions on $f$ and $l$. We first show $U$ is a subsolution of \eqref{eq:HJ_mdr}.
+
+% Subsolution proof
+From the local maximum condition in Definition \ref{def:sub_sol} and continuity of system trajectories, there exists a sufficiently small $\delta>0$, such that for $\tau \in [0, \delta]$%
+\begin{equation*}
+U(\bx_{x_0}^{\bu, \bdelta}(\tau)) \leq \psi(\bx_{x_0}^{\bu, \bdelta}(\tau))
+\end{equation*}
+%
+for all $u(\cdot) \in \UU$ and $d(\cdot) \in \DD$.
+
+For sake of contradiction, assume \eqref{eq:sub_sol} is false, then one of the following must be true
+%
+\begin{subequations}
+\begin{align}
+&h(x_0) = \psi(x_0) - \epsilon_1 \label{eq:sub_contra_a}\\
+&H(x_0,\frac{\partial \psi}{\partial x}) - \lambda \psi(x_0) = -\epsilon_2 \label{eq:sub_contra_b},
+\end{align} 
+\end{subequations}
+%
+for some $\epsilon_1, \epsilon_2 > 0$. If \eqref{eq:sub_contra_a} is true, then 
+%
+\begin{equation}
+h(\bx_{x_0}^{\bu, \bdelta}(\tau))\exp(-\lambda \tau) \leq \psi(x_0) - \frac{\epsilon_1}{2} = U(x_0) - \frac{\epsilon_1}{2}
+\end{equation}
+%
+Incorporating this into the dynamic programming principle (Lemma \ref{dpp}), we have 
+%
+\begin{equation}
+\begin{split}
+U(x_0) &\leq \inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU_\delta}
+\big \{\inf_{t \in [0, \delta]} h\big(\bx_{x}^{\bu,\beta[\bu]}(t)\big))\exp(-\lambda  t) \big \} \\&\leq U(x_0) - \frac{\epsilon_1}{2},
+\end{split}
+\end{equation}
+%
+which is a contradiction since $\epsilon_1>0$. Similarly, if \eqref{eq:sub_contra_b}, then for a small enough $\delta>0$ and some nonanticipative strategy $\beta[\cdot]$, 
+%
+\begin{equation}
+H(\bx_{x_0}^{\bu,\beta[\bu]}(\tau), \frac{\partial \psi}{\partial x}) - \lambda \psi(\bx_{x_0}^{\bu,\beta[\bu]}(\tau)) \leq \frac{\epsilon_2}{2}
+\end{equation}
+%
+for all $\tau \in [0,\delta]$ and all inputs $\bu(\cdot) \in \UU$. Due to the $\max{}$ in \eqref{eq:hamiltonian}, for $\tau \in [0,\delta]$
+%
+\begin{equation}
+\begin{split}
+&f(\bx_{x_0}^{\bu,\beta[\bu]}(\tau),\bu(\tau), \beta[\bu](\tau)) \cdot \frac{\partial \psi}{\partial x} - \lambda \psi(\bx_{x_0}^{\bu,\beta[\bu]}(\tau)) \leq \\ &H(\bx_{x_0}^{\bu,\beta[\bu]}(\tau), \frac{\partial \psi}{\partial x}) - \lambda \psi(\bx_{x_0}^{\bu,\beta[\bu]}(\tau)).
+\end{split}
+\end{equation}
+%
+Combining the two previous inequalities and integrating over the interval $[0,\delta]$ we have
+%
+\begin{equation}
+\exp(-\lambda \delta)\psi(\bx_{x_0}^{\bu,\beta[\bu]}(\delta))-\psi(x_0) \leq \frac{\epsilon_2}{2} \delta
+\end{equation}
+%
+Recalling that $U(x_0)=\psi(x_0)$
+%
+\begin{equation}
+\exp(-\lambda \delta)U(\bx_{x_0}^{\bu,\beta[\bu]}(\delta)) \leq \frac{\epsilon_2}{2} \delta + U(x_0)
+\end{equation}
+%
+Incorporating this into the dynamic programming principle, we have
+%
+\begin{equation}
+U(x_0) \leq \exp(-\lambda \delta)U(\bx_{x_0}^{\bu,\beta[\bu]}(\delta)) \leq \frac{\epsilon_2}{2} \delta + U(x_0),
+\end{equation}
+%
+which is a contradiction, thus we conclude that $U$ is a subsolution.
+
+% Supersolution proof
+Next we show that $U$ is a supersolution. From the local minimum condition in Definition \ref{def:sup_sol} and continuity of system trajectories, there exists a sufficiently small $\delta>0$, such that for $\tau \in [0, \delta]$
+%
+\begin{equation*}
+U(\bx_{x_0}^{\bu, \bdelta}(\tau)) \geq \psi(\bx_{x_0}^{\bu, \bdelta}(\tau))
+\end{equation*}
+%
+for all $u(\cdot) \in \UU$ and $d(\cdot) \in \DD$.
+
+If we suppose \eqref{eq:sup_sol} is false, then both of the following must hold 
+%
+\begin{subequations}
+\begin{align}
+&h(x_0) = \psi(x_0) + \epsilon_1 \label{eq:sup_contra_a}\\
+&H(x_0,\frac{\partial \psi}{\partial x}) - \lambda \psi(x_0) = \epsilon_2 \label{eq:sup_contra_b},
+\end{align} 
+\end{subequations}
+%
+for some small $\epsilon_1, \epsilon_2 > 0$. If \eqref{eq:sup_contra_a} is true, then 
+%
+\begin{equation}
+\begin{split}
+h(\bx_{x_0}^{\bu, \bdelta}(\tau))\exp(-\lambda \tau) &\geq \psi(x_0) + \frac{\epsilon_1}{2} \\ &= U(x_0) + \frac{\epsilon_1}{2}
+\end{split}
+\end{equation}
+%
+Similarly, if \eqref{eq:sub_contra_b}, then for small enough $\delta>0$ and  some input $\bu(\cdot) \in \UU$ 
+%
+\begin{equation}
+H(\bx_{x_0}^{\bu,\beta[\bu]}(\tau), \frac{\partial \psi}{\partial x}) - \lambda \psi(\bx_{x_0}^{\bu,\beta[\bu]}(\tau)) \geq \frac{\epsilon_2}{2}
+\end{equation}
+%
+for all $\tau \in [0,\delta]$ and all nonanticipative strategies $\beta[\cdot]$. 
+
+Due to the $\min{}$ in \eqref{eq:hamiltonian}, for $\tau \in [0,\delta]$
+%
+\begin{equation}
+\begin{split}
+&f(\bx_{x_0}^{\bu,\beta[\bu]}(\tau),\bu(\tau), \beta[\bu](\tau)) \cdot \frac{\partial \psi}{\partial x} - \lambda \psi(\bx_{x_0}^{\bu,\beta[\bu]}(\tau)) \geq \\ &H(\bx_{x_0}^{\bu,\beta[\bu]}(\tau), \frac{\partial \psi}{\partial x}) - \lambda \psi(\bx_{x_0}^{\bu,\beta[\bu]}(\tau)).
+\end{split}
+\end{equation}
+%
+Combining the two previous inequalities and integrating over the interval $[0,\delta]$ we have
+%
+\begin{equation}
+\exp(-\lambda \delta)\psi(\bx_{x_0}^{\bu,\beta[\bu]}(\delta))-\psi(x_0) \geq \frac{\epsilon_2}{2} \delta
+\end{equation}
+%
+Recalling that $U(x_0)=\psi(x_0)$
+%
+\begin{equation}
+\exp(-\lambda \delta)U(\bx_{x_0}^{\bu,\beta[\bu]}(\delta)) \geq \frac{\epsilon_2}{2} \delta + U(x_0).
+\end{equation}
+%
+Incorporating this into the dynamic programming principle, we have
+%
+
+% HELP: How can we split this equation
+\begin{equation} 
+\begin{split}
+U(x) = 
+\inf_{\beta[\bu](\cdot) \in \B} \sup_{\bu \in \UU_\delta} 
+\big [\min\{ &\inf_{t \in [0, \delta]} h\big(\bx_{x}^{\bu,\beta[\bu]}(t)\big))\exp(-\lambda  t), \\&\exp(-\lambda \delta)U(\bx_{x}^{\bu,\beta[\bu]}(\delta))\}
+\big ]\geq
+U(x) + \min\{\frac{\epsilon_1}{2}, \frac{\epsilon_2}{2} \delta \},
+\end{split}
+\end{equation}
+%
+which is a contradiction, thus $U$ is also a supersolution.
+
+Since we have shown that $U$ is both a viscosity subsolution and viscosity supersolution of the HJ equation, this completes the proof that $U$ is a viscosity solution of \eqref{eq:HJ_mdr}. Uniqueness follows from the classical comparison and uniqueness theorems for viscosity solutions (see Theorem 4.2 in \cite{Barron1989}).
+\end{proof}
+\end{for_journal}
